@@ -1,0 +1,105 @@
+#
+# Run this script as root to configure, compile and install
+# gnustep-make, gnustep-base, gnustep-gui, gnustep-back
+# with a single command
+#
+# Examples:
+#
+# ./compile-all
+#
+# <uses `--prefix=/usr/GNUstep' as option to configure>
+#
+# ./compile-all /usr/local/GNUstep
+#
+# <uses `--prefix=/usr/local/GNUstep' as option to configure>
+#
+
+if [ "$1" != "" ]; then 
+  prefix="$1"
+else
+  prefix="/usr/GNUstep"
+fi
+
+if [ "$2" != "" ]; then
+  options="$2"
+fi
+
+if [ "$3" != "" ]; then
+  compiler="$3"
+fi
+
+UNAME=`uname | cut -d'-' -f1`
+
+if [ "$UNAME" != "MINGW32_NT" ] ; then
+  if [ ! \( -d $prefix -a -w $prefix \) ] ; then
+    if [ ! \( -d $(basename $prefix) -a -w $(basename $prefix) \) ] ; then
+      NEEDSROOT="true"
+    fi
+  fi  
+fi
+
+if gmake -v >/dev/null 2>&1
+then
+  export MAKE=gmake
+else
+  export MAKE=make
+fi
+
+if [ "$3" == "" ]; then
+  if [ -x /usr/bin/gcc3 ]; then
+    export CC=gcc3
+  elif [ -z "$CC" ]; then
+    export CC=gcc
+  fi
+else
+  export CC=$compiler
+fi
+
+echo "Using compiler $CC"
+
+# Flags for windows build.
+if [ "$UNAME" == "MINGW32_NT" ] ; then
+  export CCFLAGS="-fstrict-aliasing -fno-omit-frame-pointer"
+fi
+
+# Install make
+cd make
+CC=$CC ./configure --with-layout=gnustep
+$MAKE
+if [ "true" == "$NEEDSROOT" ]; then
+sudo -u root $MAKE install
+else
+$MAKE install
+fi
+
+. $prefix/System/Library/Makefiles/GNUstep.sh
+
+# Install base
+cd ../base
+CC=$CC ./configure --with-installation-domain=SYSTEM ${options}
+$MAKE
+if [ "true" == "$NEEDSROOT" ]; then
+sudo -u root ./install.sh $prefix $MAKE
+else
+$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM install
+fi
+
+# Install gui
+cd ../gui
+CC=$CC ./configure
+$MAKE
+if [ true == $NEEDSROOT ]; then
+sudo -u root ./install.sh $prefix $MAKE
+else
+$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM install
+fi
+
+# Install back
+cd ../back
+CC=$CC ./configure
+$MAKE
+if [ "true" == "$NEEDSROOT" ]; then
+sudo -u root ./install.sh $prefix $MAKE
+else
+$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM install
+fi

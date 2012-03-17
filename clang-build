@@ -1,0 +1,3 @@
+#!/bin/sh
+./scripts/compile-all "" "" "clang" "clang++"
+exit

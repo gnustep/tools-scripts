@@ -28,6 +28,10 @@ if [ "$3" != "" ]; then
   compiler="$3"
 fi
 
+if [ "$4" != "" ]; then
+   cxxcompiler="$4"
+fi
+
 UNAME=`uname | cut -d'-' -f1`
 
 if [ "$UNAME" != "MINGW32_NT" ] ; then
@@ -46,38 +50,47 @@ else
 fi
 
 if [ "$3" == "" ]; then
-  if [ -x /usr/bin/gcc3 ]; then
-    export CC=gcc3
-  elif [ -z "$CC" ]; then
-    export CC=gcc
-  fi
+  export CC=gcc
 else
   export CC=$compiler
 fi
 
+if [ "$4" == "" ]; then
+  export CXX=g++
+else
+  export CXX=$cxxcompiler
+fi
+
 echo "Using compiler $CC"
+echo "Using c++ compiler $CXX"
 
 # Flags for windows build.
 if [ "$UNAME" == "MINGW32_NT" ] ; then
-  export CCFLAGS="-fstrict-aliasing -fno-omit-frame-pointer"
+  export cc_flags="-fstrict-aliasing -fno-omit-frame-pointer"
+else
+#  export cc_flags="-O0"
+  if [ "$CC" == "clang" ] ; then
+     cc_flags="${cc_flags} -fblocks -fobjc-nonfragile-abi"
+  fi
 fi
 
 # Install make
 cd make
-CC=$CC ./configure --with-layout=gnustep
+echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --with-layout=gnustep"
+CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-layout=gnustep
 $MAKE
 if [ "true" == "$NEEDSROOT" ]; then
 sudo -u root $MAKE install
 else
-$MAKE install
+$MAKE messages=yes install
 fi
 
 . $prefix/System/Library/Makefiles/GNUstep.sh
 
 # Install base
 cd ../base
-CC=$CC ./configure --with-installation-domain=SYSTEM ${options}
-$MAKE
+CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-installation-domain=SYSTEM ${options}
+$MAKE messages=yes debug=yes
 if [ "true" == "$NEEDSROOT" ]; then
 sudo -u root ./install.sh $prefix $MAKE
 else
@@ -86,8 +99,8 @@ fi
 
 # Install gui
 cd ../gui
-CC=$CC ./configure
-$MAKE
+CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure
+$MAKE messages=yes debug=yes
 if [ true == $NEEDSROOT ]; then
 sudo -u root ./install.sh $prefix $MAKE
 else
@@ -96,8 +109,8 @@ fi
 
 # Install back
 cd ../back
-CC=$CC ./configure
-$MAKE
+CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure
+$MAKE messages=yes debug=yes
 if [ "true" == "$NEEDSROOT" ]; then
 sudo -u root ./install.sh $prefix $MAKE
 else

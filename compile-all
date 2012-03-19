@@ -52,7 +52,7 @@ fi
 if [ "$3" == "" ]; then
   export CC=gcc
 else
-  export CC=$compiler
+  export CC="$compiler"
 fi
 
 if [ "$4" == "" ]; then

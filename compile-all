@@ -14,6 +14,8 @@
 # <uses `--prefix=/usr/local/GNUstep' as option to configure>
 #
 
+scriptsdir="`pwd`/scripts"
+
 if [ "$1" != "" ]; then 
   prefix="$1"
 else
@@ -61,8 +63,10 @@ else
   export CXX=$cxxcompiler
 fi
 
+echo "==== compile-all"
 echo "Using compiler $CC"
 echo "Using c++ compiler $CXX"
+echo "===="
 
 # Flags for windows build.
 if [ "$UNAME" == "MINGW32_NT" ] ; then
@@ -86,6 +90,17 @@ $MAKE messages=yes install
 fi
 
 . $prefix/System/Library/Makefiles/GNUstep.sh
+
+# Install libobjc2, if needed...
+if [ "$CC" == "clang" ] ; then
+   makedir=`pwd`
+   cd ../../dev-libs/libobjc2
+   CCFLAGS=$cc_flags CXX=$CXX CC=$CC make
+   if [ "true" == "$NEEDSROOT" ]; then
+      sudo -u root $scriptsdir/install.sh $prefix $MAKE LOCAL
+   fi
+   cd $makedir
+fi
 
 # Install base
 cd ../base

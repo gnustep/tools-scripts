@@ -34,21 +34,22 @@ if [ "$4" != "" ]; then
    cxxcompiler="$4"
 fi
 
-UNAME=`uname | cut -d'-' -f1`
+# If we are installing into home, then we do not need root...
+if 
+   echo $prefix | grep "^/home/"
+then
+   unset NEEDSROOT
+   make_flags="--disable-importing-config-file"
+fi
 
+# Check if we are compiling under windows...
+UNAME=`uname | cut -d'-' -f1`
 if [ "$UNAME" != "MINGW32_NT" ] ; then
   if [ ! \( -d $prefix -a -w $prefix \) ] ; then
     if [ ! \( -d $(basename $prefix) -a -w $(basename $prefix) \) ] ; then
       NEEDSROOT="true"
     fi
   fi  
-fi
-
-# If we are installing into home, then we do not need root...
-if 
-   echo $prefix | grep "^/home/"
-then
-   unset NEEDSROOT
 fi
 
 if gmake -v >/dev/null 2>&1
@@ -87,8 +88,8 @@ fi
 
 # Install make
 cd make
-echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --with-layout=gnustep"
-CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-layout=gnustep
+echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --prefix=$prefix --with-layout=gnustep $make_flags"
+CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --prefix=$prefix --with-layout=gnustep $make_flags
 $MAKE
 if [ "true" == "$NEEDSROOT" ]; then
 sudo -u root $MAKE install

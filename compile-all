@@ -44,6 +44,13 @@ if [ "$UNAME" != "MINGW32_NT" ] ; then
   fi  
 fi
 
+# If we are installing into home, then we do not need root...
+if 
+   echo $prefix | grep "^/home/"
+then
+   unset NEEDSROOT
+fi
+
 if gmake -v >/dev/null 2>&1
 then
   export MAKE=gmake

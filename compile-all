@@ -34,14 +34,6 @@ if [ "$4" != "" ]; then
    cxxcompiler="$4"
 fi
 
-# If we are installing into home, then we do not need root...
-if 
-   echo $prefix | grep "^/home/"
-then
-   unset NEEDSROOT
-   make_flags="--disable-importing-config-file"
-fi
-
 # Check if we are compiling under windows...
 UNAME=`uname | cut -d'-' -f1`
 if [ "$UNAME" != "MINGW32_NT" ] ; then
@@ -50,6 +42,14 @@ if [ "$UNAME" != "MINGW32_NT" ] ; then
       NEEDSROOT="true"
     fi
   fi  
+fi
+
+# If we are installing into home, then we do not need root...
+if 
+   echo $prefix | grep "^/home/"
+then
+   unset NEEDSROOT
+   make_flags="--disable-importing-config-file"
 fi
 
 if gmake -v >/dev/null 2>&1

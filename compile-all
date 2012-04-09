@@ -88,7 +88,9 @@ fi
 
 # Install make
 cd make
+echo "===="
 echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --prefix=$prefix --with-layout=gnustep $make_flags"
+echo "===="
 CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --prefix=$prefix --with-layout=gnustep $make_flags
 $MAKE
 if [ "true" == "$NEEDSROOT" ]; then
@@ -108,6 +110,13 @@ if [ "$CC" == "clang" ] ; then
       sudo -u root $scriptsdir/install.sh $prefix $MAKE LOCAL
    fi
    cd $makedir
+   # Reconfigure make to use the new libobjc2 if it has been updated...
+   CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --prefix=$prefix --with-layout=gnustep $make_flags
+   if [ "true" == "$NEEDSROOT" ]; then
+      sudo -u root $MAKE install
+   else
+      $MAKE messages=yes install
+   fi
 fi
 
 # Install base

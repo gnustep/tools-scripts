@@ -104,12 +104,17 @@ fi
 # Install libobjc2, if needed...
 if [ "$CC" == "clang" ] ; then
    makedir=`pwd`
+
+   # Build and install libobjc2...
    cd ../../dev-libs/libobjc2
-   CCFLAGS=$cc_flags CXX=$CXX CC=$CC make
+   CCFLAGS=$cc_flags CXX=$CXX CC=$CC $MAKE
    if [ "true" == "$NEEDSROOT" ]; then
       sudo -u root $scriptsdir/install.sh $prefix $MAKE LOCAL
+   else
+      $MAKE GNUSTEP_INSTALLATION_DOMAIN=LOCAL install
    fi
    cd $makedir
+
    # Reconfigure make to use the new libobjc2 if it has been updated...
    CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --prefix=$prefix --with-layout=gnustep $make_flags
    if [ "true" == "$NEEDSROOT" ]; then

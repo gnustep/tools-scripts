@@ -107,6 +107,8 @@ if [ "$CC" == "clang" ] ; then
 
    # Build and install libobjc2...
    cd ../../dev-libs/libobjc2
+   # Get environment...
+   . $prefix/System/Library/Makefiles/GNUstep.sh
    CCFLAGS=$cc_flags CXX=$CXX CC=$CC $MAKE
    if [ "true" == "$NEEDSROOT" ]; then
       sudo -u root $scriptsdir/install.sh $prefix $MAKE LOCAL
@@ -122,6 +124,8 @@ if [ "$CC" == "clang" ] ; then
    else
       $MAKE messages=yes install
    fi
+   # Refresh environment...
+   . $prefix/System/Library/Makefiles/GNUstep.sh
 fi
 
 # Install base

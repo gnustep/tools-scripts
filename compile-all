@@ -130,6 +130,7 @@ fi
 
 # Install base
 cd ../base
+. $prefix/System/Library/Makefiles/GNUstep.sh
 CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-installation-domain=SYSTEM ${options}
 $MAKE messages=yes debug=yes
 if [ "true" == "$NEEDSROOT" ]; then
@@ -140,6 +141,7 @@ fi
 
 # Install gui
 cd ../gui
+. $prefix/System/Library/Makefiles/GNUstep.sh
 CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure
 $MAKE messages=yes debug=yes
 if [ true == $NEEDSROOT ]; then
@@ -150,6 +152,7 @@ fi
 
 # Install back
 cd ../back
+. $prefix/System/Library/Makefiles/GNUstep.sh
 CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure
 $MAKE messages=yes debug=yes
 if [ "true" == "$NEEDSROOT" ]; then

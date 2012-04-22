@@ -131,12 +131,13 @@ fi
 # Install base
 cd ../base
 . $prefix/System/Library/Makefiles/GNUstep.sh
-CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --prefix=${prefix} --with-installation-domain=SYSTEM ${options}
+echo "BASE CONFIGURATION: CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-installation-domain=SYSTEM ${options}"
+CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-installation-domain=SYSTEM ${options}
 $MAKE messages=yes debug=yes
 if [ "true" == "$NEEDSROOT" ]; then
 sudo -u root ./install.sh $prefix $MAKE
 else
-$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM install
+$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM messages=yes install
 fi
 
 # Install gui
@@ -147,7 +148,7 @@ $MAKE messages=yes debug=yes
 if [ true == $NEEDSROOT ]; then
 sudo -u root ./install.sh $prefix $MAKE
 else
-$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM install
+$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM messages=yes install
 fi
 
 # Install back
@@ -158,5 +159,5 @@ $MAKE messages=yes debug=yes
 if [ "true" == "$NEEDSROOT" ]; then
 sudo -u root ./install.sh $prefix $MAKE
 else
-$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM install
+$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM messages=yes install
 fi

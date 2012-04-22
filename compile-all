@@ -91,7 +91,7 @@ cd make
 echo "===="
 echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --prefix=$prefix --with-layout=gnustep $make_flags"
 echo "===="
-CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure  --disable-importing-config-file --prefix=$prefix --with-layout=gnustep $make_flags
+CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure  --prefix=$prefix --with-layout=gnustep $make_flags
 $MAKE
 if [ "true" == "$NEEDSROOT" ]; then
 sudo -u root $MAKE install
@@ -118,7 +118,7 @@ if [ "$CC" == "clang" ] ; then
    cd $makedir
 
    # Reconfigure make to use the new libobjc2 if it has been updated...
-   CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure  --disable-importing-config-file --prefix=$prefix --with-layout=gnustep $make_flags
+   CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure  --prefix=$prefix --with-layout=gnustep $make_flags
    if [ "true" == "$NEEDSROOT" ]; then
       sudo -u root $MAKE install
    else
@@ -131,7 +131,7 @@ fi
 # Install base
 cd ../base
 . $prefix/System/Library/Makefiles/GNUstep.sh
-CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-installation-domain=SYSTEM ${options}
+CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --prefix=${prefix} --with-installation-domain=SYSTEM ${options}
 $MAKE messages=yes debug=yes
 if [ "true" == "$NEEDSROOT" ]; then
 sudo -u root ./install.sh $prefix $MAKE

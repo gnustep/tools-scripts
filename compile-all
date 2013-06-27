@@ -14,9 +14,6 @@
 # <uses `--prefix=/usr/local/GNUstep' as option to configure>
 #
 
-export CFLAGS="-I/usr/local/include"
-export LDFLAGS="-L/usr/local/lib"
-
 scriptsdir="`pwd`/scripts"
 
 if [ "$1" != "" ]; then 
@@ -92,9 +89,9 @@ fi
 # Install make
 cd make
 echo "===="
-# echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --prefix=$prefix --with-layout=gnustep --with-include-flags=-I/usr/local/include --with-library-flags=-L/usr/local/lib $make_flags"
+echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --prefix=$prefix --with-layout=gnustep $make_flags"
 echo "===="
-CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure  --prefix=$prefix --with-layout=gnustep --with-include-flags=-I/usr/local/include --with-library-flags=-L/usr/local/lib $make_flags
+CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure  --prefix=$prefix --with-layout=gnustep $make_flags
 $MAKE
 if [ "true" == "$NEEDSROOT" ]; then
 sudo -u root $MAKE install
@@ -112,25 +109,16 @@ if [ "$CC" == "clang" ] ; then
    cd ../../dev-libs/libobjc2
    # Get environment...
    . $prefix/System/Library/Makefiles/GNUstep.sh
-   echo $LD_LIBRARY_PATH
-   if [ -e Build ]; then
-      rm -rf Build
-   fi
-   mkdir Build
-   cd Build
-   cmake .. -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_ASM_COMPILER=clang
-   make
+   CCFLAGS=$cc_flags CXX=$CXX CC=$CC $MAKE
    if [ "true" == "$NEEDSROOT" ]; then
-      sudo -E make install
-      # sudo -u root $scriptsdir/install.sh $prefix $MAKE LOCAL
+      sudo -u root $scriptsdir/install.sh $prefix $MAKE LOCAL
    else
-      make install
-      # $MAKE GNUSTEP_INSTALLATION_DOMAIN=LOCAL install
+      $MAKE GNUSTEP_INSTALLATION_DOMAIN=LOCAL install
    fi
    cd $makedir
 
    # Reconfigure make to use the new libobjc2 if it has been updated...
-   CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure  --prefix=$prefix --with-layout=gnustep --with-include-flags=-I/usr/local/include --with-library-flags=-L/usr/local/lib $make_flags
+   CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure  --prefix=$prefix --with-layout=gnustep $make_flags
    if [ "true" == "$NEEDSROOT" ]; then
       sudo -u root $MAKE install
    else
@@ -143,10 +131,8 @@ fi
 # Install base
 cd ../base
 . $prefix/System/Library/Makefiles/GNUstep.sh
-   echo $LD_LIBRARY_PATH
-
-# echo "BASE CONFIGURATION: CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-installation-domain=SYSTEM ${options}"
-CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-installation-domain=SYSTEM --with-include-flags=-I/usr/local/include --with-library-flags=-L/usr/local/lib ${options}
+echo "BASE CONFIGURATION: CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-installation-domain=SYSTEM ${options}"
+CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-installation-domain=SYSTEM ${options}
 $MAKE messages=yes debug=yes
 if [ "true" == "$NEEDSROOT" ]; then
 sudo -u root ./install.sh $prefix $MAKE
@@ -157,7 +143,7 @@ fi
 # Install gui
 cd ../gui
 . $prefix/System/Library/Makefiles/GNUstep.sh
-CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-include-flags=-I/usr/local/include --with-library-flags=-L/usr/local/lib
+CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure
 $MAKE messages=yes debug=yes
 if [ true == $NEEDSROOT ]; then
 sudo -u root ./install.sh $prefix $MAKE
@@ -168,7 +154,7 @@ fi
 # Install back
 cd ../back
 . $prefix/System/Library/Makefiles/GNUstep.sh
-CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-include-flags=-I/usr/local/include --with-library-flags=-L/usr/local/lib
+CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure
 $MAKE messages=yes debug=yes
 if [ "true" == "$NEEDSROOT" ]; then
 sudo -u root ./install.sh $prefix $MAKE

@@ -4,8 +4,8 @@ echo "Building for Windows/win32/MinGW..."
 echo ""
 
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
-cd make && ./configure --with-layout=gnustep && make install
-cd ../base && ./configure --with-installation-domain=SYSTEM && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
+cd make && ./configure --with-layout=gnustep --prefix=/GNUstep && make install
+cd ../base && CFLAGS+=-I/usr/local/include LDFLAGS+=-L/usr/local/lib ./configure --with-installation-domain=SYSTEM && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 cd ../gui && ./configure && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 cd ../back && ./configure && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 

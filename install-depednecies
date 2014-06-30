@@ -1,0 +1,20 @@
+#!/bin/sh
+
+echo "Installing Debian/Ubuntu depednecies..."
+sudo apt-get install gobjc 
+sudo apt-get install gobjc++
+sudo apt-get install libjpeg-dev 
+sudo apt-get install libtiff-dev 
+sudo apt-get install libpng-dev 
+sudo apt-get install libicns-dev 
+sudo apt-get install libxml2-dev 
+sudo apt-get install libxslt-dev 
+sudo apt-get install gnutls-dev
+sudo apt-get install libffi-dev 
+sudo apt-get install libicu-dev 
+sudo apt-get install libcairo2-dev
+sudo apt-get install libxft-dev
+sudo apt-get install libavahi-dev
+sudo apt-get install libavahi-client-dev
+sudo apt-get install flite-dev
+sudo apt-get install libxt-dev

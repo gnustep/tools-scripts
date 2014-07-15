@@ -11,7 +11,7 @@ sudo apt-get install libpng-dev
 sudo apt-get install libicns-dev 
 sudo apt-get install libxml2-dev 
 sudo apt-get install libxslt-dev 
-sudo apt-get install gnutls-dev
+sudo apt-get install libgnutls-dev
 sudo apt-get install libffi-dev 
 sudo apt-get install libicu-dev 
 sudo apt-get install libcairo2-dev

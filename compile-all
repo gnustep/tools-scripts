@@ -56,7 +56,7 @@ if gmake -v >/dev/null 2>&1
 then
   export MAKE=gmake
 else
-  export MAKE=make
+  export MAKE=make -j9
 fi
 
 if [ "$3" == "" ]; then
@@ -109,6 +109,7 @@ if [ "$CC" == "clang" ] ; then
    cd ../../dev-libs/libobjc2
    # Get environment...
    . $prefix/System/Library/Makefiles/GNUstep.sh
+   CCFLAGS=$cc_flags CXX=$CXX CC=$CC $MAKE clean
    CCFLAGS=$cc_flags CXX=$CXX CC=$CC $MAKE
    if [ "true" == "$NEEDSROOT" ]; then
       sudo -u root $scriptsdir/install.sh $prefix $MAKE LOCAL
@@ -126,6 +127,9 @@ if [ "$CC" == "clang" ] ; then
    fi
    # Refresh environment...
    . $prefix/System/Library/Makefiles/GNUstep.sh
+
+   # Assume the presence of libdispatch if we are using clang and libobjc2
+   export LDFLAGS=-ldispatch
 fi
 
 # Install base

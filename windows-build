@@ -7,7 +7,7 @@ if [ -f /mingw/lib/pkgconfig/fontconfig.pc ]; then
     echo "fontconfig.pc file exists..."
 else
     echo "fontconfig.pc does not exist, copying..."
-    cp ./fontconfig.pc /mingw/lib/pkgconfig
+    cp ./scripts/fontconfig.pc /mingw/lib/pkgconfig
 fi
 
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/mingw/lib/pkgconfig:${PKG_CONFIG_PATH}

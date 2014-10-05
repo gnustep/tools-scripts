@@ -1,0 +1,12 @@
+prefix=/mingw
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: Fontconfig
+Version: 2.9.0
+Description: Font configuration and customization library
+
+Libs: -L${libdir} -lfontconfig
+Libs.private: -lz -lexpat -lfreetype    
+Cflags: -I${includedir}

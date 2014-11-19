@@ -1,5 +1,6 @@
 #!/bin/sh
 
+echo "NOTE: Make sure you have done apt-get update and apt-get upgrade prior to running this script."
 echo "Installing Debian/Ubuntu dependencies"
 echo "-------"
 

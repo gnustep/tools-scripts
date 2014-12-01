@@ -165,3 +165,12 @@ sudo -u root ./install.sh $prefix $MAKE
 else
 $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM messages=yes install
 fi
+
+# Perform other operations
+echo "Add script to etc and xsession..."
+if [ ! -e /etc/profile.d/GNUstep.sh ]; then
+   sudo -u root ln -s /usr/GNUstep/System/Library/Makefiles/GNUstep.sh /etc/profile.d/GNUstep.sh
+fi
+cd ../../plugins/session
+sudo -u root ./install.sh
+echo "Done."

@@ -1,0 +1,21 @@
+#!/bin/sh
+
+echo "Installing OpenBSD dependencies"
+
+sudo pkg_add -v gmake
+sudo pkg_add -v windowmaker
+sudo pkg_add -v jpeg
+sudo pkg_add -v tiff
+sudo pkg_add -v png
+sudo pkg_add -v libxml
+sudo pkg_add -v libxslt
+sudo pkg_add -v gnutls
+sudo pkg_add -v libffi
+sudo pkg_add -v icu4c
+sudo pkg_add -v cairo
+sudo pkg_add -v avahi
+sudo pkg_add -v portaudio
+sudo pkg_add -v flite
+
+echo "Done..."
+exit 0

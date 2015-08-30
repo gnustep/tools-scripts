@@ -3,18 +3,19 @@
 echo "Building for Windows/win32/MinGW..."
 echo ""
 
-if [ -f /mingw/lib/pkgconfig/fontconfig.pc ]; then
+if [ -f /$MSYSTEM/lib/pkgconfig/fontconfig.pc ]; then
     echo "fontconfig.pc file exists..."
 else
     echo "fontconfig.pc does not exist, copying..."
-    cp ./scripts/fontconfig.pc /mingw/lib/pkgconfig
+    cp ./scripts/fontconfig.pc /${MSYSTEM,,}/lib/pkgconfig
 fi
 
-export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/mingw/lib/pkgconfig:${PKG_CONFIG_PATH}
-cd make && ./configure --with-layout=gnustep --prefix=/GNUstep && make install
-cd ../base && CFLAGS+=-I/usr/local/include LDFLAGS+=-L/usr/local/lib ./configure --with-installation-domain=SYSTEM && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
-cd ../gui && ./configure && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
-cd ../back && ./configure --enable-graphics=cairo && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
+#export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/${MSYSTEM,,}/lib/pkgconfig:${PKG_CONFIG_PATH}
+cd make && ./configure --with-layout=gnustep --prefix=/${MSYSTEM,,}/GNUstep --enable-install-ld-so-conf && make install messages=yes
+source /${MSYSTEM,,}/GNUstep/System/Library/Makefiles/GNUstep.sh
+cd ../base && CFLAGS+=-I/usr/local/include LDFLAGS+=-L/usr/local/lib ./configure --with-installation-domain=SYSTEM --disable-libdispatch && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install -j8 messages=yes
+cd ../gui && ./configure && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install -j8 messages=yes
+cd ../back && ./configure --enable-graphics=cairo --with-name=cairo && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install -j8 messages=yes
 
 echo ""
 echo "Done."

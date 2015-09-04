@@ -111,6 +111,7 @@ if [ "$CC" == "clang" ] ; then
    . $prefix/System/Library/Makefiles/GNUstep.sh
    CCFLAGS=$cc_flags CXX=$CXX CC=$CC $MAKE clean
    CCFLAGS=$cc_flags CXX=$CXX CC=$CC $MAKE
+   export OBJCFLAGS=-fobjc-runtime=gnustep-1.7
    if [ "true" == "$NEEDSROOT" ]; then
       sudo -u root $scriptsdir/install.sh $prefix $MAKE LOCAL
    else

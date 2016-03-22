@@ -150,7 +150,7 @@ cd ../gui
 . $prefix/System/Library/Makefiles/GNUstep.sh
 CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure
 $MAKE messages=yes debug=yes
-if [ true == $NEEDSROOT ]; then
+if [ "true" == "$NEEDSROOT" ]; then
 sudo -u root ./install.sh $prefix $MAKE
 else
 $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM messages=yes install

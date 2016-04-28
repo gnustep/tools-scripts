@@ -1,0 +1,30 @@
+#!/bin/sh
+cd ~
+
+# cleanup
+rm -rf libdispatch
+rm -rf libobjc2
+   
+# pull
+git clone https://github.com/gnustep/libobjc2.git
+git clone https://github.com/nickhutchinson/libdispatch.git
+
+# set vars
+export CC=clang
+export CXX=clang++
+
+# build and install
+cd libdispatch
+rm -rf libdispatch-build
+mkdir libdispatch-build && cd libdispatch-build
+../configure
+sudo make install
+sudo ldconfig
+
+cd ~/libobjc2
+mkdir libobjc2-build && cd libobjc2-build
+cmake ../
+sudo cmake --build . --target install
+sudo ldconfig
+
+

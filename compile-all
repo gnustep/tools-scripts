@@ -56,7 +56,7 @@ if gmake -v >/dev/null 2>&1
 then
   export MAKE=gmake
 else
-  export MAKE=make -j9
+  export MAKE=make
 fi
 
 if [ "$3" == "" ]; then
@@ -86,6 +86,14 @@ else
   fi
 fi
 
+# Install libobjc2, if needed...
+if [ "$CC" == "clang" ] ; then
+   ./scripts/clang-setup   
+
+   # Assume the presence of libdispatch if we are using clang and libobjc2
+   export LDFLAGS=-ldispatch
+fi
+
 # Install make
 cd make
 echo "===="
@@ -100,38 +108,6 @@ $MAKE messages=yes install
 fi
 
 . $prefix/System/Library/Makefiles/GNUstep.sh
-
-# Install libobjc2, if needed...
-if [ "$CC" == "clang" ] ; then
-   makedir=`pwd`
-
-   # Build and install libobjc2...
-   cd ../../dev-libs/libobjc2
-   # Get environment...
-   . $prefix/System/Library/Makefiles/GNUstep.sh
-   CCFLAGS=$cc_flags CXX=$CXX CC=$CC $MAKE clean
-   CCFLAGS=$cc_flags CXX=$CXX CC=$CC $MAKE
-   export OBJCFLAGS=-fobjc-runtime=gnustep-1.7
-   if [ "true" == "$NEEDSROOT" ]; then
-      sudo -u root $scriptsdir/install.sh $prefix $MAKE LOCAL
-   else
-      $MAKE GNUSTEP_INSTALLATION_DOMAIN=LOCAL install
-   fi
-   cd $makedir
-
-   # Reconfigure make to use the new libobjc2 if it has been updated...
-   CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure  --prefix=$prefix --with-layout=gnustep $make_flags
-   if [ "true" == "$NEEDSROOT" ]; then
-      sudo -u root $MAKE install
-   else
-      $MAKE messages=yes install
-   fi
-   # Refresh environment...
-   . $prefix/System/Library/Makefiles/GNUstep.sh
-
-   # Assume the presence of libdispatch if we are using clang and libobjc2
-   export LDFLAGS=-ldispatch
-fi
 
 # Install base
 cd ../base

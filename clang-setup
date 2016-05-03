@@ -1,6 +1,10 @@
 #!/bin/sh
 cd ~
 
+# pre-create some directories
+#sudo mkdir -p /usr/GNUstep/Local/Library/Libraries
+#sudo mkdir -p /usr/GNUstep/Local/Library/Headers
+
 # cleanup
 rm -rf libdispatch
 rm -rf libobjc2

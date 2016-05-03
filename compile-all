@@ -71,6 +71,14 @@ else
   export CXX=$cxxcompiler
 fi
 
+# Install libobjc2, if needed...
+#if [ "$CC" == "clang" ] ; then
+#   ./scripts/clang-setup   
+#
+   # Assume the presence of libdispatch if we are using clang and libobjc2
+#   export LDFLAGS=-ldispatch
+#fi
+
 echo "==== compile-all"
 echo "Using compiler $CC"
 echo "Using c++ compiler $CXX"
@@ -86,14 +94,6 @@ else
   fi
 fi
 
-# Install libobjc2, if needed...
-if [ "$CC" == "clang" ] ; then
-   ./scripts/clang-setup   
-
-   # Assume the presence of libdispatch if we are using clang and libobjc2
-   export LDFLAGS=-ldispatch
-fi
-
 # Install make
 cd make
 echo "===="
@@ -102,9 +102,26 @@ echo "===="
 CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure  --prefix=$prefix --with-layout=gnustep $make_flags
 $MAKE
 if [ "true" == "$NEEDSROOT" ]; then
-sudo -u root $MAKE install
+   sudo -u root $MAKE install
 else
-$MAKE messages=yes install
+   $MAKE messages=yes install
+fi
+
+. $prefix/System/Library/Makefiles/GNUstep.sh
+
+if [ "$CC" == "clang" ] ; then
+   ${scriptsdir}/clang-setup   
+
+   # Assume the presence of libdispatch if we are using clang and libobjc2
+   export LDFLAGS=-ldispatch
+
+   CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure  --prefix=$prefix --with-layout=gnustep $make_flags
+   $MAKE
+   if [ "true" == "$NEEDSROOT" ]; then
+      sudo -u root $MAKE install
+   else
+	$MAKE messages=yes install
+   fi
 fi
 
 . $prefix/System/Library/Makefiles/GNUstep.sh

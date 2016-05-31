@@ -1,3 +1,7 @@
+2016-05-31 19:42-EDT Gregory John Casamento <greg.casamento@gmail.com>
+
+	* compile-all: Add -j8 option to speed up the build.
+
 2016-05-03 17:08-EDT Gregory John Casamento <greg.casamento@gmail.com>
 
 	* configs/objc.cfg

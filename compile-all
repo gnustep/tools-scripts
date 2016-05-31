@@ -54,9 +54,9 @@ fi
 
 if gmake -v >/dev/null 2>&1
 then
-  export MAKE=gmake
+  export MAKE="gmake -j8"
 else
-  export MAKE=make
+  export MAKE="make -j8"
 fi
 
 if [ "$3" == "" ]; then

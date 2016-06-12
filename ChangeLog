@@ -1,3 +1,8 @@
+2016-06-12 04:13-EDT Gregory John Casamento <greg.casamento@gmail.com>
+
+	* clang-setup: Separate build and install
+	* compile-all: Preserve environment for clang build.
+
 2016-05-31 19:42-EDT Gregory John Casamento <greg.casamento@gmail.com>
 
 	* compile-all: Add -j8 option to speed up the build.

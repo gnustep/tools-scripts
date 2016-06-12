@@ -1,13 +1,16 @@
 #!/bin/sh
+
+SUDO='sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH'
+
 cd ~
 
 # pre-create some directories
-#sudo mkdir -p /usr/GNUstep/Local/Library/Libraries
-#sudo mkdir -p /usr/GNUstep/Local/Library/Headers
+#${SUDO} mkdir -p /usr/GNUstep/Local/Library/Libraries
+#${SUDO} mkdir -p /usr/GNUstep/Local/Library/Headers
 
 # cleanup
-rm -rf libdispatch
-rm -rf libobjc2
+${SUDO} rm -rf libdispatch
+${SUDO} rm -rf libobjc2
    
 # pull
 git clone https://github.com/gnustep/libobjc2.git
@@ -22,13 +25,15 @@ cd libdispatch
 rm -rf libdispatch-build
 mkdir libdispatch-build && cd libdispatch-build
 ../configure
-sudo make install
-sudo ldconfig
+make
+${SUDO} make install
+${SUDO} ldconfig
 
 cd ~/libobjc2
 mkdir libobjc2-build && cd libobjc2-build
 cmake ../
-sudo cmake --build . --target install
-sudo ldconfig
+cmake --build . --target install
+${SUDO} -E make install
+${SUDO} ldconfig
 
 

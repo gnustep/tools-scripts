@@ -14,6 +14,7 @@
 # <uses `--prefix=/usr/local/GNUstep' as option to configure>
 #
 
+SUDO='sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH'
 scriptsdir="`pwd`/scripts"
 
 if [ "$1" != "" ]; then 
@@ -102,7 +103,7 @@ echo "===="
 CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure  --prefix=$prefix --with-layout=gnustep $make_flags
 $MAKE
 if [ "true" == "$NEEDSROOT" ]; then
-   sudo -u root $MAKE install
+   ${SUDO} -u root $MAKE install
 else
    $MAKE messages=yes install
 fi
@@ -118,7 +119,7 @@ if [ "$CC" == "clang" ] ; then
    CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure  --prefix=$prefix --with-layout=gnustep $make_flags
    $MAKE
    if [ "true" == "$NEEDSROOT" ]; then
-      sudo -u root $MAKE install
+      ${SUDO} -u root $MAKE install
    else
 	$MAKE messages=yes install
    fi
@@ -133,7 +134,7 @@ echo "BASE CONFIGURATION: CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-i
 CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-installation-domain=SYSTEM ${options}
 $MAKE messages=yes debug=yes
 if [ "true" == "$NEEDSROOT" ]; then
-sudo -u root ./install.sh $prefix $MAKE
+${SUDO} -u root ./install.sh $prefix $MAKE
 else
 $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM messages=yes install
 fi
@@ -144,7 +145,7 @@ cd ../gui
 CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure
 $MAKE messages=yes debug=yes
 if [ "true" == "$NEEDSROOT" ]; then
-sudo -u root ./install.sh $prefix $MAKE
+${SUDO} -u root ./install.sh $prefix $MAKE
 else
 $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM messages=yes install
 fi
@@ -155,7 +156,7 @@ cd ../back
 CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure
 $MAKE messages=yes debug=yes
 if [ "true" == "$NEEDSROOT" ]; then
-sudo -u root ./install.sh $prefix $MAKE
+${SUDO} -u root ./install.sh $prefix $MAKE
 else
 $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM messages=yes install
 fi
@@ -163,8 +164,8 @@ fi
 # Perform other operations
 echo "Add script to etc and xsession..."
 if [ ! -e /etc/profile.d/GNUstep.sh ]; then
-   sudo -u root ln -s /usr/GNUstep/System/Library/Makefiles/GNUstep.sh /etc/profile.d/GNUstep.sh
+   ${SUDO} -u root ln -s /usr/GNUstep/System/Library/Makefiles/GNUstep.sh /etc/profile.d/GNUstep.sh
 fi
 cd ../../plugins/session
-sudo -u root ./install.sh
+${SUDO} -u root ./install.sh
 echo "Done."

@@ -36,4 +36,5 @@ echo "4) gnustep-back"
 pacman -S mingw-w64-i686-cairo
 
 echo "Done."
+echo "Don't forget to run /mingw32_shell.bat to create a session to build in."
 

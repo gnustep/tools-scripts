@@ -1,0 +1,39 @@
+#! /bin/sh
+echo "Install dependencies at MSYS2/MINGW64..."
+
+echo "0) Source Version Control"
+pacman -S subversion
+pacman -S git
+
+echo "1) gnustep-make"
+pacman -S tar
+pacman -S unzip
+pacman -S make 
+pacman -S autogen automake autoconf autoconf2.13 libtool mingw-w64-x86_64-libtool
+pacman -S mingw-w64-x86_64-toolchain
+pacman -S mingw-w64-x86_64-pkg-config
+
+echo "2) gnutep-base"
+#pacman -S mingw-w64-x86_64-libffi
+pacman -S mingw-w64-x86_64-libxml2
+pacman -S mingw-w64-x86_64-gnutls
+pacman -S mingw-w64-x86_64-libxslt
+
+echo "3) gnustep-gui"
+pacman -S mingw-w64-x86_64-libjpeg-turbo
+pacman -S mingw-w64-x86_64-libtiff
+pacman -S mingw-w64-x86_64-giflib
+pacman -S mingw-w64-x86_64-icu
+pacman -S mingw-w64-x86_64-libsndfile
+pacman -S mingw-w64-x86_64-aspell
+pacman -S mingw-w64-x86_64-lcms mingw-w64-x86_64-lcms2
+pacman -S mingw-w64-x86_64-sqlite3
+
+pacman -S asciidoc
+pacman -S mingw-w64-x86_64-windows-default-manifest 
+
+echo "4) gnustep-back"
+pacman -S mingw-w64-x86_64-cairo
+
+echo "Done."
+echo "Don't forget to run /mingw64_shell.bat to create a session to build in."

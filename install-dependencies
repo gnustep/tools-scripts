@@ -4,24 +4,35 @@ echo "NOTE: Make sure you have done apt-get update and apt-get upgrade prior to 
 echo "Installing Debian/Ubuntu dependencies"
 echo "-------"
 
-sudo apt-get install gobjc 
-sudo apt-get install gobjc++
-sudo apt-get install libjpeg-dev 
-sudo apt-get install libtiff-dev 
-sudo apt-get install libpng-dev 
-sudo apt-get install libicns-dev 
-sudo apt-get install libxml2-dev 
-sudo apt-get install libxslt-dev 
-sudo apt-get install libgnutls-dev
-sudo apt-get install libffi-dev 
-sudo apt-get install libicu-dev 
-sudo apt-get install libcairo2-dev
-sudo apt-get install libxft-dev
-sudo apt-get install libavahi-client-dev
-sudo apt-get install flite-dev
-sudo apt-get install libxt-dev
-sudo apt-get install libportaudio-dev
-sudo apt-get install wmaker
+# check if called binaries are available
+for a in sudo; do
+    which $a >/dev/null
+    if [ ! $? -eq 0 ]; then
+        echo $a not found
+        sudo=""
+    else 
+        sudo="sudo"
+    fi
+done
+
+$sudo apt-get install gobjc 
+$sudo apt-get install gobjc++
+$sudo apt-get install libjpeg-dev 
+$sudo apt-get install libtiff5-dev 
+$sudo apt-get install libpng-dev 
+$sudo apt-get install libicns-dev 
+$sudo apt-get install libxml2-dev 
+$sudo apt-get install libxslt1-dev 
+$sudo apt-get install libgnutls28-dev
+$sudo apt-get install libffi-dev 
+$sudo apt-get install libicu-dev 
+$sudo apt-get install libcairo2-dev
+$sudo apt-get install libxft-dev
+$sudo apt-get install libavahi-client-dev
+$sudo apt-get install flite1-dev
+$sudo apt-get install libxt-dev
+$sudo apt-get install portaudio19-dev
+$sudo apt-get install wmaker
 
 echo "-------"
 echo "Done..."

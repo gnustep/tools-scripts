@@ -1,3 +1,10 @@
+2017-08-06 14:09-EDT Gregory John Casamento <greg.casamento@gmail.com>
+
+	* compile-all: Modified for new repo names.
+	* clone-app-repos: Add script to pull or clone all of the repos.
+	* update-gnustep: Add script which updates all of gnustep and
+	installs
+
 2016-06-28 16:10-EDT Gregory John Casamento <greg.casamento@gmail.com>
 
 	* install-dependencies-msys2-64bit: Minor spelling correction

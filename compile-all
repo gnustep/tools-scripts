@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #
 # Run this script as root to configure, compile and install
 # gnustep-make, gnustep-base, gnustep-gui, gnustep-back
@@ -15,7 +17,7 @@
 #
 
 SUDO='sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH'
-scriptsdir="`pwd`/scripts"
+scriptsdir="`pwd`/tools-scripts"
 
 if [ "$1" != "" ]; then 
   prefix="$1"
@@ -96,7 +98,7 @@ else
 fi
 
 # Install make
-cd make
+cd tools-make
 echo "===="
 echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --prefix=$prefix --with-layout=gnustep $make_flags"
 echo "===="
@@ -128,7 +130,7 @@ fi
 . $prefix/System/Library/Makefiles/GNUstep.sh
 
 # Install base
-cd ../base
+cd ../libs-base
 . $prefix/System/Library/Makefiles/GNUstep.sh
 echo "BASE CONFIGURATION: CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-installation-domain=SYSTEM ${options}"
 CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-installation-domain=SYSTEM ${options}
@@ -140,7 +142,7 @@ $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM messages=yes install
 fi
 
 # Install gui
-cd ../gui
+cd ../libs-gui
 . $prefix/System/Library/Makefiles/GNUstep.sh
 CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure
 $MAKE messages=yes debug=yes
@@ -151,7 +153,7 @@ $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM messages=yes install
 fi
 
 # Install back
-cd ../back
+cd ../libs-back
 . $prefix/System/Library/Makefiles/GNUstep.sh
 CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure
 $MAKE messages=yes debug=yes

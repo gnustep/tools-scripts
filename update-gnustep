@@ -1,0 +1,11 @@
+#!/bin/bash
+COMPILER=$!
+
+./tools-scripts/clone-all-repos
+if [ "${COMPILER}" == "clang" ]; then
+    ./tools-scripts/clang-build
+else
+    ./tools-scripts/compile-all
+fi
+
+exit 0

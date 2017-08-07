@@ -1,5 +1,5 @@
 #!/bin/bash
-COMPILER=$!
+COMPILER=$1
 
 ./tools-scripts/clone-all-repos
 if [ "${COMPILER}" == "clang" ]; then

@@ -5,8 +5,8 @@ SUDO='sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH'
 cd ~
 
 # pre-create some directories
-#${SUDO} mkdir -p /usr/GNUstep/Local/Library/Libraries
-#${SUDO} mkdir -p /usr/GNUstep/Local/Library/Headers
+${SUDO} mkdir -p /usr/GNUstep/Local/Library/Libraries
+${SUDO} mkdir -p /usr/GNUstep/Local/Library/Headers
 
 # cleanup
 ${SUDO} rm -rf libdispatch

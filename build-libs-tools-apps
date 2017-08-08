@@ -1,0 +1,54 @@
+#!/bin/bash
+libs_files=`ls -d libs-* | grep -v gui | grep -v base | grep -v back | grep -v uikit | grep -v corebase | grep -v opal | grep -v corenetwork | grep -v libs-ec | grep -v gscrypt | grep -v ldap | grep -v rigs`
+tools_files=`ls -d tools-* | grep -v tools-windows-development-installer | grep -v startup | grep -v nfmake | grep -v installers | grep -v model-main | grep -v startup`
+apps_files=`ls -d apps-*`
+
+echo "======= Building libraries."
+for file in ${libs_files}
+do
+    echo "***** Building ${file}..."
+    cd ${file}
+    if [ -f configure ]; then
+	./configure
+    fi
+    if [ -f GNUmakefile ]; then
+	make debug=yes
+	sudo -- sh -c '. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install'
+    fi
+    cd ..
+    echo "***** Done"
+done
+
+echo "======= Building tools."
+for file in ${tools_files}
+do
+    echo "***** Building ${file}..."
+    cd ${file}
+    if [ -f configure ]; then
+	./configure
+    fi
+    if [ -f GNUmakefile ]; then
+	make debug=yes
+	sudo -- sh -c '. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install'
+    fi
+    cd ..
+    echo "***** Done"
+done
+
+echo "======= Building applications."
+for file in ${apps_files}
+do
+    echo "***** Building ${file}..."
+    cd ${file}
+    if [ -f configure ]; then
+	./configure
+    fi
+    if [ -f GNUmakefile ]; then
+	make debug=yes
+	sudo -- sh -c '. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install'
+    fi
+    cd ..
+    echo "***** Done"
+done
+
+exit 0

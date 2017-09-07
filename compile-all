@@ -74,14 +74,6 @@ else
   export CXX=$cxxcompiler
 fi
 
-# Install libobjc2, if needed...
-#if [ "$CC" == "clang" ] ; then
-#   ./scripts/clang-setup   
-#
-   # Assume the presence of libdispatch if we are using clang and libobjc2
-#   export LDFLAGS=-ldispatch
-#fi
-
 echo "==== compile-all"
 echo "Using compiler $CC"
 echo "Using c++ compiler $CXX"

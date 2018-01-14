@@ -10,7 +10,7 @@ do
 	test -d ${file}
     then
         cd $file
-        git pull
+        git pull ${GITURL} master
 	cd ..
     else
 	git clone ${GITURL}

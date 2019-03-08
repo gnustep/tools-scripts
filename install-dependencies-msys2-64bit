@@ -35,5 +35,8 @@ pacman -S mingw-w64-x86_64-windows-default-manifest
 echo "4) gnustep-back"
 pacman -S mingw-w64-x86_64-cairo
 
+echo "5) clang"
+pacman -S mingw-w64-x86_64-clang
+
 echo "Done."
 echo "Don't forget to run /mingw64_shell.bat to create a session to build in."

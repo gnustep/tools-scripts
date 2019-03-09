@@ -1,14 +1,21 @@
 #!/bin/sh
 
-echo "NOTE: Make sure you have done apt-get update and apt-get upgrade prior to running this script."
+# Inform the user. ;) 
+echo "NOTE: Make sure you have done brew update and brew upgrade prior to running this script."
 echo "Installing macOS dependencies"
 echo "-------"
 
+# Install homebrew...
 if [ -e /usr/local/bin/brew ]; then
 	echo "Homebrew installed... continuing."
 else
 	/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 fi
+
+# Create frameworks dir...
+sudo mkdir /usr/local/Frameworks
+
+# Install dependencies...
 echo "-------"
 brew install gcc
 brew install jpeg 

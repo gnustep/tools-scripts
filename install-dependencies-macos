@@ -13,7 +13,11 @@ else
 fi
 
 # Create frameworks dir...
-sudo mkdir /usr/local/Frameworks
+if [ -e /usr/local/Frameworks ]; then
+	echo "Frameworks directory present."
+else
+	sudo mkdir /usr/local/Frameworks
+fi 
 
 # Install dependencies...
 echo "-------"
@@ -36,9 +40,9 @@ brew install portaudio
 brew install make
 brew install cmake
 
-echo "------- Upgrade existing packages..."
-brew upgrade
-echo "-------"
-echo "Done..."
+#echo "------- Upgrade existing packages..."
+#brew upgrade
+#echo "-------"
+#echo "Done..."
 
 exit 0

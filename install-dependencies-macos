@@ -1,0 +1,37 @@
+#!/bin/sh
+
+echo "NOTE: Make sure you have done apt-get update and apt-get upgrade prior to running this script."
+echo "Installing macOS dependencies"
+echo "-------"
+
+if [ -e /usr/local/bin/brew ]; then
+	echo "Homebrew installed... continuing."
+else
+	/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+fi
+echo "-------"
+brew install gcc
+brew install jpeg 
+brew install libtiff 
+brew install libpng
+brew install libicns 
+brew install libxml2
+brew install libxslt
+brew install gnutls
+brew install libffi
+# brew install libicu # optional
+brew install cairo
+# brew install libxft  # provided by X11
+# brew install libavahi-client-dev  # optional
+# brew install flite-dev # optional
+# brew install libxt-dev  # provided by X11
+brew install portaudio
+brew install make
+brew install cmake
+
+echo "------- Upgrade existing packages..."
+brew upgrade
+echo "-------"
+echo "Done..."
+
+exit 0

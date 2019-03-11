@@ -7,13 +7,6 @@ echo "Installation directory is $GNUSTEP_MSYS"
 echo "Building for Windows/win32/MinGW..."
 echo ""
 
-if [ -f $GNUSTEP_MSYS/lib/pkgconfig/fontconfig.pc ]; then
-    echo "fontconfig.pc file exists..."
-else
-    echo "fontconfig.pc does not exist, copying..."
-    cp ./tools-scripts/fontconfig.pc ${GNUSTEP_MSYS}/lib/pkgconfig
-fi
-
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:${GNUSTEP_MSYS}/lib/pkgconfig:${PKG_CONFIG_PATH}
 
 # Build make

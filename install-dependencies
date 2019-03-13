@@ -4,28 +4,28 @@ echo "NOTE: Make sure you have done apt-get update and apt-get upgrade prior to 
 echo "Installing Debian/Ubuntu dependencies"
 echo "-------"
 
-sudo apt-get install gobjc 
-sudo apt-get install gobjc++
-sudo apt-get install libjpeg-dev 
-sudo apt-get install libtiff-dev 
-sudo apt-get install libpng-dev 
-sudo apt-get install libicns-dev 
-sudo apt-get install libxml2-dev 
-sudo apt-get install libxslt-dev 
-sudo apt-get install libgnutls-dev
-sudo apt-get install libffi-dev 
-sudo apt-get install libicu-dev 
-sudo apt-get install libcairo2-dev
-sudo apt-get install libxft-dev
-sudo apt-get install libavahi-client-dev
-sudo apt-get install flite-dev
-sudo apt-get install libxt-dev
-sudo apt-get install libportaudio-dev
-sudo apt-get install wmaker
-sudo apt-get install portaudio19-dev
-sudo apt-get install make
-sudo apt-get install cmake
-sudo apt-get install gnutls-dev
+sudo apt-get --yes install gobjc
+sudo apt-get --yes install gobjc++
+sudo apt-get --yes install libjpeg-dev
+sudo apt-get --yes install libtiff-dev
+sudo apt-get --yes install libpng-dev
+sudo apt-get --yes install libicns-dev
+sudo apt-get --yes install libxml2-dev
+sudo apt-get --yes install libxslt-dev
+sudo apt-get --yes install libgnutls-dev
+sudo apt-get --yes install libffi-dev
+sudo apt-get --yes install libicu-dev
+sudo apt-get --yes install libcairo2-dev
+sudo apt-get --yes install libxft-dev
+sudo apt-get --yes install libavahi-client-dev
+sudo apt-get --yes install flite-dev
+sudo apt-get --yes install libxt-dev
+sudo apt-get --yes install libportaudio-dev
+sudo apt-get --yes install wmaker
+sudo apt-get --yes install portaudio19-dev
+sudo apt-get --yes install make
+sudo apt-get --yes install cmake
+sudo apt-get --yes install gnutls-dev
 
 echo "-------"
 echo "Done..."

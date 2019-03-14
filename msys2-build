@@ -4,7 +4,7 @@
 
 GNUSTEP_MSYS=/c/GNUstep
 echo "Installation directory is $GNUSTEP_MSYS"
-echo "Building for Windows/win32/MinGW..."
+echo "Building for MSYS2 on Windows"
 echo ""
 
 if [ -f $GNUSTEP_MSYS/lib/pkgconfig/fontconfig.pc ]; then
@@ -19,7 +19,7 @@ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:${GNUSTEP_MSYS}/lib/pkgconfig:${
 
 # Build make
 cd tools-make
-./configure --with-layout=gnustep --prefix=${GNUSTEP_MSYS}/GNUstep --enable-install-ld-so-conf && make install messages=yes
+./configure --host=mingw64 --target=mingw64 --with-layout=gnustep --prefix=${GNUSTEP_MSYS}/GNUstep --enable-install-ld-so-conf && make install messages=yes
 source ${GNUSTEP_MSYS}/GNUstep/System/Library/Makefiles/GNUstep.sh
 
 # Build base
@@ -36,6 +36,9 @@ make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 cd ../libs-back
 make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 ./configure --enable-graphics=cairo --with-name=cairo && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=yes
+
+# Set default backend
+defaults write NSGlobalDomain GSBackend libgnustep-cairo
 
 echo ""
 echo "Done."

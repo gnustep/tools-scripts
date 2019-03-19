@@ -17,7 +17,7 @@ source ${GNUSTEP_MSYS}/GNUstep/System/Library/Makefiles/GNUstep.sh
 # Build base
 cd ../libs-base
 make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
-CFLAGS+=-I/usr/local/include LDFLAGS+=-L/usr/local/lib ./configure --with-installation-domain=SYSTEM --disable-libdispatch --disable-icu && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=yes
+CFLAGS+=-I/usr/local/include LDFLAGS+=-L/usr/local/lib ./configure --with-installation-domain=SYSTEM --disable-libdispatch && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=yes
 
 # Build gui
 cd ../libs-gui

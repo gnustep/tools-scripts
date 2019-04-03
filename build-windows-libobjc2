@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# Temporary path change
+
+OLDPATH=$PATH
+export PATH=/c/Tools/Ninja:/c/Tools/CMake/bin:/c/Tools/LLVM/bin:${PATH}
+# export PATH=/c/Tools/CMake/bin:/c/Tools/LLVM/bin:${PATH}
+
+CMAKE="cmake.exe"
+CLANG="clang-cl.exe"
+NINJA="ninja.exe"
+LINKER="lld-link.exe"
+RC="llvm-rc.exe"
+
+cd libobjc2
+# git reset --hard
+rm -rf build
+mkdir build
+cd build
+
+export CC=${CLANG}
+export CXX=${CLANG}
+
+$CMAKE -G Ninja -DCMAKE_C_COMPILER_WORKS=1 -DCMAKE_CXX_COMPILER_WORKS=1 -DCMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS="" -DCMAKE_SHARED_LIBRARY_LINK_C_FLAGS="" -DCMAKE_RC_COMPILER=${RC} -DCMAKE_LINKER=${LINKER} -DCMAKE_C_COMPILER=${CLANG} -DCMAKE_CXX_COMPILER=${CLANG} ..
+# $CMAKE -G Ninja -DCMAKE_RC_COMPILER=${RC} -DCMAKE_C_COMPILER=${CLANG} -DCMAKE_CXX_COMPILER=${CLANG} ..
+# $CMAKE -G Ninja -DCMAKE_C_COMPILER=${CLANG} -DCMAKE_CXX_COMPILER=${CLANG} ..
+
+$NINJA
+
+# Restore old path
+export PATH=${OLDPATH}
+exit 0

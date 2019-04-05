@@ -13,16 +13,29 @@ RC="llvm-rc.exe"
 
 cd libobjc2
 
+#
+# Fix case in header.  The Windows.h file under the Windows SDK is capitalized.
+# The one used in MSYS2 isn't.  It's the same header.
+#
 cat safewindows.h | sed 's/Windows.h/windows.h/' > new_safewindows.h
 mv new_safewindows.h safewindows.h
 
+#
+# Cleanup
+#
 rm -rf build
 mkdir build
 cd build
 
+#
+# Set environment
+#
 export CC=${CLANG}
 export CXX=${CLANG}
 
+#
+# Generate build
+#
 $CMAKE -G Ninja -DCMAKE_C_COMPILER_WORKS=1 -DCMAKE_CXX_COMPILER_WORKS=1 \
        -DCMAKE_SHARED_LIBRARY_LINK_C_FLAGS="" \
        -DCMAKE_RC_COMPILER=${RC} -DCMAKE_LINKER=${LINKER} -DCMAKE_C_COMPILER=${CLANG} \
@@ -33,6 +46,9 @@ $CMAKE -G Ninja -DCMAKE_C_COMPILER_WORKS=1 -DCMAKE_CXX_COMPILER_WORKS=1 \
        -I/ming64/include -I/usr/include/w32api -Wno-everything \
        ..
 
+#
+# Build
+#
 $NINJA
 
 # Restore old path

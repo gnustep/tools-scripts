@@ -24,6 +24,10 @@ cat safewindows.h | sed 's/Windows.h/windows.h/' > new_safewindows.h
 mv new_safewindows.h safewindows.h
 cat CMakeLists.txt | sed 's/TESTS TRUE/TESTS FALSE/' > CMakeLists_new.txt
 mv CMakeLists_new.txt CMakeLists.txt
+cat ivar.c | sed 's/<< ivar_align_shift/<< 3/' > ivar_new.c
+mv ivar_new.c ivar.c
+cat ivar.h | sed 's/<< ivar_align_shift/<< 3/' > ivar_new.h
+mv ivar_new.h ivar.h
 
 #
 # Cleanup
@@ -54,7 +58,7 @@ $CMAKE -G Ninja -DCMAKE_C_COMPILER_WORKS=1 -DCMAKE_CXX_COMPILER_WORKS=1 \
 #
 # Build
 #
-$NINJA
+${NINJA}
 
 # Restore old path
 export PATH=${OLDPATH}

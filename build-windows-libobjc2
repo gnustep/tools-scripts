@@ -4,7 +4,6 @@
 
 OLDPATH=$PATH
 export PATH=/c/Tools/Ninja:/c/Tools/CMake/bin:/c/Tools/LLVM/bin:${PATH}
-# export PATH=/c/Tools/CMake/bin:/c/Tools/LLVM/bin:${PATH}
 
 CMAKE="cmake.exe"
 CLANG="clang-cl.exe"
@@ -13,7 +12,10 @@ LINKER="lld-link.exe"
 RC="llvm-rc.exe"
 
 cd libobjc2
-# git reset --hard
+
+cat safewindows.h | sed 's/Windows.h/windows.h/' > new_safewindows.h
+mv new_safewindows.h safewindows.h
+
 rm -rf build
 mkdir build
 cd build
@@ -21,9 +23,15 @@ cd build
 export CC=${CLANG}
 export CXX=${CLANG}
 
-$CMAKE -G Ninja -DCMAKE_C_COMPILER_WORKS=1 -DCMAKE_CXX_COMPILER_WORKS=1 -DCMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS="" -DCMAKE_SHARED_LIBRARY_LINK_C_FLAGS="" -DCMAKE_RC_COMPILER=${RC} -DCMAKE_LINKER=${LINKER} -DCMAKE_C_COMPILER=${CLANG} -DCMAKE_CXX_COMPILER=${CLANG} ..
-# $CMAKE -G Ninja -DCMAKE_RC_COMPILER=${RC} -DCMAKE_C_COMPILER=${CLANG} -DCMAKE_CXX_COMPILER=${CLANG} ..
-# $CMAKE -G Ninja -DCMAKE_C_COMPILER=${CLANG} -DCMAKE_CXX_COMPILER=${CLANG} ..
+$CMAKE -G Ninja -DCMAKE_C_COMPILER_WORKS=1 -DCMAKE_CXX_COMPILER_WORKS=1 \
+       -DCMAKE_SHARED_LIBRARY_LINK_C_FLAGS="" \
+       -DCMAKE_RC_COMPILER=${RC} -DCMAKE_LINKER=${LINKER} -DCMAKE_C_COMPILER=${CLANG} \
+       -DCMAKE_CXX_COMPILER=${CLANG} \
+       -DCMAKE_C_FLAGS=-I/usr/include -I/mingw64/x86_64-w64-mingw32/include \
+       -I/ming64/include -I/usr/include/w32api \
+       -DCMAKE_CXX_FLAGS=-I/usr/include -I/mingw64/x86_64-w64-mingw32/include \
+       -I/ming64/include -I/usr/include/w32api -Wno-everything \
+       ..
 
 $NINJA
 

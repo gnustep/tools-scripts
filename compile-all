@@ -85,16 +85,17 @@ if [ "$UNAME" == "MINGW32_NT" ] ; then
 else
 #  export cc_flags="-O0"
   if [ "$CC" == "clang" ] ; then
-     cc_flags="${cc_flags} -fblocks -fobjc-nonfragile-abi"
+      cc_flags="${cc_flags} -fblocks -fobjc-nonfragile-abi"
+      options="--with-library-combo=ng-gnu-gnu --enable-objc-arc --enable-native-objc-exceptions"
   fi
 fi
 
 # Install make
 cd tools-make
 echo "===="
-echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --prefix=$prefix --with-layout=gnustep $make_flags"
+echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --prefix=$prefix ${options} --with-layout=gnustep $make_flags"
 echo "===="
-CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure  --prefix=$prefix --with-layout=gnustep $make_flags
+CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --prefix=$prefix ${options} --with-layout=gnustep $make_flags
 $MAKE
 if [ "true" == "$NEEDSROOT" ]; then
    ${SUDO} -u root $MAKE install

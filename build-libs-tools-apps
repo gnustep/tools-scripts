@@ -1,7 +1,7 @@
 #!/bin/bash
-libs_files=`ls -d libs-* | grep -v gui | grep -v base | grep -v back | grep -v uikit | grep -v corebase | grep -v opal | grep -v corenetwork | grep -v libs-ec | grep -v gscrypt | grep -v ldap | grep -v rigs`
-tools_files=`ls -d tools-* | grep -v tools-windows-development-installer | grep -v startup | grep -v nfmake | grep -v installers | grep -v model-main | grep -v startup`
-apps_files=`ls -d apps-*`
+libs_files="libs-xcode libs-ppd libs-steptalk libs-ucsdata"
+tools_files="tools-buildtool tools-charsets"
+apps_files="apps-systempreferences apps-gworkspace apps-gorm apps-projectcenter apps-thematic apps-easydiff"
 
 echo "======= Building libraries."
 for file in ${libs_files}

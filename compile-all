@@ -86,74 +86,77 @@ else
 #  export cc_flags="-O0"
   if [ "$CC" == "clang" ] ; then
       cc_flags="${cc_flags} -fblocks -fobjc-nonfragile-abi"
-      options="--with-library-combo=ng-gnu-gnu --enable-objc-arc --enable-native-objc-exceptions"
   fi
 fi
 
 # Install make
+echo "Installing GNUstep into ${prefix}"
 cd tools-make
-echo "===="
-echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --prefix=$prefix ${options} --with-layout=gnustep $make_flags"
-echo "===="
-CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --prefix=$prefix ${options} --with-layout=gnustep $make_flags
-$MAKE
-if [ "true" == "$NEEDSROOT" ]; then
-   ${SUDO} -u root $MAKE install
-else
-   $MAKE messages=yes install
-fi
+if [ "$CC" == "gcc" ]; then
+    echo "==== BUILDING WITH GCC"
+    echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --prefix=$prefix --with-layout=gnustep $make_flags"
 
-. $prefix/System/Library/Makefiles/GNUstep.sh
+    echo "===="
+    CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --prefix=$prefix --with-layout=gnustep $make_flags
+    $MAKE
+    if [ "true" == "$NEEDSROOT" ]; then
+	${SUDO} -u root $MAKE install
+    else
+	$MAKE install
+    fi
+    
+    . $prefix/System/Library/Makefiles/GNUstep.sh
+fi
 
 if [ "$CC" == "clang" ] ; then
-   ${scriptsdir}/clang-setup   
-
-   # Assume the presence of libdispatch if we are using clang and libobjc2
-   export LDFLAGS=-ldispatch
-
-   CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure  --prefix=$prefix --with-layout=gnustep $make_flags
-   $MAKE
-   if [ "true" == "$NEEDSROOT" ]; then
-      ${SUDO} -u root $MAKE install
-   else
-	$MAKE messages=yes install
-   fi
+    echo "==== BUILDING WITH CLANG"
+    ${scriptsdir}/clang-setup   
+    
+    # Assume the presence of libdispatch if we are using clang and libobjc2
+    export LDFLAGS=-ldispatch
+    
+    CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --prefix=$prefix ${options} --with-library-combo=ng-gnu-gnu --enable-objc-arc --enable-native-objc-exceptions --with-layout=gnustep $make_flags
+    $MAKE
+    if [ "true" == "$NEEDSROOT" ]; then
+	${SUDO} -u root $MAKE install
+    else
+	$MAKE install
+    fi
+    . $prefix/System/Library/Makefiles/GNUstep.sh
 fi
-
-. $prefix/System/Library/Makefiles/GNUstep.sh
 
 # Install base
 cd ../libs-base
 . $prefix/System/Library/Makefiles/GNUstep.sh
 echo "BASE CONFIGURATION: CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-installation-domain=SYSTEM ${options}"
-CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-installation-domain=SYSTEM ${options}
-$MAKE messages=yes debug=yes
+CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure
+$MAKE debug=yes
 if [ "true" == "$NEEDSROOT" ]; then
 ${SUDO} -u root ./install.sh $prefix $MAKE
 else
-$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM messages=yes install
+$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM install
 fi
 
 # Install gui
 cd ../libs-gui
 . $prefix/System/Library/Makefiles/GNUstep.sh
 CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure
-$MAKE messages=yes debug=yes
+$MAKE debug=yes
 if [ "true" == "$NEEDSROOT" ]; then
 ${SUDO} -u root ./install.sh $prefix $MAKE
 else
-$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM messages=yes install
+$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM install
 fi
 
 # Install back
 cd ../libs-back
 . $prefix/System/Library/Makefiles/GNUstep.sh
 CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure
-$MAKE messages=yes debug=yes
+$MAKE debug=yes
 if [ "true" == "$NEEDSROOT" ]; then
 ${SUDO} -u root ./install.sh $prefix $MAKE
 else
-$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM messages=yes install
+$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM install
 fi
 
 # Perform other operations

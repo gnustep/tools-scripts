@@ -92,6 +92,7 @@ fi
 # Install make
 echo "Installing GNUstep into ${prefix}"
 cd tools-make
+make distclean
 if [ "$CC" == "gcc" ]; then
     echo "==== BUILDING WITH GCC"
     echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --prefix=$prefix --with-layout=gnustep $make_flags"
@@ -127,6 +128,7 @@ fi
 
 # Install base
 cd ../libs-base
+make distclean
 . $prefix/System/Library/Makefiles/GNUstep.sh
 echo "BASE CONFIGURATION: CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --with-installation-domain=SYSTEM ${options}"
 CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure
@@ -139,6 +141,7 @@ fi
 
 # Install gui
 cd ../libs-gui
+make distclean
 . $prefix/System/Library/Makefiles/GNUstep.sh
 CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure
 $MAKE debug=yes
@@ -150,6 +153,7 @@ fi
 
 # Install back
 cd ../libs-back
+make distclean
 . $prefix/System/Library/Makefiles/GNUstep.sh
 CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure
 $MAKE debug=yes

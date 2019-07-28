@@ -2,18 +2,22 @@
 
 SUDO='sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH'
 
-cd ~
+cd /tmp
 
 # pre-create some directories
 ${SUDO} mkdir -p /usr/GNUstep/Local/Library/Libraries
 ${SUDO} mkdir -p /usr/GNUstep/Local/Library/Headers
 
 # cleanup
-${SUDO} rm -rf libdispatch
-${SUDO} rm -rf libobjc2
+rm -rf /tmp/libdispatch
+rm -rf /tmp/libpwq
+rm -rf /tmp/libkqueue
+rm -rf /tmo/libobjc2
    
 # pull
 git clone https://github.com/gnustep/libobjc2.git
+git clone https://github.com/mheily/libpwq.git
+git clone https://github.com/mheily/libkqueue.git
 git clone https://github.com/nickhutchinson/libdispatch.git
 
 # set vars
@@ -21,19 +25,43 @@ export CC=clang
 export CXX=clang++
 
 # build and install
-cd libdispatch
-rm -rf libdispatch-build
-mkdir libdispatch-build && cd libdispatch-build
-../configure
-make
-${SUDO} make install
-${SUDO} ldconfig
-
-cd ~/libobjc2
-mkdir libobjc2-build && cd libobjc2-build
+echo "======== Installing libobjc2..."
+cd /tmp/libobjc2
+mkdir build
+cd build
 cmake ../
-cmake --build . --target install
+make -j8
 ${SUDO} -E make install
 ${SUDO} ldconfig
 
+echo "======== Installing libpwq..."
+cd /tmp/libpwq
+mkdir build
+cd build
+cmake ../
+make -j8
+${SUDO} -E make install
+${SUDO} ldconfig
+
+echo "======== Installing libkqueue..."
+cd /tmp/libkqueue
+mkdir build
+cd build
+cmake ../
+make -j8
+${SUDO} -E make install
+${SUDO} ldconfig
+
+echo "======== Installing libdispatch..."
+cd /tmp/libdispatch
+rm -rf build
+mkdir build
+cd build
+../configure
+make -j8
+${SUDO} make install
+${SUDO} ldconfig
+
+
+echo "Done."
 

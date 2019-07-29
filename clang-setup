@@ -12,7 +12,7 @@ ${SUDO} mkdir -p /usr/GNUstep/Local/Library/Headers
 rm -rf /tmp/libdispatch
 rm -rf /tmp/libpwq
 rm -rf /tmp/libkqueue
-rm -rf /tmo/libobjc2
+rm -rf /tmp/libobjc2
    
 # pull
 git clone https://github.com/gnustep/libobjc2.git
@@ -29,8 +29,8 @@ echo "======== Installing libobjc2..."
 cd /tmp/libobjc2
 mkdir build
 cd build
-cmake ../
-make -j8
+cmake -DGNUSTEP_INSTALL_TYPE=LOCAL ../
+make -j2
 ${SUDO} -E make install
 ${SUDO} ldconfig
 
@@ -39,7 +39,7 @@ cd /tmp/libpwq
 mkdir build
 cd build
 cmake ../
-make -j8
+make -j2
 ${SUDO} -E make install
 ${SUDO} ldconfig
 
@@ -48,7 +48,7 @@ cd /tmp/libkqueue
 mkdir build
 cd build
 cmake ../
-make -j8
+make -j2
 ${SUDO} -E make install
 ${SUDO} ldconfig
 
@@ -58,7 +58,7 @@ rm -rf build
 mkdir build
 cd build
 ../configure
-make -j8
+make -j2
 ${SUDO} make install
 ${SUDO} ldconfig
 

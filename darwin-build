@@ -1,0 +1,65 @@
+#!/bin/sh
+
+GNUSTEP_DIR=/usr/local/GNUstep
+echo "Installation directory is $GNUSTEP_DIR"
+echo "Building for macOS"
+echo ""
+
+#if [ -f $GNUSTEP_DIR/lib/pkgconfig/fontconfig.pc ]; then
+#    echo "fontconfig.pc file exists..."
+#else
+#    echo "fontconfig.pc does not exist, copying..."
+#	 mkdir -p ${GNUSTEP_DIR}/lib/pkgconfig
+#    cp ./tools-scripts/fontconfig.pc ${GNUSTEP_DIR}/lib/pkgconfig
+#fi
+
+# Setup environment...
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:${GNUSTEP_DIR}/lib/pkgconfig:${PKG_CONFIG_PATH}
+export CC=/usr/local/bin/gcc-8
+export CXX=/usr/local/bin/g++-8
+export CFLAGS+=-I/usr/local/include 
+export LDFLAGS+=-L/usr/local/lib 
+export GNUSTEP_TARGET_CPU=unknown
+export GNUSTEP_TARGET_OS=generic
+export DYLD_LIBRARY_PATH=${GNUSTEP_DIR}/Local/Library/Libraries:${DYLD_LIBRARY_PATH}
+
+# Build GNUSTEP MAKE
+echo "################# BUILDING GNUSTEP MAKE"
+cd tools-make
+./configure --with-library-combo=gnu-gnu-gnu --with-layout=gnustep --prefix=${GNUSTEP_DIR} --enable-install-ld-so-conf --enable-nxconstantstring
+gmake
+sudo gmake install
+source ${GNUSTEP_DIR}/System/Library/Makefiles/GNUstep.sh
+
+# Build libobjc
+echo "################# BUILDING GNUSTEP LIBOBJC -- Classic version"
+cd ../libobjc
+cp config/unknown/generic/tconfig.h .
+gmake
+sudo gmake install
+
+# Build base
+echo "################# BUILDING GNUSTEP BASE"
+cd ../libs-base
+gmake GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
+./configure --with-installation-domain=SYSTEM --disable-libdispatch --disable-icu --enable-nxconstantstring --disable-invocations && gmake GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes messages=yes
+sudo gmake install
+
+# Build gui
+echo "################# BUILDING GNUSTEP GUI"
+cd ../libs-gui
+gmake GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
+./configure && gmake GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes messages=yes
+sudo gmake install
+
+# Build backend
+echo "################# BUILDING GNUSTEP BACK"
+cd ../libs-back
+gmake GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
+./configure --enable-graphics=cairo --with-name=cairo && gmake GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes messages=yes
+sudo gmake install
+
+echo ""
+echo "Done."
+
+exit 0

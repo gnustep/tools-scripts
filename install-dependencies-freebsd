@@ -1,0 +1,22 @@
+#!/bin/sh
+
+echo "Installing FreeBSD dependencies"
+echo "NOTE: This file assumes that Xorg is installed and that sudo is installed."
+echo "      Also, the user must have sudo access to properly execute this script."
+echo "Installing..."
+sudo pkg install gmake
+sudo pkg install windowmaker
+sudo pkg install jpeg
+sudo pkg install tiff
+sudo pkg install png
+sudo pkg install libxml
+sudo pkg install libxslt
+sudo pkg install gnutls
+sudo pkg install libffi
+sudo pkg install icu
+sudo pkg install cairo
+sudo pkg install avahi
+sudo pkg install portaudio
+sudo pkg install flite
+echo "Done..."
+exit 0

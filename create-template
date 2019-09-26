@@ -1,0 +1,95 @@
+echo "Creating class"
+echo "Usage: CLASSNAME SUPERCLASS USERNAME DATE VERSION"
+
+CLASSNAME=$1
+SUPERCLASS=$2
+USERNAME=$3
+DATE=$4
+VERSION=$5
+
+cd libs-base/Headers/Foundation
+cat << !EOF > ${CLASSNAME}.h
+
+/* Definition of class ${CLASSNAME}
+   Copyright (C) 2019 Free Software Foundation, Inc.
+   
+   By: ${USERNAME}
+   Date: ${DATE}
+
+   This file is part of the GNUstep Library.
+   
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2 of the License, or (at your option) any later version.
+   
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Library General Public License for more details.
+   
+   You should have received a copy of the GNU Lesser General Public
+   License along with this library; if not, write to the Free
+   Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+   Boston, MA 02111 USA.
+*/
+
+#ifndef _${CLASSNAME}_h_GNUSTEP_BASE_INCLUDE
+#define _${CLASSNAME}_h_GNUSTEP_BASE_INCLUDE
+
+#include <Foundation/${SUPERCLASS}.h>
+
+#if	defined(__cplusplus)
+extern "C" {
+#endif
+
+#if OS_API_VERSION(MAC_OS_X_VERSION_${VERSION}, GS_API_LATEST)
+
+@interface ${CLASSNAME} : ${SUPERCLASS}
+
+@end
+
+#if	defined(__cplusplus)
+}
+#endif
+
+#endif	/* GS_API_MACOSX */
+
+#endif	/* _${CLASSNAME}_h_GNUSTEP_BASE_INCLUDE */
+
+!EOF
+
+cd ../../Source
+cat << !EOF2 > ${CLASSNAME}.m
+
+/* Implementation of class ${CLASSNAME}
+   Copyright (C) 2019 Free Software Foundation, Inc.
+   
+   By: ${USERNAME}
+   Date: ${DATE}
+
+   This file is part of the GNUstep Library.
+   
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2 of the License, or (at your option) any later version.
+   
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Library General Public License for more details.
+   
+   You should have received a copy of the GNU Lesser General Public
+   License along with this library; if not, write to the Free
+   Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+   Boston, MA 02111 USA.
+*/
+
+#include <Foundation/${CLASSNAME}.h>
+
+@implementation ${CLASSNAME}
+
+@end
+
+!EOF2

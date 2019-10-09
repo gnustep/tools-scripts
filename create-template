@@ -1,5 +1,4 @@
-echo "Creating class"
-echo "Usage: CLASSNAME SUPERCLASS USERNAME DATE VERSION"
+#!/bin/sh
 
 CLASSNAME=$1
 SUPERCLASS=$2
@@ -23,6 +22,15 @@ fi
 if [ -z "$USERNAME" ]
 then
         USERNAME=`whoami`
+fi
+
+# if no class, show usage
+if [ -z "$CLASSNAME" ]
+then
+        echo "Usage: CLASSNAME SUPERCLASS USERNAME DATE VERSION"
+        exit 0
+else
+        echo "Creating class ${CLASSNAME}."
 fi
 
 # Build the template...

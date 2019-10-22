@@ -36,7 +36,6 @@ fi
 # Build the template...
 cd libs-base/Headers/Foundation
 cat << !EOF > ${CLASSNAME}.h
-
 /* Definition of class ${CLASSNAME}
    Copyright (C) 2019 Free Software Foundation, Inc.
    

@@ -87,7 +87,6 @@ extern "C" {
 
 cd ../../Source
 cat << !EOF2 > ${CLASSNAME}.m
-
 /* Implementation of class ${CLASSNAME}
    Copyright (C) 2019 Free Software Foundation, Inc.
    

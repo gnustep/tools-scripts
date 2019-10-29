@@ -65,11 +65,11 @@ cat << !EOF > ${CLASSNAME}.h
 
 #include <Foundation/${SUPERCLASS}.h>
 
+#if OS_API_VERSION(MAC_OS_X_VERSION_${VERSION}, GS_API_LATEST)
+
 #if	defined(__cplusplus)
 extern "C" {
 #endif
-
-#if OS_API_VERSION(MAC_OS_X_VERSION_${VERSION}, GS_API_LATEST)
 
 @interface ${CLASSNAME} : ${SUPERCLASS}
 

@@ -27,7 +27,7 @@ fi
 # if no class, show usage
 if [ -z "$CLASSNAME" ]
 then
-        echo "Usage: CLASSNAME SUPERCLASS USERNAME DATE VERSION"
+        echo "Usage: CLASSNAME SUPERCLASS USERNAME VERSION"
         exit 0
 else
         echo "Creating class ${CLASSNAME}."

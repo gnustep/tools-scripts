@@ -13,7 +13,7 @@ do
         git pull ${GITURL} master
 	cd ..
     else
-	git clone ${GITURL}
+	git clone --recursive ${GITURL}
     fi
 done
 

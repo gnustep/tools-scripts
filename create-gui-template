@@ -63,8 +63,8 @@ cat << !EOF > ${CLASSNAME}.h
 #ifndef _${CLASSNAME}_h_GNUSTEP_GUI_INCLUDE
 #define _${CLASSNAME}_h_GNUSTEP_GUI_INCLUDE
 
-#include <Foundation/NSObject.h>
-#include <AppKit/${SUPERCLASS}.h>
+#import <Foundation/NSObject.h>
+#import <AppKit/${SUPERCLASS}.h>
 
 #if OS_API_VERSION(MAC_OS_X_VERSION_${VERSION}, GS_API_LATEST)
 
@@ -112,7 +112,7 @@ cat << !EOF2 > ${CLASSNAME}.m
    Boston, MA 02111 USA.
 */
 
-#include <AppKit/${CLASSNAME}.h>
+#import <AppKit/${CLASSNAME}.h>
 
 @implementation ${CLASSNAME}
 

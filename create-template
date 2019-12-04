@@ -63,7 +63,7 @@ cat << !EOF > ${CLASSNAME}.h
 #ifndef _${CLASSNAME}_h_GNUSTEP_BASE_INCLUDE
 #define _${CLASSNAME}_h_GNUSTEP_BASE_INCLUDE
 
-#include <Foundation/${SUPERCLASS}.h>
+#import <Foundation/${SUPERCLASS}.h>
 
 #if OS_API_VERSION(MAC_OS_X_VERSION_${VERSION}, GS_API_LATEST)
 
@@ -111,7 +111,7 @@ cat << !EOF2 > ${CLASSNAME}.m
    Boston, MA 02111 USA.
 */
 
-#include <Foundation/${CLASSNAME}.h>
+#import <Foundation/${CLASSNAME}.h>
 
 @implementation ${CLASSNAME}
 

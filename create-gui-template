@@ -9,28 +9,29 @@ DATE=`date`
 # Superclass
 if [ -z "$SUPERCLASS" ]
 then
-        SUPERCLASS=NSView
+    SUPERCLASS=NSView
 fi
 
 # Version
 if [ -z "$VERSION" ]
 then
-        VERSION=10_0
+    VERSION=10_0
 fi
 
 # Username
 if [ -z "$USERNAME" ]
 then
-        USERNAME=`whoami`
+    UNAME=`whoami`
+    USERNAME=`getent passwd ${UNAME} | cut -d ':' -f 5 | cut -d ',' -f 1`
 fi
 
 # if no class, show usage
 if [ -z "$CLASSNAME" ]
 then
-        echo "Usage: CLASSNAME SUPERCLASS USERNAME VERSION"
-        exit 0
+    echo "Usage: CLASSNAME SUPERCLASS USERNAME VERSION"
+    exit 0
 else
-        echo "Creating class ${CLASSNAME}."
+    echo "Creating class ${CLASSNAME}."
 fi
 
 # Build the template...

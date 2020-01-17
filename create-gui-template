@@ -5,6 +5,7 @@ SUPERCLASS=$2
 USERNAME=$3
 VERSION=$4
 DATE=`date`
+CDATE=`date +"%Y"`
 
 # Superclass
 if [ -z "$SUPERCLASS" ]
@@ -40,7 +41,7 @@ if [ "${SUPERCLASS}" = "NSObject" ]; then
     
 cat << !EOF > ${CLASSNAME}.h
 /* Definition of class ${CLASSNAME}
-   Copyright (C) 2019 Free Software Foundation, Inc.
+   Copyright (C) ${CDATE} Free Software Foundation, Inc.
    
    By: ${USERNAME}
    Date: ${DATE}
@@ -92,7 +93,7 @@ else
 
 cat << !EOF > ${CLASSNAME}.h
 /* Definition of class ${CLASSNAME}
-   Copyright (C) 2019 Free Software Foundation, Inc.
+   Copyright (C) ${CDATE} Free Software Foundation, Inc.
    
    By: ${USERNAME}
    Date: ${DATE}

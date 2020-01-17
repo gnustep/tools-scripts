@@ -5,6 +5,7 @@ SUPERCLASS=$2
 USERNAME=$3
 VERSION=$4
 DATE=`date`
+CDATE=`date +"%Y"`
 
 # Superclass
 if [ -z "$SUPERCLASS" ]
@@ -38,7 +39,7 @@ fi
 cd libs-base/Headers/Foundation
 cat << !EOF > ${CLASSNAME}.h
 /* Definition of class ${CLASSNAME}
-   Copyright (C) 2019 Free Software Foundation, Inc.
+   Copyright (C) ${CDATE} Free Software Foundation, Inc.
    
    By: ${USERNAME}
    Date: ${DATE}
@@ -89,7 +90,7 @@ extern "C" {
 cd ../../Source
 cat << !EOF2 > ${CLASSNAME}.m
 /* Implementation of class ${CLASSNAME}
-   Copyright (C) 2019 Free Software Foundation, Inc.
+   Copyright (C) ${CDATE} Free Software Foundation, Inc.
    
    By: ${USERNAME}
    Date: ${DATE}

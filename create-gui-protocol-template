@@ -1,0 +1,81 @@
+#!/bin/sh
+
+PROTONAME=$1
+USERNAME=$2
+VERSION=$3
+DATE=`date`
+CDATE=`date +"%Y"`
+
+# Version
+if [ -z "$VERSION" ]
+then
+    VERSION=10_0
+fi
+
+# Username
+if [ -z "$USERNAME" ]
+then
+    UNAME=`whoami`
+    USERNAME=`getent passwd ${UNAME} | cut -d ':' -f 5 | cut -d ',' -f 1`
+fi
+
+# if no class, show usage
+if [ -z "$PROTONAME" ]
+then
+    echo "Usage: PROTONAME SUPERCLASS USERNAME VERSION"
+    exit 0
+else
+    echo "Creating class ${PROTONAME}."
+fi
+
+# Build the template...
+cd libs-gui/Headers/AppKit
+cat << !EOF > ${PROTONAME}.h
+/* Definition of class ${PROTONAME}
+   Copyright (C) ${CDATE} Free Software Foundation, Inc.
+   
+   By: ${USERNAME}
+   Date: ${DATE}
+
+   This file is part of the GNUstep Library.
+   
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+   
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Library General Public License for more details.
+   
+   You should have received a copy of the GNU Lesser General Public
+   License along with this library; if not, write to the Free
+   Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+   Boston, MA 02110 USA.
+*/
+
+#ifndef _${PROTONAME}_h_GNUSTEP_GUI_INCLUDE
+#define _${PROTONAME}_h_GNUSTEP_GUI_INCLUDE
+
+#import <Foundation/NSObject.h>
+
+#if OS_API_VERSION(MAC_OS_X_VERSION_${VERSION}, GS_API_LATEST)
+
+#if	defined(__cplusplus)
+extern "C" {
+#endif
+
+@protocol ${PROTONAME}
+
+@end
+
+#if	defined(__cplusplus)
+}
+#endif
+
+#endif	/* GS_API_MACOSX */
+
+#endif	/* _${PROTONAME}_h_GNUSTEP_GUI_INCLUDE */
+
+!EOF

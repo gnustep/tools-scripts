@@ -25,7 +25,7 @@ then
     echo "Usage: PROTONAME SUPERCLASS USERNAME VERSION"
     exit 0
 else
-    echo "Creating class ${PROTONAME}."
+    echo "Creating protcol ${PROTONAME}."
 fi
 
 # Build the template...

@@ -15,27 +15,33 @@ else
     cp ./tools-scripts/fontconfig.pc ${GNUSTEP_MSYS}/lib/pkgconfig
 fi
 
+# Set environment vars....
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:${GNUSTEP_MSYS}/lib/pkgconfig:${PKG_CONFIG_PATH}
+CFLAGS+=-I/usr/local/include 
+LDFLAGS+=-L/usr/local/lib 
+
+export CFLAGS
+export LDFLAGS
 
 # Build make
 cd tools-make
-./configure --with-layout=gnustep --prefix=${GNUSTEP_MSYS}/GNUstep --enable-install-ld-so-conf && make install messages=yes
+./configure --with-layout=gnustep --prefix=${GNUSTEP_MSYS}/GNUstep && make install
 source ${GNUSTEP_MSYS}/GNUstep/System/Library/Makefiles/GNUstep.sh
 
 # Build base
 cd ../libs-base
 make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
-CFLAGS+=-I/usr/local/include LDFLAGS+=-L/usr/local/lib ./configure --with-installation-domain=SYSTEM --disable-libdispatch --disable-icu && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=yes
+./configure --with-installation-domain=SYSTEM --disable-libdispatch --disable-icu && make -j2 GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 
 # Build gui
 cd ../libs-gui
 make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
-./configure && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=yes
+./configure && make -j2 GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 
 # Build backend
 cd ../libs-back
 make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
-./configure --enable-graphics=cairo --with-name=cairo && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=yes
+./configure --enable-graphics=cairo --with-name=cairo && make -j2 GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install 
 
 echo ""
 echo "Done."

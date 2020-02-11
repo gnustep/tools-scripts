@@ -7,5 +7,6 @@ if [ "${COMPILER}" == "clang" ]; then
 else
     ./tools-scripts/compile-all
 fi
+make_services
 
 exit 0

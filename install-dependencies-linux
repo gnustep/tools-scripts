@@ -28,6 +28,12 @@ sudo apt-get install make
 sudo apt-get install cmake
 sudo apt-get install gnutls-dev
 sudo apt-get install libblocksruntime-dev
+sudo apt-get install pocketsphinx
+sudo apt-get install pocketsphinx-en-us
+sudo apt-get install libpocketsphinx-dev
+sudo apt-get install libsphinxbase-dev
+sudo apt-get install sphinxbase-utils
+sudo apt-get install sphinxtrain
 
 echo "-------"
 echo "Done..."

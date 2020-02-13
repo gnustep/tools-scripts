@@ -88,7 +88,7 @@ fi
 # Install make
 echo "Installing GNUstep into ${prefix}"
 cd tools-make
-make distclean
+# make distclean
 if [ "$CC" == "gcc" ]; then
     echo "==== BUILDING WITH GCC"
     echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --prefix=${prefix} --with-layout=gnustep $make_flags"

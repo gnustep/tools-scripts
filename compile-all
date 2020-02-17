@@ -99,11 +99,12 @@ elif [ "$CC" == "clang" ]; then
     echo "==== BUILDING WITH CLANG"
     unset CC
     unset CXX
-        
+
     # Assume the presence of libdispatch if we are using clang and libobjc2
     export CC=clang
     export CXX=clang++
     # export LDFLAGS=-ldispatch
+    export LDFLAGS=-fuse-ld=gold -ldispatch
     echo "CCFLAGS=${cc_flags} CXX=${CXX} CC=${CC} ./configure --prefix=${prefix} --with-library-combo=ng-gnu-gnu --enable-objc-arc --enable-native-objc-exceptions --with-layout=gnustep ${make_flags}"
     CCFLAGS=${cc_flags} CXX=${CXX} CC=${CC} ./configure --prefix=${prefix} --with-library-combo=ng-gnu-gnu --enable-objc-arc --enable-native-objc-exceptions --with-layout=gnustep ${make_flags}
 fi

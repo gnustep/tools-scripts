@@ -16,6 +16,7 @@
 # <uses `--prefix=/usr/local/GNUstep' as option to configure>
 #
 
+CPUS=`nproc`
 SUDO='sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH'
 scriptsdir="`pwd`/tools-scripts"
 
@@ -53,9 +54,9 @@ fi
 
 if gmake -v >/dev/null 2>&1
 then
-  export MAKE="gmake -j8"
+  export MAKE="gmake -j${CPUS}"
 else
-  export MAKE="make -j8"
+  export MAKE="make -j${CPUS}"
 fi
 
 if [ "$2" == "" ]; then

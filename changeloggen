@@ -1,0 +1,24 @@
+#!/bin/sh
+
+echo "Generating ChangeLog..."
+
+files=`git diff master | grep +++ | sed 's/+++ b\//\t* /g' | sort | uniq`
+date=`date +"%Y-%m-%d"`
+#user=`getent passwd ${UNAME} | cut -d ':' -f 5 | cut -d ',' -f 1`
+user=`git config user.name`
+email=`git config user.email`
+u=`whoami`
+
+cat << !EOF > /tmp/changelog_addition_${u}
+${date} ${user} <${email}>
+
+${files}:
+
+!EOF
+
+cat /tmp/changelog_addition_${u} ./ChangeLog > /tmp/new_change_log_${u}
+emacs /tmp/new_change_log_${u}
+
+cp /tmp/new_change_log_${u} ./ChangeLog
+
+echo "Done..."

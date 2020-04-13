@@ -1,3 +1,9 @@
+2020-04-13 Gregory John Casamento <greg.casamento@gmail.com>
+
+	* changeloggen: Add script to build changelog...
+	* create-gui-template: Update gui template to reflect correct license
+        and to do imports 
+
 2018-01-14  Fred Kiefer <fredkiefer@gmx.de>
 
 	* clone-app-repos: Update from master branch.

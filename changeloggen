@@ -20,5 +20,7 @@ cat /tmp/changelog_addition_${u} ./ChangeLog > /tmp/new_change_log_${u}
 emacs /tmp/new_change_log_${u}
 
 cp /tmp/new_change_log_${u} ./ChangeLog
+rm /tmp/new_change_log_${u}
+rm /tmp/changelog_addition_${u}
 
 echo "Done..."

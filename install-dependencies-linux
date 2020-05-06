@@ -4,36 +4,37 @@ echo "NOTE: Make sure you have done apt-get update and apt-get upgrade prior to 
 echo "Installing Debian/Ubuntu dependencies"
 echo "-------"
 
-sudo apt-get install gobjc 
-sudo apt-get install gobjc++
-sudo apt-get install libjpeg-dev 
-sudo apt-get install libtiff-dev 
-sudo apt-get install libpng-dev 
-sudo apt-get install libicns-dev
-sudo apt-get install libmagickcore-dev
-sudo apt-get install libxml2-dev 
-sudo apt-get install libxslt-dev 
-sudo apt-get install libgnutls-dev
-sudo apt-get install libffi-dev 
-sudo apt-get install libicu-dev 
-sudo apt-get install libcairo2-dev
-sudo apt-get install libxft-dev
-sudo apt-get install libavahi-client-dev
-sudo apt-get install flite-dev
-sudo apt-get install libxt-dev
-sudo apt-get install libportaudio-dev
-sudo apt-get install wmaker
-sudo apt-get install portaudio19-dev
-sudo apt-get install make
-sudo apt-get install cmake
-sudo apt-get install gnutls-dev
-sudo apt-get install libblocksruntime-dev
-sudo apt-get install pocketsphinx
-sudo apt-get install pocketsphinx-en-us
-sudo apt-get install libpocketsphinx-dev
-sudo apt-get install libsphinxbase-dev
-sudo apt-get install sphinxbase-utils
-sudo apt-get install sphinxtrain
+sudo apt-get --yes --force-yes install gobjc 
+sudo apt-get --yes --force-yes install gobjc++
+sudo apt-get --yes --force-yes install clang
+sudo apt-get --yes --force-yes install libjpeg-dev 
+sudo apt-get --yes --force-yes install libtiff-dev 
+sudo apt-get --yes --force-yes install libpng-dev 
+sudo apt-get --yes --force-yes install libicns-dev
+sudo apt-get --yes --force-yes install libmagickcore-dev
+sudo apt-get --yes --force-yes install libxml2-dev 
+sudo apt-get --yes --force-yes install libxslt-dev 
+sudo apt-get --yes --force-yes install libgnutls-dev
+sudo apt-get --yes --force-yes install libffi-dev 
+sudo apt-get --yes --force-yes install libicu-dev 
+sudo apt-get --yes --force-yes install libcairo2-dev
+sudo apt-get --yes --force-yes install libxft-dev
+sudo apt-get --yes --force-yes install libavahi-client-dev
+sudo apt-get --yes --force-yes install flite-dev
+sudo apt-get --yes --force-yes install libxt-dev
+sudo apt-get --yes --force-yes install libportaudio-dev
+sudo apt-get --yes --force-yes install wmaker
+sudo apt-get --yes --force-yes install portaudio19-dev
+sudo apt-get --yes --force-yes install make
+sudo apt-get --yes --force-yes install cmake
+sudo apt-get --yes --force-yes install gnutls-dev
+sudo apt-get --yes --force-yes install libblocksruntime-dev
+sudo apt-get --yes --force-yes install pocketsphinx
+sudo apt-get --yes --force-yes install pocketsphinx-en-us
+sudo apt-get --yes --force-yes install libpocketsphinx-dev
+sudo apt-get --yes --force-yes install libsphinxbase-dev
+sudo apt-get --yes --force-yes install sphinxbase-utils
+sudo apt-get --yes --force-yes install sphinxtrain
 
 echo "-------"
 echo "Done..."

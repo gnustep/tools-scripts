@@ -18,7 +18,7 @@ rm -rf /tmp/libobjc2
 # pull
 git clone --recursive https://github.com/gnustep/libobjc2.git
 git clone https://github.com/mheily/libpwq.git
-git clone https://github.com/mheily/libkqueue.git
+# git clone https://github.com/mheily/libkqueue.git
 git clone https://github.com/nickhutchinson/libdispatch.git
 
 # set vars
@@ -44,14 +44,14 @@ make -j${CPUS}
 ${SUDO} -E make install
 ${SUDO} ldconfig
 
-echo "======== Installing libkqueue..."
-cd /tmp/libkqueue
-mkdir build
-cd build
-cmake ../
-make -j${CPUS}
-${SUDO} -E make install
-${SUDO} ldconfig
+# echo "======== Installing libkqueue..."
+# cd /tmp/libkqueue
+# mkdir build
+# cd build
+# cmake ../
+# make -j${CPUS}
+# ${SUDO} -E make install
+# ${SUDO} ldconfig
 
 echo "======== Installing libdispatch..."
 cd /tmp/libdispatch

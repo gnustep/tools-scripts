@@ -2,6 +2,7 @@
 libs_files="libs-xcode libs-ppd libs-steptalk libs-ucsdata"
 tools_files="tools-buildtool tools-charsets"
 apps_files="apps-systempreferences apps-gworkspace apps-gorm apps-projectcenter apps-thematic apps-easydiff"
+CPUS=`nproc`
 
 echo "======= Building libraries."
 for file in ${libs_files}
@@ -12,7 +13,7 @@ do
 	./configure
     fi
     if [ -f GNUmakefile ]; then
-	make -j4 debug=yes
+	make -j${CPUS} debug=yes
 	sudo -- sh -c '. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install'
     fi
     cd ..
@@ -28,7 +29,7 @@ do
 	./configure
     fi
     if [ -f GNUmakefile ]; then
-	make -4 debug=yes
+	make -j${CPUS} debug=yes
 	sudo -- sh -c '. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install'
     fi
     cd ..
@@ -44,7 +45,7 @@ do
 	./configure
     fi
     if [ -f GNUmakefile ]; then
-	make -j4 debug=yes
+	make -j${CPUS} debug=yes
 	sudo -- sh -c '. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install'
     fi
     cd ..

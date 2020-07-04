@@ -143,7 +143,6 @@ extern "C" {
 
 fi
                                            
-cd ../../Source
 cat << !EOF2 > ${CLASSNAME}.m
 /* Implementation of class ${CLASSNAME}
    Copyright (C) ${CDATE} Free Software Foundation, Inc.
@@ -169,7 +168,7 @@ cat << !EOF2 > ${CLASSNAME}.m
    Boston, MA 02110 USA.
 */
 
-#import "AppKit/${CLASSNAME}.h"
+#import "${CLASSNAME}.h"
 
 @implementation ${CLASSNAME}
 

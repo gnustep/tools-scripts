@@ -36,7 +36,7 @@ else
 fi
 
 # Build the template...
-cd libs-gui/Headers/AppKit
+cd libs-gui/Source
 if [ "${SUPERCLASS}" = "NSObject" ]; then
     
 cat << !EOF > ${CLASSNAME}.h

@@ -3,20 +3,13 @@
 CLASSNAME=$1
 SUPERCLASS=$2
 USERNAME=$3
-VERSION=$4
 DATE=`date`
-CDATE=`date +"%Y"`
+CDATE=`date +"%m-%d-%Y"`
 
 # Superclass
 if [ -z "$SUPERCLASS" ]
 then
     SUPERCLASS=NSObject
-fi
-
-# Version
-if [ -z "$VERSION" ]
-then
-    VERSION=10_0
 fi
 
 # Username
@@ -29,7 +22,7 @@ fi
 # if no class, show usage
 if [ -z "$CLASSNAME" ]
 then
-    echo "Usage: CLASSNAME SUPERCLASS USERNAME VERSION"
+    echo "Usage: CLASSNAME SUPERCLASS USERNAME"
     exit 0
 else
     echo "Creating class ${CLASSNAME}."
@@ -69,8 +62,6 @@ cat << !EOF > ${CLASSNAME}.h
 
 #import <Foundation/${SUPERCLASS}.h>
 
-#if OS_API_VERSION(MAC_OS_X_VERSION_${VERSION}, GS_API_LATEST)
-
 #if	defined(__cplusplus)
 extern "C" {
 #endif
@@ -82,8 +73,6 @@ extern "C" {
 #if	defined(__cplusplus)
 }
 #endif
-
-#endif	/* GS_API_MACOSX */
 
 #endif	/* _${CLASSNAME}_h_GNUSTEP_GUI_INCLUDE */
 
@@ -121,8 +110,6 @@ cat << !EOF > ${CLASSNAME}.h
 
 #import "AppKit/${SUPERCLASS}.h"
 
-#if OS_API_VERSION(MAC_OS_X_VERSION_${VERSION}, GS_API_LATEST)
-
 #if	defined(__cplusplus)
 extern "C" {
 #endif
@@ -134,8 +121,6 @@ extern "C" {
 #if	defined(__cplusplus)
 }
 #endif
-
-#endif	/* GS_API_MACOSX */
 
 #endif	/* _${CLASSNAME}_h_GNUSTEP_GUI_INCLUDE */
 

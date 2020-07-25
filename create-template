@@ -4,7 +4,7 @@ CLASSNAME=$1
 SUPERCLASS=$2
 VERSION=$3
 USERNAME=$4
-DATE=`date +"%m-%d-%Y"`
+DATE=`date +"%d-%m-%Y"`
 CDATE=`date +"%Y"`
 
 # Superclass

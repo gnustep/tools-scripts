@@ -3,8 +3,8 @@
 CLASSNAME=$1
 SUPERCLASS=$2
 USERNAME=$3
-DATE=`date`
-CDATE=`date +"%m-%d-%Y"`
+DATE=`date +"%d-%m-%Y"`
+CDATE=`date +"%Y"`
 
 # Superclass
 if [ -z "$SUPERCLASS" ]

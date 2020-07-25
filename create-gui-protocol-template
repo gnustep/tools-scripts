@@ -3,7 +3,7 @@
 PROTONAME=$1
 VERSION=$2
 USERNAME=$3
-DATE=`date +"%m-%d-%Y"`
+DATE=`date +"%d-%m-%Y"`
 CDATE=`date +"%Y"`
 
 # Version

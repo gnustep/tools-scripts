@@ -113,7 +113,7 @@ cat << !EOF2 > ${CLASSNAME}.m
    Boston, MA 02110 USA.
 */
 
-#import <Foundation/${CLASSNAME}.h>
+#import "Foundation/${CLASSNAME}.h"
 
 @implementation ${CLASSNAME}
 

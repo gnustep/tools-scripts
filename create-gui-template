@@ -2,9 +2,9 @@
 
 CLASSNAME=$1
 SUPERCLASS=$2
-USERNAME=$3
-VERSION=$4
-DATE=`date`
+VERSION=$3
+USERNAME=$4
+DATE=`date +"%d-%m-%Y"`
 CDATE=`date +"%Y"`
 
 # Superclass
@@ -29,7 +29,7 @@ fi
 # if no class, show usage
 if [ -z "$CLASSNAME" ]
 then
-    echo "Usage: CLASSNAME SUPERCLASS USERNAME VERSION"
+    echo "Usage: CLASSNAME SUPERCLASS VERSION USERNAME"
     exit 0
 else
     echo "Creating class ${CLASSNAME}."

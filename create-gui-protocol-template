@@ -1,9 +1,9 @@
 #!/bin/sh
 
 PROTONAME=$1
-USERNAME=$2
-VERSION=$3
-DATE=`date`
+VERSION=$2
+USERNAME=$3
+DATE=`date +"%d-%m-%Y"`
 CDATE=`date +"%Y"`
 
 # Version
@@ -22,7 +22,7 @@ fi
 # if no class, show usage
 if [ -z "$PROTONAME" ]
 then
-    echo "Usage: PROTONAME SUPERCLASS USERNAME VERSION"
+    echo "Usage: PROTONAME SUPERCLASS VERSION USERNAME"
     exit 0
 else
     echo "Creating protcol ${PROTONAME}."

@@ -22,7 +22,7 @@ fi
 # if no class, show usage
 if [ -z "$PROTONAME" ]
 then
-    echo "Usage: PROTONAME SUPERCLASS VERSION USERNAME"
+    echo "Usage: PROTONAME VERSION USERNAME"
     exit 0
 else
     echo "Creating protcol ${PROTONAME}."

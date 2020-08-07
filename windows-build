@@ -30,17 +30,17 @@ source ${GNUSTEP_MSYS}/GNUstep/System/Library/Makefiles/GNUstep.sh
 
 # Build base
 cd ../libs-base
-make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
+# make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 ./configure --with-installation-domain=SYSTEM --disable-libdispatch --disable-icu && make -j4 GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 
 # Build gui
 cd ../libs-gui
-make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
+# make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 ./configure && make -j4 GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 
 # Build backend
 cd ../libs-back
-make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
+# make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 ./configure --enable-graphics=cairo --with-name=cairo && make -j4 GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install 
 
 echo ""

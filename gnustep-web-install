@@ -3,6 +3,7 @@
 mkdir -p gnustep
 cd gnustep
 git clone https://github.com/gnustep/tools-scripts
+./tools-scripts/clone-app-repos-https
 
 echo "\n================ Install Dependencies ================"
 # Install dependencies

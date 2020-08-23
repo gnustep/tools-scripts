@@ -7,7 +7,7 @@ git clone https://github.com/gnustep/tools-scripts
 
 echo "\n================ Install Dependencies ================"
 # Install dependencies
-./tools-scripts/install-dependencies-debian
+./tools-scripts/install-dependencies-linux
 
 echo "\n================ Build ================"
 # Build it...

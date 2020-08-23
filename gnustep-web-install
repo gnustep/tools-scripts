@@ -1,0 +1,12 @@
+#!/bin/sh
+
+mkdir -p gnustep
+cd gnustep
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/gnustep/tools-scripts/master/clone-all-repos-https)"
+
+
+# Install dependencies
+./tools-scripts/install-dependencies-debian
+
+# Build it...
+./tools-scripts/update-gnustep clang

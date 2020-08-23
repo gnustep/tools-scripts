@@ -1,5 +1,6 @@
 #!/bin/sh
 
+echo "======== Create gnustep build directories ========"
 mkdir -p gnustep
 cd gnustep
 git clone https://github.com/gnustep/tools-scripts

@@ -1,10 +1,13 @@
 #!/bin/sh
 
+echo "Get sudo and curl..."
+su -c 'apt install sudo curl'
+
 echo "======== Create gnustep build directories ========"
 mkdir -p gnustep
 cd gnustep
 git clone https://github.com/gnustep/tools-scripts
-./tools-scripts/clone-app-repos-https
+./tools-scripts/clone-all-repos-https
 
 echo "\n================ Install Dependencies ================"
 # Install dependencies

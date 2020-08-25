@@ -13,7 +13,7 @@ git clone https://github.com/gnustep/tools-scripts
 
 echo "\n================ Install Dependencies ================"
 # Install dependencies
-./tools-scripts/install-dependencies-linux
+./tools-scripts/install-dependencies
 
 echo "\n================ Build ================"
 # Build it...

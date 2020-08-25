@@ -5,7 +5,7 @@ FILES="libs-back libs-gui apps-projectcenter libs-palettes libs-boron apps-easyd
 
 for file in ${FILES}
 do
-    GITURL=${PREFIX}${file}
+    GITURL=${PREFIX}/${file}
     if
 	test -d ${file}
     then

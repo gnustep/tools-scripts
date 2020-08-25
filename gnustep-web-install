@@ -1,0 +1,22 @@
+#!/bin/sh
+
+echo "Get sudo and curl..."
+su -c 'apt install sudo curl'
+USER=`whoami`
+su -c 'echo "${USER}    ALL=(ALL:ALL) ALL" > /etc/sudoers.d/${USER}'
+
+echo "======== Create gnustep build directories ========"
+mkdir -p gnustep
+cd gnustep
+git clone https://github.com/gnustep/tools-scripts
+./tools-scripts/clone-all-repos-https
+
+echo "\n================ Install Dependencies ================"
+# Install dependencies
+./tools-scripts/install-dependencies-linux
+
+echo "\n================ Build ================"
+# Build it...
+./tools-scripts/clang-setup
+./tools-scripts/clang-build
+

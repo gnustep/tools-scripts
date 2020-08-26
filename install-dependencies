@@ -1,0 +1,4 @@
+#!/bin/sh
+
+kernel=`uname -s | awk '{print(tolower($0))}'`
+./tools-scripts/install-dependencies-${kernel}

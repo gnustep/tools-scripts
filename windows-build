@@ -2,6 +2,8 @@
 
 # GNUSTEP_MSYS=${MSYSTEM,,}/../
 
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+
 GNUSTEP_MSYS=/c/GNUstep
 echo "Installation directory is $GNUSTEP_MSYS"
 echo "Building for Windows/win32/MinGW..."
@@ -41,7 +43,8 @@ cd ../libs-gui
 # Build backend
 cd ../libs-back
 # make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
-./configure --enable-graphics=cairo --with-name=cairo && make -j4 GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install 
+#./configure --enable-graphics=cairo --with-name=cairo && make -j4 GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install 
+./configure && make -j4 GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 
 echo ""
 echo "Done."

@@ -1,6 +1,3 @@
-#!/bin/sh
-
-cat <<EOF
                  .:;;::::;;:           
               ..:;X@:;X@@S:t8%::.       
            .;;88tStttttttttX8%88;:     
@@ -22,27 +19,4 @@ cat <<EOF
 :X8@88 : X:..::;:t@.S:::.:::;:          
 ::t@8X;S;.%8;tttSSt;::..:.              
  ...:;:Xt.t@;;;::..                     
-     .;tS;::    
-EOF
-
-
-echo "Get sudo..."
-su -c 'apt install sudo'
-USER=`whoami`
-su -c 'echo "${USER}    ALL=(ALL:ALL) ALL" > /etc/sudoers.d/${USER}'
-
-echo "======== Create gnustep build directories ========"
-mkdir -p gnustep
-cd gnustep
-git clone https://github.com/gnustep/tools-scripts
-./tools-scripts/clone-all-repos-https
-
-echo "\n================ Install Dependencies ================"
-# Install dependencies
-./tools-scripts/install-dependencies
-
-echo "\n================ Build ================"
-# Build it...
-./tools-scripts/clang-setup
-./tools-scripts/clang-build
-
+     .;tS;::                           

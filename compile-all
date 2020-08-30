@@ -18,6 +18,7 @@
 
 CPUS=`nproc`
 SUDO='sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH'
+KERNEL=`uname -s | awk '{print tolower($0)}'`
 scriptsdir="`pwd`/tools-scripts"
 
 if [ "$1" != "" ]; then 

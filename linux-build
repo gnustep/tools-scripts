@@ -1,0 +1,5 @@
+# !/bin/sh
+
+# Linux builds are relatively simple...
+./tools-scripts/clang-setup
+./tools-scripts/clang-build

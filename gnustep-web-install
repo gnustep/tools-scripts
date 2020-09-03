@@ -1,5 +1,7 @@
 #!/bin/sh
 
+echo "Install GNUstep\n\n"
+
 cat <<EOF
                  .:;;::::;;:           
               ..:;X@:;X@@S:t8%::.       
@@ -25,11 +27,12 @@ cat <<EOF
      .;tS;::    
 EOF
 
+export KERNEL=`uname -s | awk '{print(tolower($0))}'`
+echo "\nBegin setup..."
 
-echo "Get sudo..."
-su -c 'apt install sudo'
-USER=`whoami`
-su -c 'echo "${USER}    ALL=(ALL:ALL) ALL" > /etc/sudoers.d/${USER}'
+export USER=`whoami`
+./tools-script/${KERNEL}-setup
+
 
 echo "======== Create gnustep build directories ========"
 mkdir -p gnustep
@@ -39,10 +42,9 @@ git clone https://github.com/gnustep/tools-scripts
 
 echo "\n================ Install Dependencies ================"
 # Install dependencies
-./tools-scripts/install-dependencies
+./tools-scripts/install-dependencies-#{KERNEL}
 
 echo "\n================ Build ================"
 # Build it...
-./tools-scripts/clang-setup
-./tools-scripts/clang-build
+./tools-scripts/${KERNEL}-build
 

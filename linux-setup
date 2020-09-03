@@ -1,0 +1,20 @@
+#!/bin/sh
+
+export USER=`whoami`
+if [ ! -e /usr/bin/sudo ]; then
+   echo "Installing sudo..." 
+   if [ -e /usr/bin/apt ]; then
+      su -c "apt install sudo"
+   else
+      su -c "rpm install sudo"
+   fi
+else
+   echo "sudo command is already present."
+fi
+
+if [ ! -e /etc/sudoers.d/${USER} ]; then
+   echo "Add ${USER} to sudoers"
+   su -c 'echo "${USER}    ALL=(ALL:ALL) ALL" > /etc/sudoers.d/${USER}'
+else
+   echo "User is already a member of sudo users."
+fi

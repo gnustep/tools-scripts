@@ -28,6 +28,7 @@ pacman -S mingw-w64-i686-libsndfile
 pacman -S mingw-w64-i686-aspell
 pacman -S mingw-w64-i686-lcms mingw-w64-i686-lcms2
 pacman -S mingw-w64-i686-sqlite3
+pacman -S mingw-w64-x86_64-imagemagick
 
 pacman -S asciidoc
 pacman -S mingw-w64-i686-windows-default-manifest 
@@ -40,6 +41,9 @@ pacman -S mingw-w64-x86_64-clang
 
 echo "6) ninja"
 pacman -S ninja
+
+echo "7) ghostscript for printing support"
+pacman -S mingw-w64-x86_64-ghostscript
 
 echo "Done."
 echo "Don't forget to run /mingw32_shell.bat to create a session to build in."

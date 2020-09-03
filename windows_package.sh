@@ -1,0 +1,180 @@
+#!/bin/sh
+
+APP_NAME=$1
+APP_BUNDLE=$APP_NAME.app
+DEST_DIR=/c/Users/${USER}/OneDrive/Desktop
+APP_DIR=$DEST_DIR/$APP_NAME
+GS_CONF_MASTER=windows-GNUstep.conf
+MSYS_BASE=/mingw64
+
+echo "== Packaging ${APP_BUNDLE}"
+echo " "
+echo "Removing old package"
+rm -rf 2> /dev/null ${APP_DIR}
+echo "Make ${APP_DIR}..."
+mkdir -p ${APP_DIR}
+
+echo "Creating Self-contained package for Windows for $APP_NAME"
+
+echo "Copying $APP_BUNDLE contents into $APP_DIR"
+cp 2> /dev/null -r $APP_BUNDLE/* "$APP_DIR"
+
+
+echo "Copying DLLs from /bin and ${MSYS_BASE}/bin"
+cp 2> /dev/null $(find /bin -name *.dll) "$APP_DIR"
+cp 2> /dev/null $(find ${MSYS_BASE}/bin -name *.dll) "$APP_DIR"
+cp 2> /dev/null $(find /usr/local -name *.dll) "$APP_DIR"
+
+echo "Copying the GNUstep Directory into $APP_NAME"
+mkdir -p "$APP_DIR"/GNUstep
+cp 2> /dev/null -R /usr/GNUstep/* "${APP_DIR}/GNUstep/"
+# cp 2> /dev/null -R /usr/GNUstep/* ${APP_DIR}/GNUstep/
+
+echo "Cleaning up configuration management files"
+find "$APP_DIR" -name .svn -print0 | xargs -0 rm -r
+find "$APP_DIR" -name .cvs -print0 | xargs -0 rm -r
+find "$APP_DIR" -name .git -print0 | xargs -0 rm -r
+
+echo "Cleaning up other files"
+find "$APP_DIR" -name stamp.make -print0 | xargs -0 rm
+
+echo "Copying GNUstep.conf file"
+cp 2> /dev/null $GS_CONF_MASTER "$APP_DIR"/GNUstep.conf
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/etc
+
+# echo "Copying Windows manifest"
+# cp 2> /dev/null $APP_NAME.exe.manifest $APP_DIR
+
+echo "Moving Library DLLs from the GNUstep tree to $APP_BUNDLE"
+mv "$APP_DIR"/GNUstep/Local/Tools/*.dll "$APP_DIR"/
+mv "$APP_DIR"/GNUstep/System/Tools/*.dll "$APP_DIR"/
+
+echo "Removing Network folder..."
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Network
+
+echo "Removing Headers"
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Headers
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Headers
+find "$APP_DIR"/GNUstep -name Headers -print0 | xargs -0 rm -r
+
+echo "Removing installed applications..."
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Applications
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Applications
+
+echo "Removing Fonts"
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Fonts
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Fonts
+
+echo "Removing Documentation"
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/man
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Documentation
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Documentation
+
+echo "Removing Makefiles"
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Makefiles
+
+# Check that your app doesn't use one of these!
+echo "Removing unused frameworks and its libraries"
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Frameworks/RSSKit.framework
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Libraries/libRSSKit*
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Frameworks/SimpleWebKit.framework
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Libraries/libSimpleWebKit*
+rm -rf 2> /dev/null "$APP_DIR"/SimpleWebKit*
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Frameworks/SimpleWebKit.framework
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Cynthiune
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/ApplicationSupport/GSTest
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Bundles/libgmodel.bundle
+
+echo "Removing known Application and Developer tool traces"
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Frameworks/AddressView.framework
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Frameworks/AddressView.framework
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Frameworks/Addresses.framework
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Frameworks/Addresses.framework
+
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Frameworks/PreferencePanes.framework
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Frameworks/PreferencePanes.framework
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Bundles/*.prefPane
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Bundles/*.prefPane
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Tools/SystemPreferences
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Libraries/libPreferencePanes.*
+
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Frameworks/ProjectCenter.framework
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Frameworks/ProjectCenter.framework
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Libraries/libProjectCenter*
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Libraries/libProjectCenter*
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Tools/ProjectCenter
+
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Libraries/libGorm*
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Libraries/libGorm*
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Tools/Gorm
+
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Tools/fswatcher.exe
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Tools/fswatcher.exe
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Tools/ddbd.exe
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Tools/ddbd.exe
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Services/thumbnailer.service
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Services/thumbnailer.service
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Libraries/libFSNode*
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Libraries/libFSNode*
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Libraries/libInspector*
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Libraries/libInspector*
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Libraries/libOperation*
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Libraries/libOperation*
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Bundles/ImageThumbnailer.thumb
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Bundles/ImageThumbnailer.thumb
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Bundles/ImageViewer.inspector
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Bundles/ImageViewer.inspector
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Bundles/FModule*
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Bundles/FModule*
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Bundles/NSTIFFViewer.inspector
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Bundles/NSTIFFViewer.inspector
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Bundles/NSRTFViewer.inspector
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Bundles/NSRTFViewer.inspector
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Frameworks/Operation.framework
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Frameworks/Operation.framework
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Frameworks/FSNode.framework
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Frameworks/FSNode.framework
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Library/Frameworks/Inspector.framework
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Frameworks/Inspector.framework
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Bundles/AppViewer.inspector
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Bundles/FolderViewer.inspector
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Bundles/IBViewViewer.inspector
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Bundles/SoundViewer.inspector
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Bundles/RtfViewer.inspector
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Bundles/NSColorViewer.inspector
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Bundles/Role.extinfo
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Bundles/MDModuleAnnotations.mdm
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Tools/Recycler
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Tools/Recycler
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Tools/wopen.exe
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Tools/searchtool.exe
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Tools/GWorkspace
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Library/Libraries/libDBKit.*
+
+rm -rf 2> /dev/null "$APP_DIR"/libsvn*.dll
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/share
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Tools/debugapp
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Tools/autogsdoc.exe
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Tools/make_strings.exe
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Tools/plparse.exe
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/System/Tools/sfparse.exe
+
+echo "Removing specific libraries"
+rm -rf 2> /dev/null "$APP_DIR"/Gorm*.dll
+rm -rf 2> /dev/null "$APP_DIR"/Addresses*.dll
+rm -rf 2> /dev/null "$APP_DIR"/AddressView*.dll
+rm -rf 2> /dev/null "$APP_DIR"/Operation*.dll
+rm -rf 2> /dev/null "$APP_DIR"/ProjectCenter*.dll
+rm -rf 2> /dev/null "$APP_DIR"/PreferencePanes*.dll
+rm -rf 2> /dev/null "$APP_DIR"/RSSKit*.dll
+rm -rf 2> /dev/null "$APP_DIR"/Cynthiune*.dll
+rm -rf 2> /dev/null "$APP_DIR"/FSNode*.dll
+rm -rf 2> /dev/null "$APP_DIR"/Inspector*.dll
+rm -rf 2> /dev/null "$APP_DIR"/DBKit*.dll
+
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Tools/AClock
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Tools/AddressManager
+rm -rf 2> /dev/null "$APP_DIR"/GNUstep/Local/Tools/GFractal
+
+echo " "
+echo "== Done."

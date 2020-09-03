@@ -13,7 +13,7 @@ pacman -S autogen automake autoconf autoconf2.13 libtool mingw-w64-i686-libtool
 pacman -S mingw-w64-i686-toolchain
 pacman -S mingw-w64-i686-pkg-config
 
-echo "2) gnutep-base"
+echo "2) gnustep-base"
 #pacman -S mingw-w64-i686-libffi
 pacman -S mingw-w64-i686-libxml2
 pacman -S mingw-w64-i686-gnutls

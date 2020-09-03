@@ -27,11 +27,11 @@ cat <<EOF
      .;tS;::    
 EOF
 
-export KERNEL=`uname -s | awk '{print(tolower($0))}'`
+export KERNEL=`uname -s | sed "s/\-.*//g" | awk '{print(tolower($0))}'`
 echo "Begin setup..."
 
 export USER=`whoami`
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/gnustep/tools-scripts/master/${KERNEL}-setup)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/gnustep/tools-scripts/master/$setup-{KERNEL})"
 
 echo "======== Create gnustep build directories ========"
 mkdir -p gnustep
@@ -45,5 +45,5 @@ echo "\n================ Install Dependencies ================"
 
 echo "\n================ Build ================"
 # Build it...
-./tools-scripts/${KERNEL}-build
+./tools-scripts/build-${KERNEL}
 

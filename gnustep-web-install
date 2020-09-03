@@ -31,7 +31,7 @@ export KERNEL=`uname -s | awk '{print(tolower($0))}'`
 echo "\nBegin setup..."
 
 export USER=`whoami`
-./tools-script/${KERNEL}-setup
+./tools-scripts/${KERNEL}-setup
 
 
 echo "======== Create gnustep build directories ========"

@@ -5,6 +5,7 @@ APP_BUNDLE=$APP_NAME.app
 DEST_DIR=/c/Users/${USER}/OneDrive/Desktop
 APP_DIR=$DEST_DIR/$APP_NAME
 GS_CONF_MASTER=windows-GNUstep.conf
+GS_CONF=
 MSYS_BASE=/mingw64
 
 echo "== Packaging ${APP_BUNDLE}"
@@ -13,6 +14,36 @@ echo "Removing old package"
 rm -rf 2> /dev/null ${APP_DIR}
 echo "Make ${APP_DIR}..."
 mkdir -p ${APP_DIR}
+
+echo "== Creating GNUstep.conf file..."
+cat > $APP_DIR/GNUstep.conf << EOF
+GNUSTEP_USER_CONFIG_FILE=.GNUstep.conf
+GNUSTEP_USER_DIR=GNUstep
+GNUSTEP_USER_DEFAULTS_DIR=GNUstep/Defaults
+
+GNUSTEP_SYSTEM_APPS=./GNUstep/System/Applications
+GNUSTEP_SYSTEM_ADMIN_APPS=./GNUstep/System/Applications
+GNUSTEP_SYSTEM_TOOLS=./GNUstep/System/Tools
+GNUSTEP_SYSTEM_ADMIN_TOOLS=./GNUstep/System/Tools
+GNUSTEP_SYSTEM_LIBRARY=./GNUstep/System/Library
+GNUSTEP_SYSTEM_HEADERS=./GNUstep/System/Library/Headers
+GNUSTEP_SYSTEM_LIBRARIES=./GNUstep/System/Library/Libraries
+GNUSTEP_SYSTEM_DOC=./GNUstep/System/Library/Documentation
+GNUSTEP_SYSTEM_DOC_MAN=./GNUstep/System/Library/Documentation/man
+GNUSTEP_SYSTEM_DOC_INFO=./GNUstep/System/Library/Documentation/info
+
+
+GNUSTEP_LOCAL_APPS=./GNUstep/Local/Applications
+GNUSTEP_LOCAL_ADMIN_APPS=./GNUstep/Local/Applications
+GNUSTEP_LOCAL_TOOLS=./GNUstep/Local/Tools
+GNUSTEP_LOCAL_ADMIN_TOOLS=./GNUstep/Local/Tools
+GNUSTEP_LOCAL_LIBRARY=./GNUstep/Local/Library
+GNUSTEP_LOCAL_HEADERS=./GNUstep/Local/Library/Headers
+GNUSTEP_LOCAL_LIBRARIES=./GNUstep/Local/Library/Libraries
+GNUSTEP_LOCAL_DOC=./GNUstep/Local/Library/Documentation
+GNUSTEP_LOCAL_DOC_MAN=./GNUstep/Local/Library/Documentation/man
+GNUSTEP_LOCAL_DOC_INFO=./GNUstep/Local/Library/Documentation/info
+EOF
 
 echo "Creating Self-contained package for Windows for $APP_NAME"
 

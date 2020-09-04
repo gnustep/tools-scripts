@@ -32,7 +32,9 @@ export KERNEL=`uname -s | sed "s/\-.*//g" | awk '{print(tolower($0))}'`
 echo "Begin setup for ${KERNEL}"
 
 export USER=`whoami`
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/gnustep/tools-scripts/master/setup-${KERNEL})"
+curl -fsSL https://raw.githubusercontent.com/gnustep/tools-scripts/master/setup-${KERNEL}
+. ./setup-${KERNEL}
+rm ./setup-${KERNEL}
 
 echo "======== Create gnustep build directories ========"
 mkdir -p gnustep

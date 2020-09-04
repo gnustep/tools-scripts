@@ -1,0 +1,2 @@
+#!/bin/sh
+export DYLD_LIBRARY_PATH=/usr/local/Cellar/gcc/10.2.0/lib/gcc/10:${DYLD_LIBRARY_PATH}

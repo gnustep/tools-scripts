@@ -35,8 +35,10 @@ pacman -S mingw-w64-x86_64-windows-default-manifest
 echo "4) gnustep-back"
 pacman -S mingw-w64-x86_64-cairo
 
-echo "5) clang"
+echo "5) compiler"
 pacman -S mingw-w64-x86_64-clang
+pacman -S mingw-w64-x86_64-gcc
+pacman -S mingw-w64-x86_64-gcc-objc
 
 echo "6) ninja"
 pacman -S ninja

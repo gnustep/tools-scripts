@@ -3,3 +3,10 @@ echo "Setting up for GNUstep install"
 echo "Copying patched shlwapi.h header to avoid conflict with objc reserved words"
 cp ./tools-scripts/Patched/shlwapi.h /ming64/x86_64-w64-mingw32/include/shlwapi.h
 pacman -S git
+
+cat >> ~/.bashrc <<EOF
+
+echo "Setting up GNUstep environment on $(uname -s)"
+. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh
+
+EOF

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+PREFIX="https://github.com/gnustep/"
+FILES="libs-back libs-gui libobjc2 libs-base libs-corebase plugins-themes-WinUXTheme tools-scripts tools-buildtool libs-xcode apps-gorm"
+
+for file in ${FILES}
+do
+    GITURL=${PREFIX}${file}
+    if
+	test -d ${file}
+    then
+        cd $file
+        git pull ${GITURL} master
+	cd ..
+    else
+	git clone --recursive ${GITURL}
+    fi
+done
+
+exit 0

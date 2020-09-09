@@ -9,6 +9,9 @@ MSYS_ROOT=/
 USR_ROOT=${MSYS_ROOT}usr
 GNUSTEP_ROOT=${USR_ROOT}/GNUstep
 
+echo "Copying patched shlwapi.h header"
+cp ~/Development/gnustep/tools-scripts/Patched/shlwapi.h /mingw64/x86_64-w64-mingw32/include/shlwapi.h
+
 echo "Installation directory is $GNUSTEP_ROOT"
 echo "Building GNUstep for MSYS64 on Windows"
 echo ""

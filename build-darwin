@@ -8,19 +8,20 @@ USR_ROOT=${ROOT}usr/local
 GNUSTEP_ROOT=${USR_ROOT}/opt/GNUstep
 export GNUSTEP_CONFIG_FILE=${GNUSTEP_ROOT}/etc/GNUstep.conf
 export GNUSTEP_INSTALL_LD_SO_CONF=no
+export LDFLAGS="-L/usr/local/opt/bison/lib -shared-libgcc "
 
 echo "Installation directory is $GNUSTEP_ROOT"
 echo "Building GNUstep for Darwin"
 echo ""
 
 export PKG_CONFIG_PATH=${USR_ROOT}/local/lib/pkgconfig:${USR_ROOT}/lib/pkgconfig:${PKG_CONFIG_PATH}
-export LDFLAGS+=-L/usr/local/Cellar/gcc/10.2.0/lib/gcc/10/
+# export LDFLAGS+= -L/usr/local/Cellar/gcc/10.2.0/lib/gcc/10/
 
 # Build make
 echo "======== Build make"
 cd tools-make
 ./configure --with-library-combo=gnu-gnu-gnu --with-layout=gnustep --prefix=${GNUSTEP_ROOT}
-make install messages=yes
+LDFLAGS=-L/usr/local/Cellar/gcc/10.2.0/lib/gcc/10/ CC=gcc-10 CXX=g++-10 DLYD_LIBRARY_PATH=/usr/local/Cellar/gcc/10.2.0/lib/gcc/10:${DYLD_LIBRARY_PATH} make install messages=no -j4
 source ${GNUSTEP_ROOT}/System/Library/Makefiles/GNUstep.sh
 
 # Build base
@@ -28,23 +29,23 @@ echo "======== Build base"
 cd ../libs-base
 # make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 export CFLAGS+=-I/usr/local/include
-export LDFLAGS="-L/usr/local/opt/bison/lib -shared-libgcc"
 ./configure --with-installation-domain=SYSTEM --disable-icu
-make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=no -j4
+LDFLAGS=-L/usr/local/Cellar/gcc/10.2.0/lib/gcc/10/ DLYD_LIBRARY_PATH=/usr/local/Cellar/gcc/10.2.0/lib/gcc/10:${DYLD_LIBRARY_PATH} make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=no -j4
+
 
 # Build gui
 echo "======== Build gui"
 cd ../libs-gui
 # make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 ./configure
-make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=no -j4
+CC=gcc-10 CXX=g++-10 DLYD_LIBRARY_PATH=/usr/local/Cellar/gcc/10.2.0/lib/gcc/10:${DYLD_LIBRARY_PATH} make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=no -j4
 
 # Build backend
 echo "======== Build back"
 cd ../libs-back
 # make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 ./configure
-make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=no -j4
+CC=gcc-10 CXX=g++-10 DLYD_LIBRARY_PATH=/usr/local/Cellar/gcc/10.2.0/lib/gcc/10:${DYLD_LIBRARY_PATH} make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=no -j4
 
 # Set default backend
 # defaults write NSGlobalDomain GSBackend libgnustep-cairo

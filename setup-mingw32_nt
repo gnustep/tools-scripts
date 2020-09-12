@@ -3,9 +3,12 @@ echo "Setting up for GNUstep install"
 pacman -S git
 
 echo "Add .bashrc code to initialize GNUstep"
-cat >> ~/.bashrc << EOF
+cat >> ~/.bashrc <<EOF
 
 echo "Setting up GNUstep environment on $(uname -s)"
 . /usr/GNUstep/System/Library/Makefiles/GNUstep.sh
 
 EOF
+
+mkdir -p ~/Development
+cd Development

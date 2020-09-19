@@ -39,7 +39,7 @@ echo "5) compiler, also install older binutils to avoid linking issue"
 # pacman -S mingw-w64-x86_64-clang
 pacman -S mingw-w64-x86_64-gcc
 pacman -S mingw-w64-x86_64-gcc-objc
-pacman -U ./tools-scripts/Packages/mingw-w64-x86_64-binutils-2.34-3-any.pkg.tar.zst
+# pacman -U ./tools-scripts/Packages/mingw-w64-x86_64-binutils-2.34-3-any.pkg.tar.zst
 
 # echo "6) ninja for building libobjc2"
 # pacman --noconfirm -S ninja

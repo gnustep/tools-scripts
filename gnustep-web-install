@@ -50,3 +50,11 @@ echo "================ Build ================"
 # Build it...
 ./tools-scripts/build-${KERNEL}
 
+# Post installation
+echo "================ Post Installation ================"
+./tools-scripts/post-install-${KERNEL}
+
+echo "Done..."
+
+
+

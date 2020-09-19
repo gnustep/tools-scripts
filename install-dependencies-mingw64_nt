@@ -41,8 +41,8 @@ pacman -S mingw-w64-x86_64-gcc
 pacman -S mingw-w64-x86_64-gcc-objc
 # pacman -U ./tools-scripts/Packages/mingw-w64-x86_64-binutils-2.34-3-any.pkg.tar.zst
 
-# echo "6) ninja for building libobjc2"
-# pacman --noconfirm -S ninja
+echo "6) ninja for building libobjc2"
+pacman --noconfirm -S ninja
 
 echo "Done."
 # echo "Don't forget to run /mingw64_shell.bat to create a session to build in."

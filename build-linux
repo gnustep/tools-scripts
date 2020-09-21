@@ -1,5 +1,7 @@
 # !/bin/sh
 
 # Linux builds are relatively simple...
-./tools-scripts/clang-setup
 ./tools-scripts/clang-build
+
+# since the last place we were in the build was libs-back
+cd ..

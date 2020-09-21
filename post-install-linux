@@ -1,7 +1,6 @@
 #!/bin/sh
 
 pwd
-cd ../
 cd apps-gorm
 make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 

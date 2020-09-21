@@ -4,4 +4,4 @@
 ./tools-scripts/clang-build
 
 # since the last place we were in the build was libs-back
-cd ..
+# cd ..

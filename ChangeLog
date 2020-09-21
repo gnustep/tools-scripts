@@ -1,3 +1,10 @@
+2020-09-21 Gregory John Casamento <greg.casamento@gmail.com>
+
+	* build-linux
+	* clone-essential-repos
+	* clone-essential-repos-https: Download essential repos for building
+	gnustep.  Update the linux build script.
+
 2020-04-13 Gregory John Casamento <greg.casamento@gmail.com>
 
 	* changeloggen: Add script to build changelog...

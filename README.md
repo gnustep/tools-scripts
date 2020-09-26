@@ -21,7 +21,6 @@ The purposes of all of the scripts is as follows:
 * windows-package - packages a GNUstep application so that it can run WITHOUT having GNUstep installed
 * clone-essential-repos - uses SSL to update the essential repos
 * clone-essential-repos-https - uses HTTPS to update the essential repos
-... more documentation to come...
 
 Please report any bugs you find with this set of scripts.
 

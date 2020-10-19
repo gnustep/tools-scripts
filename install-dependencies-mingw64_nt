@@ -36,13 +36,19 @@ echo "4) gnustep-back dependencies"
 pacman --noconfirm -S mingw-w64-x86_64-cairo
 
 echo "5) compiler, also install older binutils to avoid linking issue"
-# pacman -S mingw-w64-x86_64-clang
-pacman -S mingw-w64-x86_64-gcc
-pacman -S mingw-w64-x86_64-gcc-objc
-# pacman -U ./tools-scripts/Packages/mingw-w64-x86_64-binutils-2.34-3-any.pkg.tar.zst
+# pacman --noconfirm -S mingw-w64-x86_64-clang
+pacman --noconfirm -S mingw-w64-x86_64-gcc
+pacman --noconfirm -S mingw-w64-x86_64-gcc-objc
+#
+# IMPORTANT: if you are using the GNUstep release or latest tarballs
+# you must uncomment the command below since there will be a link error when
+# building libs-base.
+#
+# pacman --noconfirm -U ./tools-scripts/Packages/mingw-w64-x86_64-binutils-2.34-3-any.pkg.tar.zst
 
-echo "6) ninja for building libobjc2"
+echo "6) tools building libobjc2"
 pacman --noconfirm -S ninja
+pacman --noconfirm -S cmake
 
 echo "Done."
 # echo "Don't forget to run /mingw64_shell.bat to create a session to build in."

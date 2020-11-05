@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 PREFIX="git@github.com:gnustep/"
 FILES="tools-make libs-back libs-gui libobjc2 libs-base libs-corebase plugins-themes-WinUXTheme tools-scripts tools-buildtool libs-xcode apps-gorm plugins-session"

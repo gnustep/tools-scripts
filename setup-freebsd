@@ -1,26 +1,29 @@
 #!/bin/sh
-echo "Setup FreeBSD"
+echo "=== Setup FreeBSD"
 
-export USER=`whoami`
-if [ ! -e /usr/bin/sudo ]; then
+# export USER=`whoami`
+if [ ! -e /usr/local/bin/sudo ]; then
     echo "Installing sudo"
-    echo "Enter ${USER} password"
-    sudo pkg install sudo
-else
-    echo "sudo command already present."
+    echo "Enter root password"
+    su -m root -c  'pkg install sudo'
 fi
 
-if [ ! -e /etc/sudoers.d/${USER} ]; then
+if [ ! -e /usr/local/etc/sudoers.d/${USER} ]; then
     echo "Add ${USER} to sudoers"
     echo "Enter root password"
-    su -c 'echo "${USER}    ALL=(ALL:ALL) ALL" > /etc/sudoers.d/${USER}'
-else
-    echo "User is already a member of sudo users"
+    su -m root -c 'echo "${USER}    ALL=(ALL:ALL) ALL" > /usr/local/etc/sudoers.d/${USER}'
 fi
 
 # Make sure git is installed
-sudo pkg install git
-sudo pkg install subversion
+if [ ! -e /usr/local/bin/git ]; then
+    echo "Enter password for ${USER}"
+    sudo pkg install git
+fi
+
+if [ ! -e /usr/local/bin/git ]; then
+    echo "Enter password for ${USER}"
+    sudo pkg install subversion
+fi
 
 # done
-echo "==="
+echo "=== Done"

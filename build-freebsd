@@ -4,6 +4,7 @@ export CC=clang
 export CXX=clang++
 export MAKE=gmake
 export SUDO=sudo
+# export LDFLAGS=-fuse-ld=gold
 
 ROOT=/ 
 USR_ROOT=${ROOT}usr
@@ -20,6 +21,7 @@ echo ""
 echo "======== Build make"
 cd tools-make
 ./configure --with-library-combo=ng-gnu-gnu --with-layout=gnustep --prefix=${GNUSTEP_ROOT}
+${MAKE}
 ${SUDO} -u root ${MAKE} install
 . ${GNUSTEP_ROOT}/System/Library/Makefiles/GNUstep.sh
 echo "==="
@@ -28,7 +30,7 @@ echo "==="
 echo "======== Build base"
 cd ../libs-base
 ./configure --with-installation-domain=SYSTEM --disable-icu --disable-invocations
-CC=${CC} CXX=${CXX} ${MAKE} debug=yes messages=no -j4
+LDFLAGS=${LDFLAGS} CC=${CC} CXX=${CXX} ${MAKE} debug=yes messages=no -j4
 ${SUDO} -u root ./install.sh ${GNUSTEP_ROOT} ${MAKE}
 echo "==="
 
@@ -36,15 +38,15 @@ echo "==="
 echo "======== Build gui"
 cd ../libs-gui
 ./configure
-CC=${CC} CXX=${CXX} ${MAKE} debug=yes messages=no -j4
+LDFLAGS=${LDFLAGS} CC=${CC} CXX=${CXX} ${MAKE} debug=yes messages=no -j4
 ${SUDO} -u root ./install.sh ${GNUSTEP_ROOT} ${MAKE}
 echo "==="
 
 # Build backend
 echo "======== Build back"
 cd ../libs-back
-./configure
-CC=${CC} CXX=${CXX} ${MAKE} debug=yes messages=no -j4
+./configure --enable-graphics=cairo
+LDFLAGS=${LDFLAGS} CC=${CC} CXX=${CXX} ${MAKE} debug=yes messages=no -j4
 ${SUDO} -u root ./install.sh ${GNUSTEP_ROOT} ${MAKE}
 echo "==="
 

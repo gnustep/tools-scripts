@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# post install freebsd
+echo "Post install FreeBSD"

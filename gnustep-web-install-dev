@@ -1,0 +1,60 @@
+#!/bin/sh
+
+echo "Install GNUstep"
+echo " "
+cat <<EOF
+                 .:;;::::;;:           
+              ..:;X@:;X@@S:t8%::.       
+           .;;88tStttttttttX8%88;:     
+          .:;% @tt%t;;;;;;;::;;@8X;;:  
+          ;:tS;ttt;;::;::;;t; 8SX @8;  
+       ..:;S@S;;t;;;:::::tX@      X  :: 
+       :;:S::;;;;::;:;::;%8       8 .:.
+ .;:t  .:X :S::::::;;;:::tS@        X8%t
+.;S8S:::.SS:;:;::;:;;;;;;%X@    ..  8 8:
+ :;;  8t  %;8.::;;;:8888888X8       Xt::
+ .:;X SS888;;;;;;St%.....  .        8:@:
+   ;.:8 t8%;;::;;tXS .              ;8S;
+   .:8@ 8t88t@::;%SS .  .          S  :.
+  .:S%tt.t88@8.;St%;  .           @X%;:.
+ ...:Xt;;;; X%@SXSS%          .  @ 8:;  
+  ;.:St;t8t.8t :X%%:    .      %:S t:   
+::S  8;t:t.;@S S:@@Xt:.  .:%8:88t%:    
+:XX8@;:;8@:.X:@.;%8 X@t;;tX%%8%.:       
+:X8@88 : X:..::;:t@.S:::.:::;:          
+::t@8X;S;.%8;tttSSt;::..:.              
+ ...:;:Xt.t@;;;::..                     
+     .;tS;::    
+EOF
+
+echo " "
+export KERNEL=`uname -s | sed "s/\-.*//g" | awk '{print(tolower($0))}'`
+echo "Begin setup for ${KERNEL}"
+
+export USER=`whoami`
+curl -fsSL > ./setup-${KERNEL} https://raw.githubusercontent.com/gnustep/tools-scripts/master/setup-${KERNEL}
+. ./setup-${KERNEL}
+rm ./setup-${KERNEL}
+
+echo "======== Create gnustep build directories ========"
+mkdir -p gnustep
+cd gnustep
+git clone https://github.com/gnustep/tools-scripts
+./tools-scripts/clone-essential-repos
+
+echo "================ Install Dependencies ================"
+# Install dependencies
+./tools-scripts/install-dependencies-${KERNEL}
+
+echo "================ Build ================"
+# Build it...
+./tools-scripts/build-${KERNEL}
+
+# Post installation
+echo "================ Post Installation ================"
+./tools-scripts/post-install-${KERNEL}
+
+echo "Done..."
+
+
+

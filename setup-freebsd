@@ -20,9 +20,14 @@ if [ ! -e /usr/local/bin/git ]; then
     sudo pkg install git
 fi
 
-if [ ! -e /usr/local/bin/git ]; then
+if [ ! -e /usr/local/bin/svn ]; then
     echo "Enter password for ${USER}"
     sudo pkg install subversion
+fi
+
+if [ ! -e /usr/local/bin/bash ]; then
+    echo "Enter password for ${USER}"
+    sudo pkg install bash
 fi
 
 # done

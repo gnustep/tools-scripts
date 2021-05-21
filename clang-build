@@ -1,3 +1,3 @@
-#!/bin/bash
+#!/bin/sh
 . ./tools-scripts/compile-all "/usr/GNUstep" "clang" "clang++"
 exit

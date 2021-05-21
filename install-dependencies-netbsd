@@ -16,11 +16,13 @@ sudo ./netbsd_pkg_add libxml
 sudo ./netbsd_pkg_add libxslt
 sudo ./netbsd_pkg_add gnutls
 sudo ./netbsd_pkg_add libffi
-sudo ./netbsd_pkg_add icu4c
+sudo ./netbsd_pkg_add icu
 sudo ./netbsd_pkg_add cairo
 sudo ./netbsd_pkg_add avahi
 sudo ./netbsd_pkg_add portaudio
 sudo ./netbsd_pkg_add flite
+sudo ./netbsd_pkg_add clang
+sudo ./netbsd_pkg_add cmake
  
 echo "Done..."
 exit 0

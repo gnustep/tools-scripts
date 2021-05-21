@@ -1,0 +1,26 @@
+#!/bin/sh
+
+echo "Installing NetBSD dependencies"
+
+PATH="/usr/pkg/sbin:/usr/sbin:$PATH"
+PKG_PATH="http://cdn.netbsd.org/pub/pkgsrc/packages/NetBSD/amd64/9.1/All"
+export PATH
+export PKG_PATH
+
+sudo ./netbsd_pkg_add gmake
+sudo ./netbsd_pkg_add windowmaker
+sudo ./netbsd_pkg_add jpeg
+sudo ./netbsd_pkg_add tiff
+sudo ./netbsd_pkg_add png
+sudo ./netbsd_pkg_add libxml
+sudo ./netbsd_pkg_add libxslt
+sudo ./netbsd_pkg_add gnutls
+sudo ./netbsd_pkg_add libffi
+sudo ./netbsd_pkg_add icu4c
+sudo ./netbsd_pkg_add cairo
+sudo ./netbsd_pkg_add avahi
+sudo ./netbsd_pkg_add portaudio
+sudo ./netbsd_pkg_add flite
+ 
+echo "Done..."
+exit 0

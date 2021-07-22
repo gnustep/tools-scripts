@@ -1,0 +1,33 @@
+#!/bin/sh
+echo "=== Setup OpenBSD"
+
+# export USER=`whoami`
+if [ ! -e /usr/local/bin/sudo ]; then
+    echo "Installing sudo"
+    echo "Enter root password"
+    su -m root -c 'pkg_add sudo'
+    if [ ! -e /etc/sudoers ]; then
+	echo "Add ${USER} to sudoers"
+	echo "Enter root password"
+	su -m root -c 'echo "${USER}    ALL=(ALL) SETENV: ALL" >> /etc/sudoers'
+    fi
+fi
+
+# Make sure git is installed
+if [ ! -e /usr/local/bin/git ]; then
+    echo "Enter password for ${USER}"
+    sudo pkg_add git
+fi
+
+if [ ! -e /usr/local/bin/svn ]; then
+    echo "Enter password for ${USER}"
+    sudo pkg_add subversion
+fi
+
+if [ ! -e /usr/local/bin/bash ]; then
+    echo "Enter password for ${USER}"
+    sudo pkg_add bash
+fi
+
+# done
+echo "=== Done"

@@ -33,7 +33,9 @@ cd build
 cmake -DGNUSTEP_INSTALL_TYPE=LOCAL ../
 make -j${CPUS}
 ${SUDO} -E make install
-${SUDO} ldconfig
+if [ $? == 0 ]; then
+  ${SUDO} ldconfig
+fi
 
 echo "======== Installing libpwq..."
 cd /tmp/libpwq
@@ -42,7 +44,9 @@ cd build
 cmake ../
 make -j${CPUS}
 ${SUDO} -E make install
-${SUDO} ldconfig
+if [ $? == 0 ]; then
+  ${SUDO} ldconfig
+fi
 
 # echo "======== Installing libkqueue..."
 # cd /tmp/libkqueue
@@ -51,7 +55,9 @@ ${SUDO} ldconfig
 # cmake ../
 # make -j${CPUS}
 # ${SUDO} -E make install
-# ${SUDO} ldconfig
+# if [ $? == 0 ]; then
+#   ${SUDO} ldconfig
+# fi
 
 echo "======== Installing libdispatch..."
 cd /tmp/libdispatch
@@ -61,8 +67,9 @@ cd build
 ../configure
 make -j${CPUS}
 ${SUDO} make install
-${SUDO} ldconfig
-
+if [ $? == 0 ]; then
+  ${SUDO} ldconfig
+fi
 
 echo "Done."
 

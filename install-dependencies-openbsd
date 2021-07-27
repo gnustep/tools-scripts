@@ -14,7 +14,7 @@ sudo pkg_add libxml
 sudo pkg_add libxslt
 sudo pkg_add gnutls
 sudo pkg_add libffi
-sudo pkg_add icu
+sudo pkg_add icu4c
 sudo pkg_add cairo
 sudo pkg_add avahi
 sudo pkg_add gcc

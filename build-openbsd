@@ -1,11 +1,12 @@
 #!/bin/sh
 
-export CC=clang
-export CXX=clang++
+export CC=egcc
+export CXX=eg++
+export LD=ld.bfd
 export MAKE=gmake
 export SUDO=sudo
-export CFLAGS=-I/usr/local/include/gnustep
-export LDFLAGS=-L/usr/local/lib
+# export CFLAGS=-I/usr/local/include/gnustep
+# export LDFLAGS=-L/usr/local/lib
 
 ROOT=/ 
 USR_ROOT=${ROOT}usr
@@ -27,7 +28,7 @@ scriptsdir="`pwd`/tools-scripts"
 # Build make
 cd tools-make
 make clean
-./configure --with-library-combo=ng-gnu-gnu --with-layout=gnustep --prefix=${prefix}
+./configure --with-layout=gnustep CC=${CC} CXX=${CXX} LD=${LD} --prefix=${prefix}
 echo "======== Build make"
 ${MAKE}
 ${SUDO} -u root ${MAKE} install
@@ -36,8 +37,8 @@ ${SUDO} -u root ${MAKE} install
 # Build base
 echo "======== Build base"
 cd ../libs-base
-./configure --with-installation-domain=SYSTEM --disable-icu --disable-invocations
-LDFLAGS=${LDFLAGS} CC=${CC} CXX=${CXX} ${MAKE} debug=yes messages=no -j4
+./configure --with-installation-domain=SYSTEM
+${MAKE} debug=yes messages=no -j4
 ${SUDO} -u root ./install.sh ${GNUSTEP_ROOT} ${MAKE}
 echo "==="
 

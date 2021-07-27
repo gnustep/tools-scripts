@@ -17,7 +17,10 @@ sudo pkg_add libffi
 sudo pkg_add icu
 sudo pkg_add cairo
 sudo pkg_add avahi
-# sudo pkg_add portaudio
+sudo pkg_add gcc
+sudo pkg_add gobjc
+sudo pkg_add gdb
+sudo pkg_add gnustep-libobjc2
 sudo pkg_add flite
 echo "Done..."
 exit 0

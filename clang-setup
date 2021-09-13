@@ -1,5 +1,8 @@
 #!/bin/sh
 
+CLANG=${1:-clang}
+CLANGPP=${2:-clang++}
+
 SUDO='sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH'
 CPUS="1"
 
@@ -22,8 +25,8 @@ git clone https://github.com/mheily/libpwq.git
 git clone https://github.com/nickhutchinson/libdispatch.git
 
 # set vars
-export CC=clang
-export CXX=clang++
+export CC=${CLANG}
+export CXX=${CLANGPP}
 
 # build and install
 echo "======== Installing libobjc2..."

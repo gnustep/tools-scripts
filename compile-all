@@ -83,7 +83,7 @@ if [ "$UNAME" == "MINGW32_NT" ] ; then
 fi
 
 # If we are building with clang, then add this to cc_flags
-if [ "$CC" == "clang" ] ; then
+if [ "$CC" != "gcc" ] ; then
     export cc_flags="-fblocks -fobjc-nonfragile-abi ${cc_flags}"
 fi
 
@@ -97,14 +97,14 @@ if [ "$CC" == "gcc" ]; then
 
     echo "===="
     CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --prefix=${prefix} --with-layout=gnustep ${make_flags}
-elif [ "$CC" == "clang" ]; then
+else
     echo "==== BUILDING WITH CLANG"
     unset CC
     unset CXX
 
     # Assume the presence of libdispatch if we are using clang and libobjc2
-    export CC=clang
-    export CXX=clang++
+    export CC=${compiler}
+    export CXX=${cxxcompiler}
     # export LDFLAGS=-ldispatch
     export LDFLAGS=-fuse-ld=gold -ldispatch
     echo "CCFLAGS=${cc_flags} CXX=${CXX} CC=${CC} ./configure --prefix=${prefix} --with-library-combo=ng-gnu-gnu --enable-objc-arc --enable-native-objc-exceptions --with-layout=gnustep ${make_flags}"
@@ -122,8 +122,8 @@ fi
 . $prefix/System/Library/Makefiles/GNUstep.sh
 
 # Setup clang specific libraries...
-if [ "$CC" == "clang" ]; then
-    ${scriptsdir}/clang-setup
+if [ "$CC" != "gcc" ]; then
+    ${scriptsdir}/clang-setup "$CLANG" "$CLANGPP"
 fi
 
 # Install base

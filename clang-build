@@ -1,4 +1,12 @@
 #!/bin/sh
 
-$(which bash) ./tools-scripts/compile-all "/usr/GNUstep" "clang" "clang++"
+CLANG=${1:-clang}
+CLANGPP=${2:-clang++}
+
+echo "Using..."
+echo ${CLANG}
+echo ${CLANGPP}
+echo "--"
+
+$(which bash) ./tools-scripts/compile-all "/usr/GNUstep" "${CLANG}" "${CLANGPP}"
 exit

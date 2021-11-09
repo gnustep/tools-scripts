@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [ -e /etc/os-release ]; then
+   . /etc/os-release
+fi
+
+echo $ID
+
+#if [ -e /etc/redhat-release ]; then
+#   echo "redhat"
+#elif [ -e /etc/debian_version ]; then
+#   echo "debian"
+

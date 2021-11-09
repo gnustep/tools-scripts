@@ -45,7 +45,7 @@ install_debian()
 install_redhat()
 {
     echo "NOTE: Make sure you have done apt-get update and apt-get upgrade prior to running this script."
-    echo "Installing Debian/Ubuntu dependencies"
+    echo "Installing RedHat/CentOS/etc dependencies"
     echo "-------"
 
     sudo yum -y install gobjc 
@@ -99,6 +99,9 @@ case ${ID} in
         install_debian
         ;;
     ubuntu)
+        install_debian
+        ;;
+    raspbian)
         install_debian
         ;;
     redhat)

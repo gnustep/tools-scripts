@@ -37,7 +37,8 @@ install_debian()
     sudo apt-get --yes --force-yes install libsphinxbase-dev
     sudo apt-get --yes --force-yes install sphinxbase-utils
     sudo apt-get --yes --force-yes install sphinxtrain
-
+    sudo apt-get --yes --force-yes install libssl-dev
+    
     echo "-------"
     echo "Done..."
 }
@@ -79,6 +80,7 @@ install_redhat()
 #    sudo yum -y install sphinxbase-utils
 #    sudo yum -y install sphinxtrain
     sudo yum -y install openssl-devel
+    sudo yum -y install gnutls-devel
 
     echo "-------"
     echo "Done..."

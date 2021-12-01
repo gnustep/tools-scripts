@@ -48,37 +48,37 @@ install_redhat()
     echo "Installing RedHat/CentOS/etc dependencies"
     echo "-------"
 
-    sudo yum -y install gobjc 
-    sudo yum -y install gobjc++
+    sudo yum -y install gcc 
+    sudo yum -y install gcc-objc
     sudo yum -y install clang
-    sudo yum -y install libjpeg-dev 
-    sudo yum -y install libtiff-dev 
-    sudo yum -y install libpng-dev 
-    sudo yum -y install libicns-dev
-    sudo yum -y install libmagickcore-dev
-    sudo yum -y install libxml2-dev 
-    sudo yum -y install libxslt-dev 
-    sudo yum -y install libgnutls-dev
-    sudo yum -y install libffi-dev 
-    sudo yum -y install libicu-dev 
-    sudo yum -y install libcairo2-dev
-    sudo yum -y install libxft-dev
-    sudo yum -y install libavahi-client-dev
-    sudo yum -y install flite-dev
-    sudo yum -y install libxt-dev
-    sudo yum -y install libportaudio-dev
-    sudo yum -y install wmaker
-    sudo yum -y install portaudio19-dev
+    sudo yum -y install libjpeg-turbo-devel 
+    sudo yum -y install libtiff-devel 
+    sudo yum -y install libpng-devel
+    sudo yum -y install libicns-devel
+    sudo yum -y install ImageMagick-devel
+    sudo yum -y install libxml2-devel
+    sudo yum -y install libxslt-devel
+    sudo yum -y install gnutls-devel
+    sudo yum -y install libffi-devel
+    sudo yum -y install libicu-devel
+    sudo yum -y install cairo-devel
+    sudo yum -y install libXft-devel
+    sudo yum -y install avahi-devel
+    sudo yum -y install flite-devel
+    sudo yum -y install libXt-devel
+#    sudo yum -y install libportaudio-devel
+#    sudo yum -y install wmaker
+#    sudo yum -y install portaudio19-dev
     sudo yum -y install make
     sudo yum -y install cmake
-    sudo yum -y install gnutls-dev
-    sudo yum -y install libblocksruntime-dev
-    sudo yum -y install pocketsphinx
-    sudo yum -y install pocketsphinx-en-us
-    sudo yum -y install libpocketsphinx-dev
-    sudo yum -y install libsphinxbase-dev
-    sudo yum -y install sphinxbase-utils
-    sudo yum -y install sphinxtrain
+#    sudo yum -y install libblocksruntime-dev
+#    sudo yum -y install pocketsphinx
+#    sudo yum -y install pocketsphinx-en-us
+#    sudo yum -y install libpocketsphinx-dev
+#    sudo yum -y install libsphinxbase-dev
+#    sudo yum -y install sphinxbase-utils
+#    sudo yum -y install sphinxtrain
+    sudo yum -y install openssl-devel
 
     echo "-------"
     echo "Done..."

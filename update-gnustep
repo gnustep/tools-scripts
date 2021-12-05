@@ -1,9 +1,10 @@
 #!/bin/bash
 COMPILER=${1:-clang}
+CXX=${2:-clang++}
 
 ./tools-scripts/clone-all-repos
 if [ "${COMPILER}" != "gcc" ]; then
-    CXX=`echo ${COMPILER} | sed 's/clang/clang++/g`
+#    CXX=`echo ${COMPILER} | sed 's/clang/clang++/g`
     ./tools-scripts/clang-build "${COMPILER}" "${CXX}"
 else
     ./tools-scripts/compile-all "gcc" "g++"

@@ -38,6 +38,7 @@ install_debian()
     sudo apt-get --yes --force-yes install sphinxbase-utils
     sudo apt-get --yes --force-yes install sphinxtrain
     sudo apt-get --yes --force-yes install libssl-dev
+    sudo apt-get --yes --force-yes install freeglut3-dev
     
     echo "-------"
     echo "Done..."

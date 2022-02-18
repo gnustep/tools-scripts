@@ -28,6 +28,9 @@ cat <<EOF
 EOF
 
 echo " "
+echo "IMPORTANT!"
+echo "You must update your .ssh directory so it contains your github ssh key"
+echo " "
 export KERNEL=`uname -s | sed "s/\-.*//g" | awk '{print(tolower($0))}'`
 echo "Begin setup for ${KERNEL}"
 
@@ -39,7 +42,7 @@ rm ./setup-${KERNEL}
 echo "======== Create gnustep build directories ========"
 mkdir -p gnustep
 cd gnustep
-git clone https://github.com/gnustep/tools-scripts
+git clone git@github.com:gnustep/tools-scripts.git
 ./tools-scripts/clone-essential-repos
 
 echo "================ Install Dependencies ================"

@@ -3,10 +3,14 @@
 libs_files="libs-xcode"
 tools_files="tools-buildtool"
 apps_files="apps-gorm plugins-themes-WinUXTheme"
-CPUS=`nproc`
+
+# OS
 OS=`uname -s`
 
+# number of processes
+CPUS=`nproc`
 
+# func..
 build_and_install()
 {
     echo "***** Building ${1}..."
@@ -26,24 +30,27 @@ build_and_install()
     echo "***** Done"
 }
 
-. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh
+install_files()
+{
+    for file in ${1}
+    do
+	build_and_install $file
+    done
+}
 
-echo "======= Building libraries."
-for file in ${libs_files}
-do
-    build_and_install $file
-done
+do_install()
+{
+    . /usr/GNUstep/System/Library/Makefiles/GNUstep.sh
 
-echo "======= Building tools."
-for file in ${tools_files}
-do
-    build_and_install $file
-done
+    echo "======= Building libraries."
+    install_files "${libs_files}"
 
-echo "======= Building applications."
-for file in ${apps_files}
-do
-    build_and_install $file
-done
+    echo "======= Building tools."
+    install_files in "${tools_files}"
 
+    echo "======= Building applications."
+    install_files "${apps_files}"
+}
+
+do_install
 exit 0

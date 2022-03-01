@@ -1,65 +1,60 @@
-#!/bin/sh
+# Maintainer: Some One <some.one@some.email.com>
 
-# Temporary path change
+_realname=libobjc2
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=1314.ab25470
+pkgrel=1
+pkgdesc="GNUstep modern objc runtime (mingw-w64)"
+arch=('x86_64')
+url='https://www.github.com/gnustep/libobjc2/'
+license=('LICENSE')
+#validpgpkeys=('gpg_KEY')
+makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
+             'git')
+options=('!strip' 'staticlibs' '!debug')
 
-OLDPATH=$PATH
-export PATH=/c/Tools/Ninja:/c/Tools/CMake/bin:/c/Tools/LLVM/bin:${PATH}
+#source=("${_realname}"::"git+https://gitlab+deploy-token-19:zNYh5wak2zY3RHxQ8npU@git.testplant.com/EPF/libobjc2.git#branch=1.9clang7")
+#source=("${_realname}"::"git+https://github.com/gnustep/libobjc2.git#branch=mingw")
+#source=("${_realname}"::"git+https://github.com/TestPlant/libobjc2.git#branch=mingw")
+#source=("${_realname}"::"git+https://github.com/gnustep/libobjc2.git#branch=mingw_fixes")
+#source=("${_realname}"::"git+https://github.com/gnustep/libobjc2.git#branch=master")
+#source=("${_realname}"::"git+https://github.com/gnustep/libobjc2.git#branch=msys2_updates")
+#source=("${_realname}"::"git+https://github.com/Microsoft/libobjc2")
 
-CMAKE="cmake.exe"
-CLANG="clang-cl.exe"
-NINJA="ninja.exe"
-LINKER="lld-link.exe"
-RC="llvm-rc.exe"
+sha256sums=('SKIP')
+tests_enabled=('OFF')
 
-cd libobjc2
+build() {
+  # cd "${srcdir}"/${_realname}
+  # [[ -d "${srcdir}"/build-${CARCH} ]] && rm -rf "${srcdir}"/build-${CARCH}
+  # mkdir -p "${srcdir}"/build-${CARCH} && cd "${srcdir}"/build-${CARCH}
 
-git reset --hard
-git pull
+  declare -a extra_config
+  declare -a extra_make_opts
+  if check_option "debug" "n"; then
+    extra_config+=("-DCMAKE_BUILD_TYPE=Release")
+  else
+    extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
+    extra_config+=(-DCMAKE_C_FLAGS="-g -O0 -DDEBUG -fobjc-runtime=gnustep-1.9")
+    extra_config+=(-DCMAKE_C_LINK_FLAGS="-Wl,--allow-multiple-definition")
+    tests_enabled=('ON')
+    extra_make_opts+=("VERBOSE=1")
+  fi
 
-#
-# Fix case in header.  The Windows.h file under the Windows SDK is capitalized.
-# The one used in MSYS2 isn't.  It's the same header.  Also disable testing
-#
-cat safewindows.h | sed 's/Windows.h/windows.h/' > new_safewindows.h
-mv new_safewindows.h safewindows.h
-cat CMakeLists.txt | sed 's/TESTS TRUE/TESTS FALSE/' > CMakeLists_new.txt
-mv CMakeLists_new.txt CMakeLists.txt
-cat ivar.c | sed 's/<< ivar_align_shift/<< 3/' > ivar_new.c
-mv ivar_new.c ivar.c
-cat ivar.h | sed 's/<< ivar_align_shift/<< 3/' > ivar_new.h
-mv ivar_new.h ivar.h
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+    ${MINGW_PREFIX}/bin/cmake \
+      -G'MSYS Makefiles' \
+      -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+      -DGNUSTEP_INSTALL_TYPE=NONE \
+      "${extra_config[@]}" \
+      -DCMAKE_POSITION_INDEPENDENT_CODE=OFF \
+	  -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_ASM_COMPILER=clang -DCMAKE_ASM_FLAGS=-c -DTESTS=${tests_enabled} \
+      ../${_realname}
 
-#
-# Cleanup
-#
-rm -rf build
-mkdir build
-cd build
+  make "${extra_make_opts[@]}"
+}
 
-#
-# Set environment
-#
-export CC=${CLANG}
-export CXX=${CLANG}
-
-#
-# Generate build
-#
-$CMAKE -G Ninja -DCMAKE_C_COMPILER_WORKS=1 -DCMAKE_CXX_COMPILER_WORKS=1 \
-       -DCMAKE_SHARED_LIBRARY_LINK_C_FLAGS="" \
-       -DCMAKE_RC_COMPILER=${RC} -DCMAKE_LINKER=${LINKER} -DCMAKE_C_COMPILER=${CLANG} \
-       -DCMAKE_CXX_COMPILER=${CLANG} \
-       -DCMAKE_C_FLAGS=-I/usr/include -I/mingw64/x86_64-w64-mingw32/include \
-       -I/ming64/include -I/usr/include/w32api -Wno-everything -DNO_LEGACY=1 \
-       -DCMAKE_CXX_FLAGS=-I/usr/include -I/mingw64/x86_64-w64-mingw32/include \
-       -I/ming64/include -I/usr/include/w32api -Wno-everything -DNO_LEGACY=1 \
-       -DCMAKE_BUILD_TYPE=Release ..
-
-#
-# Build
-#
-${NINJA}
-
-# Restore old path
-export PATH=${OLDPATH}
+build
 exit 0
+

@@ -5,6 +5,9 @@ libs_files="libs-xcode libs-ppd libs-steptalk libs-ucsdata"
 tools_files="tools-buildtool tools-charsets"
 apps_files="apps-systempreferences apps-gworkspace apps-gorm apps-projectcenter apps-thematic apps-easydiff"
 
+# OS
+OS=`uname -s`
+
 # number of processes
 CPUS=`nproc`
 
@@ -28,24 +31,27 @@ build_and_install()
     echo "***** Done"
 }
 
-. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh
+install_files()
+{
+    for file in ${1}
+    do
+	build_and_install $file
+    done
+}
 
-echo "======= Building libraries."
-for file in ${libs_files}
-do
-    build_and_install $file
-done
+do_install()
+{
+    . /usr/GNUstep/System/Library/Makefiles/GNUstep.sh
 
-echo "======= Building tools."
-for file in ${tools_files}
-do
-    build_and_install $file
-done
+    echo "======= Building libraries."
+    install_files ${libs_files}
 
-echo "======= Building applications."
-for file in ${apps_files}
-do
-    build_and_install $file
-done
+    echo "======= Building tools."
+    install_files ${tools_files}
 
+    echo "======= Building applications."
+    install_files ${apps_files}
+}
+
+do_install
 exit 0

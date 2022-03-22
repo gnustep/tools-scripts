@@ -29,16 +29,16 @@ pacman --noconfirm -S mingw-w64-x86_64-libsndfile
 pacman --noconfirm -S mingw-w64-x86_64-aspell
 pacman --noconfirm -S mingw-w64-x86_64-lcms mingw-w64-x86_64-lcms2
 pacman --noconfirm -S mingw-w64-x86_64-sqlite3
-pacman --noconfirm -S asciidoc
 pacman --noconfirm -S mingw-w64-x86_64-windows-default-manifest 
 
 echo "4) gnustep-back dependencies"
 pacman --noconfirm -S mingw-w64-x86_64-cairo
 
 echo "5) compiler, also install older binutils to avoid linking issue"
-# pacman --noconfirm -S mingw-w64-x86_64-clang
+pacman --noconfirm -S mingw-w64-x86_64-clang
 pacman --noconfirm -S mingw-w64-x86_64-gcc
 pacman --noconfirm -S mingw-w64-x86_64-gcc-objc
+
 #
 # IMPORTANT: if you are using the GNUstep release or latest tarballs
 # you must uncomment the command below since there will be a link error when
@@ -49,6 +49,8 @@ pacman --noconfirm -S mingw-w64-x86_64-gcc-objc
 echo "6) tools building libobjc2"
 pacman --noconfirm -S ninja
 pacman --noconfirm -S cmake
+pacman --noconfirm -S nano
+pacman --noconfirm -S asciidoc
 
 echo "Done."
 # echo "Don't forget to run /mingw64_shell.bat to create a session to build in."

@@ -29,6 +29,7 @@ export PKG_CONFIG_PATH=${USR_ROOT}/local/lib/pkgconfig:${USR_ROOT}/lib/pkgconfig
 # Build make
 echo "Build make"
 cd tools-make
+make 2> /dev/null distclean
 ./configure --with-library-combo=gnu-gnu-gnu --with-layout=gnustep --prefix=${GNUSTEP_ROOT} --enable-install-ld-so-conf && make install messages=yes
 source ${GNUSTEP_ROOT}/System/Library/Makefiles/GNUstep.sh
 

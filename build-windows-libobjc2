@@ -1,21 +1,6 @@
 # Maintainer: Gregory Casamento <greg.casamento@gmail.com>
 
 _realname=libobjc2
-
-pkgbase=mingw-w64-${_realname}
-pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=1314.ab25470
-pkgrel=1
-pkgdesc="GNUstep modern objc runtime (mingw-w64)"
-arch=('x86_64')
-url='https://www.github.com/gnustep/libobjc2/'
-
-license=('LICENSE')
-makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
-             'git')
-options=('!strip' 'staticlibs' '!debug')
-
-sha256sums=('SKIP')
 tests_enabled=('OFF')
 
 build()
@@ -41,9 +26,11 @@ build()
       -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
       -DGNUSTEP_INSTALL_TYPE=NONE \
       "${extra_config[@]}" \
-      -DCMAKE_POSITION_INDEPENDENT_CODE=OFF \
-	  -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_ASM_COMPILER=clang -DCMAKE_ASM_FLAGS=-c -DTESTS=${tests_enabled} \
-      ../${_realname}
+      	-DCMAKE_POSITION_INDEPENDENT_CODE=OFF \
+	-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+	-DCMAKE_ASM_COMPILER=clang -DCMAKE_ASM_FLAGS=-c \
+	-DTESTS=${tests_enabled} \
+      	../${_realname}
 
   make "${extra_make_opts[@]}"
 }

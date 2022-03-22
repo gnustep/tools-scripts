@@ -12,7 +12,8 @@ pacman --noconfirm -S make
 pacman --noconfirm -S autogen automake autoconf autoconf2.13 libtool 
 pacman --noconfirm -S mingw-w64-x86_64-libtool
 pacman --noconfirm -S mingw-w64-x86_64-toolchain
-pacman --noconfirm -S mingw-w64-x86_64-pkg-config
+# pacman --noconfirm -S mingw-w64-x86_64-pkg-config
+pacman --noconfirm -S mingw-w64-x86_64-cmake
 
 echo "2) gnustep-base dependencies"
 #pacman --noconfirm -S mingw-w64-x86_64-libffi

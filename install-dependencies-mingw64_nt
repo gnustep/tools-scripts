@@ -14,6 +14,7 @@ pacman --noconfirm -S mingw-w64-x86_64-libtool
 pacman --noconfirm -S mingw-w64-x86_64-toolchain
 # pacman --noconfirm -S mingw-w64-x86_64-pkg-config
 pacman --noconfirm -S mingw-w64-x86_64-cmake
+pacman --noconfitm -S base-devel
 
 echo "2) gnustep-base dependencies"
 #pacman --noconfirm -S mingw-w64-x86_64-libffi

@@ -44,13 +44,13 @@ do_install()
     . /usr/GNUstep/System/Library/Makefiles/GNUstep.sh
 
     echo "======= Building libraries."
-    install_files ${libs_files}
+    install_files "${libs_files}"
 
     echo "======= Building tools."
-    install_files ${tools_files}
+    install_files "${tools_files}"
 
     echo "======= Building applications."
-    install_files ${apps_files}
+    install_files "${apps_files}"
 }
 
 do_install

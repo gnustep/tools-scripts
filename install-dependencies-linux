@@ -116,6 +116,9 @@ case ${ID} in
     suse)
         install_redhat
         ;;
+    fedora)
+        install_redhat
+        ;;
     *)
         echo "Please report this to bugs-gnustep@gnu.org."
         echo "Your linux os ${ID} is currently unsupported."

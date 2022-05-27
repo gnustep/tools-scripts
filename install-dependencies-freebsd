@@ -5,14 +5,14 @@ echo "NOTE: This file assumes that Xorg is installed and that sudo is installed.
 echo "      Also, the user must have sudo access to properly execute this script."
 echo "Installing..."
 sudo pkg install libobjc2
-sudo pkg install llvm-devel
+sudo pkg install llvm
 sudo pkg install gmake
 sudo pkg install cmake
 sudo pkg install windowmaker
 sudo pkg install openjpeg
 sudo pkg install tiff
 sudo pkg install png
-sudo pkg install libxml
+sudo pkg install libxml2
 sudo pkg install libxslt
 sudo pkg install gnutls
 sudo pkg install libffi

@@ -6,8 +6,7 @@ export PATH
 REVISION=$1
 
 # Create development...
-if [ -e ~/Development ]
-then
+if [ -e ~/Development ]; then
     cd ~/Development
 else
     mkdir ~/Development
@@ -15,16 +14,19 @@ fi
 
 # Update llvm...
 cd ~/Development
-rm -rf llvm-project
-git clone https://github.com/llvm/llvm-project.git
+if [ -e llvm-project ]; then
+    echo "Updating project"
+else
+    echo "Cloning project"
+    git clone https://github.com/llvm/llvm-project.git
+fi
 cd llvm-project
 
 # Make the build directory...
-cd ~/Development
 rm -rf build
 mkdir -p build
 cd build
 
-cmake -DCMAKE_INSTALL_PREFIX=/opt/local -DLLVM_ENABLE_PROJECTS=clang -DLLVM_USE_LINKER=gold -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" ../llvm-project/llvm
+cmake -DCMAKE_INSTALL_PREFIX=/opt/local -DLLVM_ENABLE_PROJECTS=clang -DLLVM_USE_LINKER=gold -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" ../llvm
 cmake --build .
-
+sudo cmake install

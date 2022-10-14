@@ -2,7 +2,7 @@
 
 # Libraries/Apps/Tools
 libs_files="libs-xcode libs-ppd libs-steptalk libs-ucsdata"
-tools_files="tools-buildtool tools-charsets"
+tools_files="tools-charsets tools-xctest"
 apps_files="apps-systempreferences apps-gworkspace apps-gorm apps-projectcenter apps-thematic apps-easydiff"
 
 # OS

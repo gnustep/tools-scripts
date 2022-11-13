@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Libraries/Apps/Tools
-libs_files="libs-xcode libs-ppd libs-steptalk libs-ucsdata"
+libs_files="libs-xcode libs-ppd libs-steptalk libs-ucsdata libs-renaissancve libs-gdl2 libs-gsweb"
 tools_files="tools-charsets tools-xctest"
 apps_files="apps-systempreferences apps-gworkspace apps-gorm apps-projectcenter apps-thematic apps-easydiff"
 

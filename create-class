@@ -71,6 +71,7 @@ cat << !EOF > ${CLASSNAME}.h
 extern "C" {
 #endif
 
+GS_EXPORT_CLASS
 @interface ${CLASSNAME} : ${SUPERCLASS}
 
 @end

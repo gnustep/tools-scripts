@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Libraries/Apps/Tools
-libs_files="libs-xcode libs-ppd libs-steptalk libs-ucsdata libs-renaissancve libs-gdl2 libs-gsweb"
-tools_files="tools-charsets tools-xctest"
-apps_files="apps-systempreferences apps-gworkspace apps-gorm apps-projectcenter apps-thematic apps-easydiff"
+libs_files="libs-xcode libs-ppd libs-steptalk libs-ucsdata libs-renaissance apps-gorm libs-gdl2 libs-gsweb"
+tools_files="tools-charsets"
+apps_files="apps-systempreferences apps-gworkspace apps-projectcenter apps-thematic apps-easydiff"
 
 # OS
 OS=`uname -s`

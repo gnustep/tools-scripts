@@ -1,7 +1,6 @@
 #!/bin/bash
 
 libs_files="libs-xcode"
-tools_files="tools-buildtool"
 apps_files="apps-gorm plugins-themes-WinUXTheme"
 
 # OS
@@ -45,8 +44,8 @@ do_install()
     echo "======= Building libraries."
     install_files ${libs_files}
 
-    echo "======= Building tools."
-    install_files ${tools_files}
+#    echo "======= Building tools."
+#    install_files ${tools_files}
 
     echo "======= Building applications."
     install_files ${apps_files}

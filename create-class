@@ -66,11 +66,13 @@ cat << !EOF > ${CLASSNAME}.h
 #define _${CLASSNAME}_h_INCLUDE
 
 #import <Foundation/${SUPERCLASS}.h>
+#import <GNUstepBase/GSVersionMacros.h>
 
 #if	defined(__cplusplus)
 extern "C" {
 #endif
 
+GS_EXPORT_CLASS
 @interface ${CLASSNAME} : ${SUPERCLASS}
 
 @end
@@ -114,11 +116,13 @@ cat << !EOF > ${CLASSNAME}.h
 #define _${CLASSNAME}_h_INCLUDE
 
 #import "${SUPERCLASS}.h"
+#import <GNUstepBase/GSVersionMacros.h>
 
 #if	defined(__cplusplus)
 extern "C" {
 #endif
 
+GS_EXPORT_CLASS
 @interface ${CLASSNAME} : ${SUPERCLASS}
 
 @end

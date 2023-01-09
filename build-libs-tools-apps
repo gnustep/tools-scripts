@@ -29,6 +29,7 @@ build_and_install()
     fi
     cd ..
     echo "***** Done"
+    echo " "
 }
 
 install_files()

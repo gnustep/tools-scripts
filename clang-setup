@@ -13,16 +13,12 @@ ${SUDO} mkdir -p /usr/GNUstep/Local/Library/Libraries
 ${SUDO} mkdir -p /usr/GNUstep/Local/Library/Headers
 
 # cleanup
-#sudo rm -rf /tmp/libdispatch
-#sudo rm -rf /tmp/libpwq
-#sudo rm -rf /tmp/libkqueue
+sudo rm -rf /tmp/libdispatch
 sudo rm -rf /tmp/libobjc2
    
 # pull
 git clone --recursive https://github.com/gnustep/libobjc2.git
-#git clone https://github.com/mheily/libpwq.git
-# git clone https://github.com/mheily/libkqueue.git
-#git clone https://github.com/nickhutchinson/libdispatch.git
+git clone https://github.com/apple/swift-corelibs-libdispatch.git libdispatch
 
 # set vars
 export CC=${CLANG}
@@ -37,33 +33,14 @@ cmake -DGNUSTEP_INSTALL_TYPE=LOCAL ../
 make -j${CPUS}
 ${SUDO} -E make install && ${SUDO} ldconfig
 
-#echo "======== Installing libpwq..."
-#cd /tmp/libpwq
-#mkdir build
-#cd build
-#cmake ../
-#make -j${CPUS}
-#${SUDO} -E make install && ${SUDO} ldconfig
-
-# echo "======== Installing libkqueue..."
-# cd /tmp/libkqueue
-# mkdir build
-# cd build
-# cmake ../
-# make -j${CPUS}
-# ${SUDO} -E make install
-# if [ $? == 0 ]; then
-#   ${SUDO} ldconfig
-# fi
-
-#echo "======== Installing libdispatch..."
-#cd /tmp/libdispatch
-#rm -rf build
-#mkdir build
-#cd build
-#../configure
-#make -j${CPUS}
-#${SUDO} -E make install && ${SUDO} ldconfig
+echo "======== Installing libdispatch..."
+cd /tmp/libdispatch
+rm -rf build
+mkdir build
+cd build
+cmake ../
+make -j${CPUS}
+${SUDO} -E make install && ${SUDO} ldconfig
 
 echo "Done."
 

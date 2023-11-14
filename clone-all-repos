@@ -13,13 +13,15 @@ do
 	echo "*** Entering directory: ${file}"
         cd $file
         git pull ${GITURL} master
-	echo "*** Done updating...\n"
+	echo "*** Done updating..."
+	echo ""
 	cd ..
     else
 	echo ""
 	echo "*** New checkout for ${GITURL}"
 	git clone --recursive ${GITURL}
-	echo "*** Done checkout...\n"
+	echo "*** Done checkout..."
+	echo ""
     fi
 done
 

@@ -1,15 +1,15 @@
 #!/bin/sh
 
-#export CC=gcc-10
-#export CXX=g++-10
+export CC=gcc-13
+export CXX=g++-13
 
-export CC=clang
-export CXX=clang++
+# export CC=clang
+# export CXX=clang++
 
-ROOT=/ 
-USR_ROOT=${ROOT}usr/local
-GNUSTEP_ROOT=${USR_ROOT}/opt/GNUstep
-export GNUSTEP_CONFIG_FILE=${GNUSTEP_ROOT}/etc/GNUstep.conf
+ROOT=/
+USR_ROOT=${ROOT}/opt
+GNUSTEP_ROOT=${USR_ROOT}/GNUstep
+export GNUSTEP_CONFIG_FILE=${USR_ROOT}/etc/GNUstep.conf
 export GNUSTEP_INSTALL_LD_SO_CONF=no
 # export LDFLAGS="-L/usr/local/opt/bison/lib -shared-libgcc "
 

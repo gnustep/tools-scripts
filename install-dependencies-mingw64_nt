@@ -4,6 +4,8 @@ echo "Install dependencies at MSYS2/MINGW64..."
 echo "0) Source Version Control"
 pacman --noconfirm -S subversion
 pacman --noconfirm -S git
+pacman --noconfirm -S vim
+pacman --noconfirm -S nano
 
 echo "1) gnustep-make dependencies"
 pacman --noconfirm -S tar
@@ -50,9 +52,8 @@ pacman --noconfirm -S mingw-w64-x86_64-gcc-objc
 
 echo "6) tools building libobjc2"
 pacman --noconfirm -S ninja
-pacman --noconfirm -S cmake
-pacman --noconfirm -S nano
 pacman --noconfirm -S asciidoc
+pacman --noconfirm -S mingw-w64-x86_64-lld
 
 echo "Done."
 # echo "Don't forget to run /mingw64_shell.bat to create a session to build in."

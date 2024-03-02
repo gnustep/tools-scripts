@@ -2,63 +2,44 @@
 
 # GNUSTEP_MSYS=${MSYSTEM,,}/../
 
-MSYS_ROOT=/ 
-USR_ROOT=${MSYS_ROOT}usr
-GNUSTEP_ROOT=${USR_ROOT}/GNUstep
-GNUSTEP_DOMAIN_OBJC=Local
+export MSYS_ROOT=/ 
+export USR_ROOT=${MSYS_ROOT}usr
+export GNUSTEP_ROOT=${USR_ROOT}/GNUstep
+export GNUSTEP_DOMAIN_OBJC=Local
+export CC="clang"
+export CXX="clang++"
+export LDFLAGS="-fuse-ld=lld -lstdc++ -lgcc_s"
 
 # echo "Copying patched shlwapi.h header"
 # cp ./tools-scripts/Patched/shlwapi.h /mingw64/x86_64-w64-mingw32/include/shlwapi.h
 
-echo "Installation directory is $GNUSTEP_ROOT"
-echo "Building GNUstep for MSYS64 on Windows"
+echo "** Installation directory is $GNUSTEP_ROOT"
+echo "** Building GNUstep for MSYS64 + clang on Windows"
 echo ""
 
 export PKG_CONFIG_PATH=${USR_ROOT}/local/lib/pkgconfig:${USR_ROOT}/lib/pkgconfig:${PKG_CONFIG_PATH}
 
-# Build libobjc2
-echo "Build libobjc2"
-cd libobjc2
-rm -rf build
-mkdir build
-cd build
-CC=clang CXX=clang++ LDFLAGS="-fuse-ld=lld -lstdc++ -lgcc_s" cmake .. -DOLDABI_COMPAT=ON
-cmake --build . -j${nproc}
-# cmake --install . --prefix=/mingw64
-# cp /mingw64/lib/objc.dll /mingw64/bin
-
-# Manually install libobjc2
-mkdir -p ${GNUSTEP_ROOT}/${GNUSTEP_DOMAIN_OBJC}/Library/Headers
-mkdir -p ${GNUSTEP_ROOT}/${GNUSTEP_DOMAIN_OBJC}/Library/Libraries
-mkdir -p ${GNUSTEP_ROOT}/${GNUSTEP_DOMAIN_OBJC}/Tools
-
-# Copy everything...
-cp -vr ../objc ${GNUSTEP_ROOT}/${GNUSTEP_DOMAIN_OBJC}/Library/Headers
-cp -vr objc.dll ${GNUSTEP_ROOT}/${GNUSTEP_DOMAIN_OBJC}/Library/Libraries/libobjc.dll
-cp -vr objc.lib ${GNUSTEP_ROOT}/${GNUSTEP_DOMAIN_OBJC}/Library/Libraries/libobjc.lib
-cp -vr objc.dll ${GNUSTEP_ROOT}/${GNUSTEP_DOMAIN_OBJC}/Tools/libobjc.dll
-cp -vr objc.lib ${GNUSTEP_ROOT}/${GNUSTEP_DOMAIN_OBJC}/Tools/libobjc.lib
-
-cd ../..
-
 # Build make
-echo "Build make"
+echo ""
+echo "############## Build tools-make"
 cd tools-make
-make 2> /dev/null distclean
-./configure --with-library-combo=ng-gnu-gnu --with-runtime-abi=gnustep-2.0 --with-layout=gnustep --prefix=${GNUSTEP_ROOT} --enable-install-ld-so-conf
+# make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
+./configure --with-library-combo=ng-gnu-gnu --with-runtime-abi=gnustep-2.0 --with-layout=gnustep --prefix=${GNUSTEP_ROOT}
 make install messages=yes -j${nproc}
 source ${GNUSTEP_ROOT}/System/Library/Makefiles/GNUstep.sh
 cd ..
 
 # Build base
-echo "Build base"
+echo ""
+echo "############## Build libs-base"
 cd libs-base
 CFLAGS+=-I/usr/local/include LDFLAGS+=-L/usr/local/lib ./configure --with-installation-domain=SYSTEM --disable-libdispatch --disable-icu --without-unwind
 make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=no -j${nproc}
 cd ..
 
 # Build gui
-echo "Build gui"
+echo ""
+echo "############## Build libs-gui"
 cd libs-gui
 # make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 ./configure
@@ -66,7 +47,8 @@ make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=no -j${nproc}
 cd ..
 
 # Build backend
-echo "Build back"
+echo ""
+echo "############## Build libs-back"
 cd libs-back
 # make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 ./configure --enable-graphics=cairo && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=no -j4
@@ -76,6 +58,6 @@ cd ..
 # defaults write NSGlobalDomain GSBackend libgnustep-cairo
 
 echo ""
-echo "Done."
+echo "** Done."
 
 exit 0

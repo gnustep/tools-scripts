@@ -12,64 +12,45 @@ GNUSTEP_ROOT=${USR_ROOT}/GNUstep
 # echo "Copying patched shlwapi.h header"
 # cp ./tools-scripts/Patched/shlwapi.h /mingw64/x86_64-w64-mingw32/include/shlwapi.h
 
-echo "Installation directory is $GNUSTEP_ROOT"
-echo "Building GNUstep for MSYS64 on Windows"
+echo "** Installation directory is $GNUSTEP_ROOT"
+echo "** Building GNUstep for MSYS64 + gcc on Windows"
 echo ""
-
-#if [ -f ${USR_ROOT}/lib/pkgconfig/fontconfig.pc ]; then
-#    echo "fontconfig.pc file exists..."
-#else
-#    echo "fontconfig.pc does not exist, copying..."
-#    mkdir -p ${USR_ROOT}/lib/pkgconfig
-#    cp ./tools-scripts/fontconfig.pc ${USR_ROOT}/lib/pkgconfig
-#fi
 
 export PKG_CONFIG_PATH=${USR_ROOT}/local/lib/pkgconfig:${USR_ROOT}/lib/pkgconfig:${PKG_CONFIG_PATH}
 
 # Build make
-echo "Build make"
+echo ""
+echo "############## Build tools-make"
 cd tools-make
-make 2> /dev/null distclean
+make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 ./configure --with-library-combo=gnu-gnu-gnu --with-layout=gnustep --prefix=${GNUSTEP_ROOT} --enable-install-ld-so-conf && make install messages=yes
 source ${GNUSTEP_ROOT}/System/Library/Makefiles/GNUstep.sh
 
-# Copy libobjc2
-#echo "Copy libobjc2"
-#cd ../libobjc2
-# copy headers...
-#mkdir -p ${GNUSTEP_ROOT}/System/Library/Headers/objc
-#cp -r objc/* ${GNUSTEP_ROOT}/System/Library/Headers/objc
-#cd build
-#cp libobjc.pc /usr/lib/pkgconfig
-#mkdir -p ${GNUSTEP_ROOT}/System/Library/Libraries
-#cp objc.dll ${GNUSTEP_ROOT}/System/Library/Libraries
-#cp objc.dll ${GNUSTEP_ROOT}/System/Library/Libraries/libobjc.dll
-#cp objc.dll ${GNUSTEP_ROOT}/System/Library/Libraries/libobjc.dll.a
-#cp objc.lib ${GNUSTEP_ROOT}/System/Library/Libraries/libobjc.a
-#cd ..
-
 # Build base
-echo "Build base"
+echo ""
+echo "############## Build libs-base"
 cd ../libs-base
-# make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
+make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 CFLAGS+=-I/usr/local/include LDFLAGS+=-L/usr/local/lib ./configure --with-installation-domain=SYSTEM --disable-libdispatch --disable-icu --without-unwind && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=no -j4
 
 # Build gui
-echo "Build gui"
+echo ""
+echo "############## Build libs-gui"
 cd ../libs-gui
-# make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
+make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 ./configure && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=no -j4
 
 # Build backend
-echo "Build back"
+echo ""
+echo "############## Build libs-back"
 cd ../libs-back
-# make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
+make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 ./configure --enable-graphics=cairo && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=no -j4
 
 # Set default backend
 # defaults write NSGlobalDomain GSBackend libgnustep-cairo
 
 echo ""
-echo "Done."
+echo "** Done."
 
 exit 0

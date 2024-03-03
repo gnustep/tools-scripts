@@ -14,7 +14,7 @@ export LDFLAGS="-fuse-ld=lld -lstdc++ -lgcc_s"
 # cp ./tools-scripts/Patched/shlwapi.h /mingw64/x86_64-w64-mingw32/include/shlwapi.h
 
 echo "** Installation directory is $GNUSTEP_ROOT"
-echo "** Building GNUstep for MSYS64 + clang on Windows"
+echo "** Building GNUstep for MSYS64 + libobjc2 + clang on Windows"
 echo ""
 
 export PKG_CONFIG_PATH=${USR_ROOT}/local/lib/pkgconfig:${USR_ROOT}/lib/pkgconfig:${PKG_CONFIG_PATH}
@@ -23,7 +23,7 @@ export PKG_CONFIG_PATH=${USR_ROOT}/local/lib/pkgconfig:${USR_ROOT}/lib/pkgconfig
 echo ""
 echo "############## Build tools-make"
 cd tools-make
-# make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
+make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 ./configure --with-library-combo=ng-gnu-gnu --with-runtime-abi=gnustep-2.0 --with-layout=gnustep --prefix=${GNUSTEP_ROOT}
 make install messages=yes -j${nproc}
 source ${GNUSTEP_ROOT}/System/Library/Makefiles/GNUstep.sh
@@ -33,6 +33,7 @@ cd ..
 echo ""
 echo "############## Build libs-base"
 cd libs-base
+make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 CFLAGS+=-I/usr/local/include LDFLAGS+=-L/usr/local/lib ./configure --with-installation-domain=SYSTEM --disable-libdispatch --disable-icu --without-unwind
 make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=no -j${nproc}
 cd ..
@@ -41,7 +42,7 @@ cd ..
 echo ""
 echo "############## Build libs-gui"
 cd libs-gui
-# make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
+make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 ./configure
 make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=no -j${nproc}
 cd ..
@@ -50,7 +51,7 @@ cd ..
 echo ""
 echo "############## Build libs-back"
 cd libs-back
-# make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
+make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 ./configure --enable-graphics=cairo && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=no -j4
 cd ..
 

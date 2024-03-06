@@ -1,8 +1,7 @@
 #!/bin/sh
 echo "Setting up MSVC/GNUstep Environment"
 . /c/GNUstep/x64/Debug/share/GNUstep/Makefiles/GNUstep.sh
-. /c/src/tools-windows-msvc/scripts/setup_path.sh
+export PATH=/c/Program\ Files/Microsoft\ Visual\ Studio/2022/Community/VC/Tools/Llvm/x64/bin:${PATH}
 echo "Done"
 which clang
-which cmake
-
+# which cmake

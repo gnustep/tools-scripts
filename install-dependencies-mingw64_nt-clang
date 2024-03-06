@@ -23,9 +23,6 @@ echo "2) gnustep-base dependencies"
 pacman --noconfirm -S mingw-w64-x86_64-libxml2
 pacman --noconfirm -S mingw-w64-x86_64-gnutls
 pacman --noconfirm -S mingw-w64-x86_64-libxslt
-# pacman --noconfirm -S mingw-w64-x86_64-libobjc2
-pacman --noconfirm -S mingw-w64-x86_64-autotools
-# pacman --noconfirm -S mingw-w64-clang
 
 echo "3) gnustep-gui dependencies"
 pacman --noconfirm -S mingw-w64-x86_64-libjpeg-turbo
@@ -41,10 +38,11 @@ pacman --noconfirm -S mingw-w64-x86_64-windows-default-manifest
 echo "4) gnustep-back dependencies"
 pacman --noconfirm -S mingw-w64-x86_64-cairo
 
-echo "5) compiler, also install older binutils to avoid linking issue"
+echo "5) compiler, also install libobjc2 from msys2 repo, get lld and autotools"
 pacman --noconfirm -S mingw-w64-x86_64-clang
-pacman --noconfirm -S mingw-w64-x86_64-gcc
-pacman --noconfirm -S mingw-w64-x86_64-gcc-objc
+pacman --noconfirm -S mingw-w64-x86_64-lld
+pacman --noconfirm -S mingw-w64-x86_64-libobjc2
+pacman --noconfirm -S mingw-w64-x86_64-autotools
 
 #
 # IMPORTANT: if you are using the GNUstep release or latest tarballs

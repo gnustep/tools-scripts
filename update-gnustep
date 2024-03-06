@@ -7,7 +7,7 @@ if [ "${COMPILER}" != "gcc" ]; then
 #    CXX=`echo ${COMPILER} | sed 's/clang/clang++/g`
     ./tools-scripts/clang-build "${COMPILER}" "${CXX}"
 else
-    ./tools-scripts/compile-all "gcc" "g++"
+    ./tools-scripts/compile-all "/usr/GNUstep" "gcc" "g++"
 fi
 make_services
 

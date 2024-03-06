@@ -45,6 +45,9 @@ if [ "$UNAME" != "MINGW32_NT" ] ; then
   fi  
 fi
 
+# Get architecture
+ARCH=`uname -m`
+
 # If we are installing into home, then we do not need root...
 if 
    echo $prefix | grep "^/home/"
@@ -93,10 +96,10 @@ cd tools-make
 # make distclean
 if [ "$CC" == "gcc" ]; then
     echo "==== BUILDING WITH GCC"
-    echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --prefix=${prefix} --with-layout=gnustep $make_flags"
+    echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --prefix=${prefix} --with-library-combo=gnu-gnu-gnu --with-layout=gnustep $make_flags"
 
     echo "===="
-    CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --prefix=${prefix} --with-layout=gnustep ${make_flags}
+    LDFLAGS=-fuse-ld=gold CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --prefix=${prefix} --with-library-combo=gnu-gnu-gnu --with-layout=gnustep ${make_flags}
 else
     echo "==== BUILDING WITH CLANG"
     unset CC

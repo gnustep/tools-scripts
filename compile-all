@@ -99,7 +99,7 @@ if [ "$CC" == "gcc" ]; then
     echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --prefix=${prefix} --with-library-combo=gnu-gnu-gnu --with-layout=gnustep $make_flags"
 
     echo "===="
-    LDFLAGS=-fuse-ld=gold CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --prefix=${prefix} --with-library-combo=gnu-gnu-gnu --with-layout=gnustep ${make_flags}
+    CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --prefix=${prefix} --with-library-combo=gnu-gnu-gnu --with-layout=gnustep ${make_flags}
 else
     echo "==== BUILDING WITH CLANG"
     unset CC

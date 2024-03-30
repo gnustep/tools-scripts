@@ -2,46 +2,46 @@
 echo "Install dependencies at MSYS2/MINGW64..."
 
 echo "0) Source Version Control"
-pacman -S subversion
-pacman -S git
+pacman -S --noconfirm subversion
+pacman -S --noconfirm git
 
 echo "1) gnustep-make"
-pacman -S tar
-pacman -S unzip
-pacman -S make
-pacman -S autogen automake autoconf autoconf2.13 libtool mingw-w64-x86_64-libtool
-pacman -S mingw-w64-x86_64-toolchain
-pacman -S mingw-w64-x86_64-pkg-config
+pacman -S --noconfirm tar
+pacman -S --noconfirm unzip
+pacman -S --noconfirm make
+pacman -S --noconfirm autogen automake autoconf autoconf2.13 libtool mingw-w64-x86_64-libtool
+pacman -S --noconfirm mingw-w64-x86_64-toolchain
+pacman -S --noconfirm mingw-w64-x86_64-pkg-config
 
 echo "2) gnustep-base"
-#pacman -S mingw-w64-x86_64-libffi
-pacman -S mingw-w64-x86_64-libxml2
-pacman -S mingw-w64-x86_64-gnutls
-pacman -S mingw-w64-x86_64-libxslt
+#pacman -S --noconfirm mingw-w64-x86_64-libffi
+pacman -S --noconfirm mingw-w64-x86_64-libxml2
+pacman -S --noconfirm mingw-w64-x86_64-gnutls
+pacman -S --noconfirm mingw-w64-x86_64-libxslt
 
 echo "3) gnustep-gui"
-pacman -S mingw-w64-x86_64-libjpeg-turbo
-pacman -S mingw-w64-x86_64-libtiff
-pacman -S mingw-w64-x86_64-giflib
-pacman -S mingw-w64-x86_64-icu
-pacman -S mingw-w64-x86_64-libsndfile
-pacman -S mingw-w64-x86_64-aspell
-pacman -S mingw-w64-x86_64-lcms mingw-w64-x86_64-lcms2
-pacman -S mingw-w64-x86_64-sqlite3
+pacman -S --noconfirm mingw-w64-x86_64-libjpeg-turbo
+pacman -S --noconfirm mingw-w64-x86_64-libtiff
+pacman -S --noconfirm mingw-w64-x86_64-giflib
+pacman -S --noconfirm mingw-w64-x86_64-icu
+pacman -S --noconfirm mingw-w64-x86_64-libsndfile
+pacman -S --noconfirm mingw-w64-x86_64-aspell
+pacman -S --noconfirm mingw-w64-x86_64-lcms mingw-w64-x86_64-lcms2
+pacman -S --noconfirm mingw-w64-x86_64-sqlite3
 
-pacman -S asciidoc
-pacman -S mingw-w64-x86_64-windows-default-manifest 
+pacman -S --noconfirm asciidoc
+pacman -S --noconfirm mingw-w64-x86_64-windows-default-manifest 
 
 echo "4) gnustep-back"
-pacman -S mingw-w64-x86_64-cairo
+pacman -S --noconfirm mingw-w64-x86_64-cairo
 
 echo "5) compiler"
-pacman -S mingw-w64-x86_64-clang
-pacman -S mingw-w64-x86_64-gcc
-pacman -S mingw-w64-x86_64-gcc-objc
+pacman -S --noconfirm mingw-w64-x86_64-clang
+pacman -S --noconfirm mingw-w64-x86_64-gcc
+pacman -S --noconfirm mingw-w64-x86_64-gcc-objc
 
 echo "6) ninja"
-pacman -S ninja
+pacman -S --noconfirm ninja
 
 echo "Done."
 echo "Don't forget to run /mingw64_shell.bat to create a session to build in."

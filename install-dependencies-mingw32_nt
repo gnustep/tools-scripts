@@ -2,48 +2,48 @@
 echo "Install dependencies at MSYS2/MINGW32..."
 
 echo "0) Source Version Control"
-pacman -S subversion
-pacman -S git
+pacman -S --noconfirm subversion
+pacman -S --noconfirm git
 
 echo "1) gnustep-make"
-pacman -S tar
-pacman -S unzip
-pacman -S make 
-pacman -S autogen automake autoconf autoconf2.13 libtool mingw-w64-i686-libtool
-pacman -S mingw-w64-i686-toolchain
-pacman -S mingw-w64-i686-pkg-config
+pacman -S --noconfirm tar
+pacman -S --noconfirm unzip
+pacman -S --noconfirm make 
+pacman -S --noconfirm autogen automake autoconf autoconf2.13 libtool mingw-w64-i686-libtool
+pacman -S --noconfirm mingw-w64-i686-toolchain
+pacman -S --noconfirm mingw-w64-i686-pkg-config
 
 echo "2) gnustep-base"
-#pacman -S mingw-w64-i686-libffi
-pacman -S mingw-w64-i686-libxml2
-pacman -S mingw-w64-i686-gnutls
-pacman -S mingw-w64-i686-libxslt
+#pacman -S --noconfirm mingw-w64-i686-libffi
+pacman -S --noconfirm mingw-w64-i686-libxml2
+pacman -S --noconfirm mingw-w64-i686-gnutls
+pacman -S --noconfirm mingw-w64-i686-libxslt
 
 echo "3) gnustep-gui"
-pacman -S mingw-w64-i686-libjpeg-turbo
-pacman -S mingw-w64-i686-libtiff
-pacman -S mingw-w64-i686-giflib
-pacman -S mingw-w64-i686-icu
-pacman -S mingw-w64-i686-libsndfile
-pacman -S mingw-w64-i686-aspell
-pacman -S mingw-w64-i686-lcms mingw-w64-i686-lcms2
-pacman -S mingw-w64-i686-sqlite3
-pacman -S mingw-w64-x86_64-imagemagick
+pacman -S --noconfirm mingw-w64-i686-libjpeg-turbo
+pacman -S --noconfirm mingw-w64-i686-libtiff
+pacman -S --noconfirm mingw-w64-i686-giflib
+pacman -S --noconfirm mingw-w64-i686-icu
+pacman -S --noconfirm mingw-w64-i686-libsndfile
+pacman -S --noconfirm mingw-w64-i686-aspell
+pacman -S --noconfirm mingw-w64-i686-lcms mingw-w64-i686-lcms2
+pacman -S --noconfirm mingw-w64-i686-sqlite3
+pacman -S --noconfirm mingw-w64-x86_64-imagemagick
 
-pacman -S asciidoc
-pacman -S mingw-w64-i686-windows-default-manifest 
+pacman -S --noconfirm asciidoc
+pacman -S --noconfirm mingw-w64-i686-windows-default-manifest 
 
 echo "4) gnustep-back"
-pacman -S mingw-w64-i686-cairo
+pacman -S --noconfirm mingw-w64-i686-cairo
 
 echo "5) clang"
-pacman -S mingw-w64-x86_64-clang
+pacman -S --noconfirm mingw-w64-x86_64-clang
 
 echo "6) ninja"
-pacman -S ninja
+pacman -S --noconfirm ninja
 
 echo "7) ghostscript for printing support"
-pacman -S mingw-w64-x86_64-ghostscript
+pacman -S --noconfirm mingw-w64-x86_64-ghostscript
 
 echo "Done."
 echo "Don't forget to run /mingw32_shell.bat to create a session to build in."

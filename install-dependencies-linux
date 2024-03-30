@@ -7,40 +7,41 @@ install_debian()
     echo "-------"
 
     sudo apt update
+    sudo apt upgrade
 
-    sudo apt install -y gobjc 
-    sudo apt install -y gobjc++
-    sudo apt install -y clang
-    sudo apt install -y libjpeg-dev 
-    sudo apt install -y libtiff-dev 
-    sudo apt install -y libpng-dev 
-    sudo apt install -y libicns-dev
-    sudo apt install -y libmagickcore-dev
-    sudo apt install -y libxml2-dev 
-    sudo apt install -y libxslt-dev 
-    sudo apt install -y libgnutls-dev
-    sudo apt install -y libffi-dev 
-    sudo apt install -y libicu-dev 
-    sudo apt install -y libcairo2-dev
-    sudo apt install -y libxft-dev
-    sudo apt install -y libavahi-client-dev
-    sudo apt install -y flite-dev
-    sudo apt install -y libxt-dev
-    sudo apt install -y libportaudio-dev
-    sudo apt install -y wmaker
-    sudo apt install -y portaudio19-dev
-    sudo apt install -y make
-    sudo apt install -y cmake
-    sudo apt install -y gnutls-dev
-    sudo apt install -y libblocksruntime-dev
-    sudo apt install -y pocketsphinx
-    sudo apt install -y pocketsphinx-en-us
-    sudo apt install -y libpocketsphinx-dev
-    sudo apt install -y libsphinxbase-dev
-    sudo apt install -y sphinxbase-utils
-    sudo apt install -y sphinxtrain
-    sudo apt install -y libssl-dev
-    sudo apt install -y freeglut3-dev
+    sudo apt --yes install gobjc 
+    sudo apt --yes install gobjc++
+    sudo apt --yes install clang
+    sudo apt --yes install libjpeg-dev 
+    sudo apt --yes install libtiff-dev 
+    sudo apt --yes install libpng-dev 
+    sudo apt --yes install libicns-dev
+    sudo apt --yes install libmagickcore-dev
+    sudo apt --yes install libxml2-dev 
+    sudo apt --yes install libxslt-dev 
+    sudo apt --yes install libgnutls-dev
+    sudo apt --yes install libffi-dev 
+    sudo apt --yes install libicu-dev 
+    sudo apt --yes install libcairo2-dev
+    sudo apt --yes install libxft-dev
+    sudo apt --yes install libavahi-client-dev
+    sudo apt --yes install flite-dev
+    sudo apt --yes install libxt-dev
+    sudo apt --yes install libportaudio-dev
+    sudo apt --yes install wmaker
+    sudo apt --yes install portaudio19-dev
+    sudo apt --yes install make
+    sudo apt --yes install cmake
+    sudo apt --yes install gnutls-dev
+    sudo apt --yes install libblocksruntime-dev
+    sudo apt --yes install pocketsphinx
+    sudo apt --yes install pocketsphinx-en-us
+    sudo apt --yes install libpocketsphinx-dev
+    sudo apt --yes install libsphinxbase-dev
+    sudo apt --yes install sphinxbase-utils
+    sudo apt --yes install sphinxtrain
+    sudo apt --yes install libssl-dev
+    sudo apt --yes install freeglut3-dev
     
     echo "-------"
     echo "Done..."

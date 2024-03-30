@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PREFIX="https://github.com/gnustep/"
-FILES="tools-make libs-back libs-gui libobjc2 libs-base libs-corebase plugins-themes-WinUXTheme tools-scripts tools-buildtool libs-xcode apps-gorm plugins-session"
+FILES="tools-make libs-back libs-gui libobjc2 libs-base libs-corebase plugins-themes-WinUXTheme tools-scripts libs-xcode apps-gorm plugins-session"
 
 for file in ${FILES}
 do

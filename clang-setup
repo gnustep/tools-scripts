@@ -14,8 +14,8 @@ ${SUDO} mkdir -p /usr/GNUstep/Local/Library/Libraries
 ${SUDO} mkdir -p /usr/GNUstep/Local/Library/Headers
 
 # cleanup
-sudo rm -rf /tmp/libdispatch
-sudo rm -rf /tmp/libobjc2
+${SUDO} rm -rf /tmp/libdispatch
+${SUDO} rm -rf /tmp/libobjc2
 
 # pull
 git clone --recursive https://github.com/gnustep/libobjc2.git
@@ -34,6 +34,7 @@ make -j${CPUS}
 ${SUDO} -E make install && ${SUDO} ldconfig
 
 if [ $ARCH != arm7l ]; then
+cd /tmp
 git clone https://github.com/apple/swift-corelibs-libdispatch.git libdispatch
 echo "======== Installing libdispatch..."
 cd /tmp/libdispatch

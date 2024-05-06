@@ -68,7 +68,7 @@ cat << !EOF > ${CLASSNAME}.h
 #define _${CLASSNAME}_h_GNUSTEP_GUI_INCLUDE
 
 #import <Foundation/${SUPERCLASS}.h>
-#import <AppKit/AppKitDefines.h>
+#import "AppKit/AppKitDefines.h"
 
 #if OS_API_VERSION(MAC_OS_X_VERSION_${VERSION}, GS_API_LATEST)
 

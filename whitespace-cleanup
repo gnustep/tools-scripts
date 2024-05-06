@@ -1,0 +1,4 @@
+#!/bin/sh
+
+FILENAME=$1
+emacs -batch ${FILENAME} --eval '(whitespace-cleanup)' -f save-buffer

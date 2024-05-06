@@ -1,0 +1,12 @@
+#!/bin/sh
+
+COMMAND=$1
+
+FILES=`git diff | grep "+++" | sed 's/+++ b\///'`
+
+for file in ${FILES}
+do
+	${COMMAND} ${file}
+done
+
+exit 0

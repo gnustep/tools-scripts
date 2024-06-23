@@ -1,11 +1,16 @@
 #!/bin/sh
+# shellcheck disable=SC2016
 
 CLANG=${1:-clang}
 CLANGPP=${2:-clang++}
+linker=${3:-ld.gold}
+
+LD=$(which "${linker}")
+export LDFLAGS="-fuse-ld=$LD"
 
 SUDO='sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH'
 CPUS="1"
-ARCH=`uname -m`
+ARCH=$(uname -m)
 
 cd /tmp
 
@@ -21,15 +26,20 @@ ${SUDO} rm -rf /tmp/libobjc2
 git clone --recursive https://github.com/gnustep/libobjc2.git
 
 # set vars
-export CC=${CLANG}
-export CXX=${CLANGPP}
+export CC="${CLANG}"
+export CXX="${CLANGPP}"
 
 # build and install
 echo "======== Installing libobjc2..."
 cd /tmp/libobjc2
 mkdir build
 cd build
-cmake -DGNUSTEP_INSTALL_TYPE=LOCAL ../
+cmake -DGNUSTEP_INSTALL_TYPE=SYSTEM ../ \
+  -DCMAKE_C_COMPILER="${CC}" \
+  -DCMAKE_CXX_COMPILER="${CXX}" \
+  -DCMAKE_ASM_COMPILER="${CC}" \
+  -DCMAKE_LINKER="${LD}" \
+  -DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS}"
 make -j${CPUS}
 ${SUDO} -E make install && ${SUDO} ldconfig
 
@@ -41,7 +51,20 @@ cd /tmp/libdispatch
 rm -rf build
 mkdir build
 cd build
-cmake ../
+cmake ../ \
+  -DCMAKE_C_COMPILER="${CC}" \
+  -DCMAKE_CXX_COMPILER="${CXX}" \
+  -DCMAKE_ASM_COMPILER="${CC}" \
+  -DCMAKE_LINKER="${LD}" \
+  -DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS}" \
+  -DCMAKE_INSTALL_BINDIR="$(gnustep-config --variable=GNUSTEP_SYSTEM_TOOLS)" \
+  -DCMAKE_INSTALL_LIBDIR="$(gnustep-config --variable=GNUSTEP_SYSTEM_LIBRARIES)" \
+  -DCMAKE_INSTALL_INCLUDEDIR="$(gnustep-config --variable=GNUSTEP_SYSTEM_HEADERS)" \
+  -DCMAKE_INSTALL_MANDIR="$(gnustep-config --variable=GNUSTEP_SYSTEM_DOC_MAN)" \
+  -DCMAKE_INSTALL_INFODIR="$(gnustep-config --variable=GNUSTEP_SYSTEM_DOC_INFO)" \
+  -DCMAKE_INSTALL_DOCDIR="$(gnustep-config --variable=GNUSTEP_SYSTEM_DOC)" \
+  -DCMAKE_INSTALL_DATAROOTDIR="$(gnustep-config --variable=GNUSTEP_SYSTEM_LIBRARY)" \
+  -DTESTS=OFF
 make -j${CPUS}
 ${SUDO} -E make install && ${SUDO} ldconfig
 fi

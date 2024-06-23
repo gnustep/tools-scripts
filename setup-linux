@@ -13,8 +13,9 @@ else
 fi
 
 if [ ! -e /etc/sudoers.d/${USER} ]; then
-   echo "Add ${USER} to sudoers"
+   echo "Adding ${USER} to sudoers..."
+   echo "Please enter the root user's password."
    su -c 'echo "${USER}    ALL=(ALL:ALL) ALL" > /etc/sudoers.d/${USER}'
 else
-   echo "User is already a member of sudo users."
+   echo "${USER} is already a member of sudo users."
 fi

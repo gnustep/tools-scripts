@@ -35,6 +35,11 @@ if [ "$3" != "" ]; then
    cxxcompiler="$3"
 fi
 
+if [ "$4" != "" ]; then
+  linker=$4
+fi
+
+
 # Check if we are compiling under windows...
 UNAME=`uname | cut -d'-' -f1`
 if [ "$UNAME" != "MINGW32_NT" ] ; then
@@ -75,9 +80,38 @@ else
   export CXX=$cxxcompiler
 fi
 
+if [[ "$CC" == gcc* ]]; then
+  USING_GCC=true
+else
+  USING_GCC=false
+fi
+
+if [ "$4" == "" ]; then
+  if ! $USING_GCC; then
+    linker=ld.gold
+  fi
+else
+  LD=$(which "$linker")
+  if $USING_GCC; then
+    # We must create a directory and symlink the linker into there.
+    mkdir temp_linker_dir
+    cd temp_linker_dir
+      ln -s "$LD" ./ld
+    cd ..
+    export LDFLAGS="$LDFLAGS -B$(realpath temp_linker_dir)"
+  else
+    # Clang allows constructions such as -fuse-ld=/usr/bin/ld.lld-18
+    export LDFLAGS="$LDFLAGS -fuse-ld=$LD"
+  fi
+fi
 echo "==== compile-all"
 echo "Using compiler $CC"
 echo "Using c++ compiler $CXX"
+if [ "$4" == "" ]; then
+  echo "Using default linker"
+else
+  echo "Using linker $LD"
+fi
 echo "===="
 
 # Flags for windows build.
@@ -86,7 +120,7 @@ if [ "$UNAME" == "MINGW32_NT" ] ; then
 fi
 
 # If we are building with clang, then add this to cc_flags
-if [ "$CC" != "gcc" ] ; then
+if ! $USING_GCC; then
     export cc_flags="-fblocks -fobjc-nonfragile-abi ${cc_flags}"
 fi
 
@@ -94,7 +128,7 @@ fi
 echo "Installing GNUstep into ${prefix}"
 cd tools-make
 # make distclean
-if [ "$CC" == "gcc" ]; then
+if $USING_GCC; then
     echo "==== BUILDING WITH GCC"
     echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --prefix=${prefix} --with-library-combo=gnu-gnu-gnu --with-layout=gnustep $make_flags"
 
@@ -109,8 +143,9 @@ else
     export CC=${compiler}
     export CXX=${cxxcompiler}
     # export LDFLAGS=-ldispatch
-    export LDFLAGS=-fuse-ld=gold -ldispatch
-    echo "CCFLAGS=${cc_flags} CXX=${CXX} CC=${CC} ./configure --prefix=${prefix} --with-library-combo=ng-gnu-gnu --enable-objc-arc --enable-native-objc-exceptions --with-layout=gnustep ${make_flags}"
+    export LDFLAGS="$LDFLAGS -ldispatch"
+    echo "LDFLAGS=$LDFLAGS"
+    echo "Build command: CCFLAGS=${cc_flags} CXX=${CXX} CC=${CC} ./configure --prefix=${prefix} --with-library-combo=ng-gnu-gnu --enable-objc-arc --enable-native-objc-exceptions --with-layout=gnustep ${make_flags}"
     CCFLAGS=${cc_flags} CXX=${CXX} CC=${CC} ./configure --prefix=${prefix} --with-library-combo=ng-gnu-gnu --enable-objc-arc --enable-native-objc-exceptions --with-layout=gnustep ${make_flags}
 fi
 
@@ -125,7 +160,7 @@ fi
 . $prefix/System/Library/Makefiles/GNUstep.sh
 
 # Setup clang specific libraries...
-if [ "$CC" != "gcc" ]; then
+if ! $USING_GCC; then
     ${scriptsdir}/clang-setup "$CLANG" "$CLANGPP"
 fi
 
@@ -134,7 +169,7 @@ echo "======== Installing Base..."
 cd ../libs-base
 make distclean
 . $prefix/System/Library/Makefiles/GNUstep.sh
-$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes
+$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes || exit 1
 if [ "true" == "$NEEDSROOT" ]; then
 ${SUDO} -u root ./install.sh $prefix $MAKE
 else

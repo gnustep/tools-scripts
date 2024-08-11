@@ -28,7 +28,7 @@ echo "==="
 
 # Build libjobc2
 echo "======== Build libobjc2"
-cd ../libobjc2 && mkdir Build && cd Build && cmake .. \
+cd ../libobjc2 && [ -d Build ] && rm -rf Build && mkdir Build && cd Build && cmake .. \
 -DGNUSTEP_INSTALL_TYPE=SYSTEM \
 -DCMAKE_BUILD_TYPE=Release \
 -DCMAKE_C_COMPILER=clang \

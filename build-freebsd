@@ -26,6 +26,18 @@ ${SUDO} -u root ${MAKE} install
 . ${GNUSTEP_ROOT}/System/Library/Makefiles/GNUstep.sh
 echo "==="
 
+# Build libjobc2
+echo "======== Build libobjc2"
+cd ../libobjc2
+mkdir Build
+cd Build && pwd && ls && cmake .. \
+-DGNUSTEP_INSTALL_TYPE=SYSTEM \
+-DCMAKE_BUILD_TYPE=Release \
+-DCMAKE_C_COMPILER=clang \
+-DCMAKE_CXX_COMPILER=clang++; \
+${SUDO} -u root ./install.sh ${GNUSTEP_ROOT} ${MAKE}
+echo "==="
+
 # Build base
 echo "======== Build base"
 cd ../libs-base

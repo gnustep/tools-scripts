@@ -28,19 +28,17 @@ echo "==="
 
 # Build libjobc2
 echo "======== Build libobjc2"
-cd ../libobjc2
-mkdir Build
-cd Build && pwd && ls && cmake .. \
+cd ../libobjc2 && mkdir Build && cd Build && cmake .. \
 -DGNUSTEP_INSTALL_TYPE=SYSTEM \
 -DCMAKE_BUILD_TYPE=Release \
 -DCMAKE_C_COMPILER=clang \
 -DCMAKE_CXX_COMPILER=clang++; \
-${SUDO} -u root ./install.sh ${GNUSTEP_ROOT} ${MAKE}
+${SUDO} -u root ${MAKE} install
 echo "==="
 
 # Build base
 echo "======== Build base"
-cd ../libs-base
+cd ../../libs-base
 ./configure --with-installation-domain=SYSTEM --disable-icu --disable-invocations
 LDFLAGS=${LDFLAGS} CC=${CC} CXX=${CXX} ${MAKE} debug=yes messages=no -j4
 ${SUDO} -u root ./install.sh ${GNUSTEP_ROOT} ${MAKE}

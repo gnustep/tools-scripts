@@ -4,22 +4,21 @@ echo "Installing FreeBSD dependencies"
 echo "NOTE: This file assumes that Xorg is installed and that sudo is installed."
 echo "      Also, the user must have sudo access to properly execute this script."
 echo "Installing..."
-sudo pkg install libobjc2
-sudo pkg install llvm
-sudo pkg install gmake
-sudo pkg install cmake
-sudo pkg install windowmaker
-sudo pkg install openjpeg
-sudo pkg install tiff
-sudo pkg install png
-sudo pkg install libxml2
-sudo pkg install libxslt
-sudo pkg install gnutls
-sudo pkg install libffi
-sudo pkg install icu
-sudo pkg install cairo
-sudo pkg install avahi
-sudo pkg install portaudio
-sudo pkg install flite
+sudo pkg install -y llvm
+sudo pkg install -y gmake
+sudo pkg install -y cmake
+sudo pkg install -y windowmaker
+sudo pkg install -y openjpeg
+sudo pkg install -y tiff
+sudo pkg install -y png
+sudo pkg install -y libxml2
+sudo pkg install -y libxslt
+sudo pkg install -y gnutls
+sudo pkg install -y libffi
+sudo pkg install -y icu
+sudo pkg install -y cairo
+sudo pkg install -y avahi
+sudo pkg install -y portaudio
+sudo pkg install -y flite
 echo "Done..."
 exit 0

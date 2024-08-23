@@ -117,16 +117,12 @@ install_arch()
     sudo pacman -S --needed --noconfirm flite
     sudo pacman -S --needed --noconfirm libxt
     sudo pacman -S --needed --noconfirm portaudio
-    sudo pacman -S --needed --noconfirm windowmaker
     sudo pacman -S --needed --noconfirm make
     sudo pacman -S --needed --noconfirm cmake
     sudo pacman -S --needed --noconfirm openssl
-    sudo pacman -S --needed --noconfirm pocketsphinx
-    sudo pacman -S --needed --noconfirm sphinxbase
     sudo pacman -S --needed --noconfirm freeglut
     sudo pacman -S --needed --noconfirm giflib
     sudo pacman -S --needed --noconfirm libao
-    sudo pacman -S --needed --noconfirm cups
 
     echo "-------"
     echo "Done..."

@@ -124,6 +124,9 @@ install_arch()
     sudo pacman -S --needed --noconfirm pocketsphinx
     sudo pacman -S --needed --noconfirm sphinxbase
     sudo pacman -S --needed --noconfirm freeglut
+    sudo pacman -S --needed --noconfirm giflib
+    sudo pacman -S --needed --noconfirm libao
+    sudo pacman -S --needed --noconfirm cups
 
     echo "-------"
     echo "Done..."

@@ -92,6 +92,43 @@ install_redhat()
     echo "Done..."
 }
 
+install_arch()
+{
+    echo "Installing Arch Linux dependencies"
+    echo "-------"
+
+    sudo pacman -Syu --noconfirm
+
+    sudo pacman -S --needed --noconfirm gcc-objc
+    sudo pacman -S --needed --noconfirm clang
+    sudo pacman -S --needed --noconfirm libjpeg-turbo
+    sudo pacman -S --needed --noconfirm libtiff
+    sudo pacman -S --needed --noconfirm libpng
+    sudo pacman -S --needed --noconfirm libicns
+    sudo pacman -S --needed --noconfirm imagemagick
+    sudo pacman -S --needed --noconfirm libxml2
+    sudo pacman -S --needed --noconfirm libxslt
+    sudo pacman -S --needed --noconfirm gnutls
+    sudo pacman -S --needed --noconfirm libffi
+    sudo pacman -S --needed --noconfirm icu
+    sudo pacman -S --needed --noconfirm cairo
+    sudo pacman -S --needed --noconfirm libxft
+    sudo pacman -S --needed --noconfirm avahi
+    sudo pacman -S --needed --noconfirm flite
+    sudo pacman -S --needed --noconfirm libxt
+    sudo pacman -S --needed --noconfirm portaudio
+    sudo pacman -S --needed --noconfirm windowmaker
+    sudo pacman -S --needed --noconfirm make
+    sudo pacman -S --needed --noconfirm cmake
+    sudo pacman -S --needed --noconfirm openssl
+    sudo pacman -S --needed --noconfirm pocketsphinx
+    sudo pacman -S --needed --noconfirm sphinxbase
+    sudo pacman -S --needed --noconfirm freeglut
+
+    echo "-------"
+    echo "Done..."
+}
+
 get_system()
 {
     if [ -e /etc/os-release ]; then
@@ -109,9 +146,14 @@ else
     which yum
     if [ "$?" == "0" ]; then
 	install_redhat
-    else    
-	echo "Please report this to bugs-gnustep@gnu.org."
-        echo "Your linux os ${ID} is currently unsupported."
+    else
+        which pacman > /dev/null
+        if [ "$?" == "0" ]; then
+        install_arch
+        else    
+	        echo "Please report this to bugs-gnustep@gnu.org."
+            echo "Your linux os ${ID} is currently unsupported."
+        fi
     fi
 fi
 

@@ -42,6 +42,8 @@ install_debian()
     sudo apt --yes install sphinxtrain
     sudo apt --yes install libssl-dev
     sudo apt --yes install freeglut3-dev
+    sudo apt --yes install libxwayland-dev
+    sudo apt --yes install libxkbcommon-dev
     
     echo "-------"
     echo "Done..."

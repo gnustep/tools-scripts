@@ -8,15 +8,15 @@ linker=${3:-ld.gold}
 LD=$(which "${linker}")
 export LDFLAGS="-fuse-ld=$LD"
 
+# Ensure /usr/local/lib is in the ldconfig path
+if [ ! -f /etc/ld.so.conf.d/libc.conf ]; then
+    echo -e "# libc default configuration\n/usr/local/lib" | sudo tee /etc/ld.so.conf.d/libc.conf > /dev/null
+    sudo ldconfig
+fi
+
 SUDO='sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH'
 CPUS="1"
 ARCH=$(uname -m)
-
-# Ensure /usr/local/lib is in the ldconfig path
-if [ ! -f /etc/ld.so.conf.d/libc.conf ]; then
-    echo -e "# libc default configuration\n/usr/local/lib" | ${SUDO} tee /etc/ld.so.conf.d/libc.conf > /dev/null
-    ${SUDO} ldconfig
-fi
 
 cd /tmp
 

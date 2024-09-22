@@ -161,6 +161,12 @@ fi
 
 # Setup clang specific libraries...
 if ! $USING_GCC; then
+    # Ensure /usr/local/lib is in the ldconfig path before running clang-setup
+    if [ ! -f /etc/ld.so.conf.d/libc.conf ]; then
+      echo -e "# libc default configuration\n/usr/local/lib" | sudo tee /etc/ld.so.conf.d/libc.conf > /dev/null
+      sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ldconfig
+      sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ldconfig
+    fi
     ${scriptsdir}/clang-setup "$CLANG" "$CLANGPP"
 fi
 

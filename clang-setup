@@ -13,7 +13,7 @@ CPUS="1"
 ARCH=$(uname -m)
 
 # Add /usr/local/lib to ldconfig paths if libc.conf doesn't exist
-[ ! -f /etc/ld.so.conf.d/libc.conf ] && echo -e "# libc default configuration\n/usr/local/lib" | sudo tee /etc/ld.so.conf.d/libc.conf > /dev/null
+[ ! -f /etc/ld.so.conf.d/libc.conf ] && echo -e "# libc default configuration\n/usr/local/lib" | ${SUDO} tee /etc/ld.so.conf.d/libc.conf > /dev/null && ${SUDO} ldconfig
 
 cd /tmp
 

@@ -12,6 +12,12 @@ SUDO='sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH'
 CPUS="1"
 ARCH=$(uname -m)
 
+# Ensure /usr/local/lib is in the ldconfig path
+if [ ! -f /etc/ld.so.conf.d/libc.conf ]; then
+    echo -e "# libc default configuration\n/usr/local/lib" | ${SUDO} tee /etc/ld.so.conf.d/libc.conf > /dev/null
+    ${SUDO} ldconfig
+fi
+
 cd /tmp
 
 # pre-create some directories
@@ -45,7 +51,6 @@ ${SUDO} -E make install && ${SUDO} ldconfig
 
 if [ $ARCH != arm7l ]; then
 # Add /usr/local/lib to ldconfig paths if libc.conf doesn't exist
-[ ! -f /etc/ld.so.conf.d/libc.conf ] && echo -e "# libc default configuration\n/usr/local/lib" | ${SUDO} tee /etc/ld.so.conf.d/libc.conf > /dev/null && ${SUDO} ldconfig
 cd /tmp
 git clone https://github.com/apple/swift-corelibs-libdispatch.git libdispatch
 echo "======== Installing libdispatch..."

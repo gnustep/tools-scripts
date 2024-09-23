@@ -1,10 +1,5 @@
 # !/bin/sh
 
-if [ ! -f /etc/ld.so.conf.d/libc.conf ]; then
-  echo -e "# libc default configuration\n/usr/local/lib" | sudo tee /etc/ld.so.conf.d/libc.conf > /dev/null
-  sudo ldconfig
-fi
-
 # Linux builds are relatively simple...
 ./tools-scripts/clang-build
 

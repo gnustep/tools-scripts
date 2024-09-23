@@ -3,5 +3,10 @@
 # Linux builds are relatively simple...
 ./tools-scripts/clang-build
 
+if [ ! -f /etc/ld.so.conf.d/libc.conf ]; then
+  echo -e "# libc default configuration\n/usr/local/lib" | sudo tee /etc/ld.so.conf.d/libc.conf > /dev/null
+  sudo ldconfig
+fi
+
 # since the last place we were in the build was libs-back
 cd ..

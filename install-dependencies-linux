@@ -127,9 +127,6 @@ install_arch()
     sudo pacman -S --needed --noconfirm giflib
     sudo pacman -S --needed --noconfirm libao
 
-    cd /tmp && git clone https://github.com/mheily/blocks-runtime.git --depth=1
-    cd /tmp/blocks-runtime && autoheader && libtoolize --force --copy && aclocal && autoconf && automake --add-missing --copy && ./configure --prefix=/usr && make && sudo make install
-
     if [ ! -f /etc/ld.so.conf.d/libc.conf ]; then
       echo -e "# libc default configuration\n/usr/local/lib" | sudo tee /etc/ld.so.conf.d/libc.conf > /dev/null
       sudo ldconfig

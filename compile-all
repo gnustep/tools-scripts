@@ -140,10 +140,6 @@ else
     unset CXX
 
     # Assume the presence of libdispatch if we are using clang and libobjc2
-    if [ ! -f /etc/ld.so.conf.d/libc.conf ]; then
-      echo -e "# libc default configuration\n/usr/local/lib" | sudo tee /etc/ld.so.conf.d/libc.conf > /dev/null
-      sudo ldconfig
-    fi
     export CC=${compiler}
     export CXX=${cxxcompiler}
     # export LDFLAGS=-ldispatch

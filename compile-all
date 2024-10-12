@@ -168,8 +168,7 @@ echo "======== Installing Base..."
 cd ../libs-base
 make distclean
 . $prefix/System/Library/Makefiles/GNUstep.sh
-export LDFLAGS="$LDFLAGS -ldispatch"
-$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes || exit 1
+LDFLAGS="$LDFLAGS -ldispatch" $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes || exit 1
 if [ "true" == "$NEEDSROOT" ]; then
 ${SUDO} -u root ./install.sh $prefix $MAKE
 else

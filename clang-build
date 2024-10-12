@@ -2,13 +2,11 @@
 
 CLANG=${1:-clang}
 CLANGPP=${2:-clang++}
-linker=${3:-ld.gold}
 
 echo "Using..."
 echo ${CLANG}
 echo ${CLANGPP}
-echo ${linker}
 echo "--"
 
-$(which bash) ./tools-scripts/compile-all "/usr/GNUstep" "${CLANG}" "${CLANGPP}" "${linker}"
+$(which bash) ./tools-scripts/compile-all "/usr/GNUstep" "${CLANG}" "${CLANGPP}"
 exit

@@ -34,6 +34,49 @@ The purposes of all of the scripts is as follows:
 * process-files - run the specified command on the current files that have been changed.
 * cleanup - whitespace cleanup and, likely, other cleanups to be done on currently changed files.
 
+
+
+Install GNUstep dev environment
+===
+
+ * use ssh-agent forwarding, or have your key for GitHub locally on your dev machine and
+   start ssh-agent locally.
+ * have sudo configured, you may or may not want to use NOPASSWD
+ * have the SSH key from GitHub accepted
+
+Assume an empty development VM, i.e. Linux, OpenBSD, you name it:
+
+```
+mkdir ~/gnustep
+cd ~/gnustep
+```
+
+with curl already installed:
+```
+curl -fsSL > gnustep-web-install-dev https://raw.githubusercontent.com/gnustep/tools-scripts/refs/heads/master/gnustep-web-install-dev
+```
+or on OpenBSD with ftp:
+```
+ftp -o gnustep-web-install-dev https://raw.githubusercontent.com/gnustep/tools-scripts/refs/heads/master/gnustep-web-install-dev
+```
+
+Review what the script is doing, and you may visit the other scripts it's fetching and installing. Once you're confident, it's good to go:
+
+If you're on OpenBSD, the default invocation of ./gnustep-web-install-dev will build with gcc against gcc libobjc.
+If you want to build against libobjc2 with ARC support, before going on export WITH_ARC=yes environment variable.
+
+```
+chmod 755 gnustep-web-install-dev
+./gnustep-web-install-dev
+```
+
+Go grab a coffee, and wait a bit.
+
+Once it finished, source GNUstep.sh and start developing:
+
+. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh
+
+
 Please report any bugs you find with this set of scripts.
 
 Thank you... GC

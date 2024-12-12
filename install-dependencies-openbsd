@@ -1,4 +1,4 @@
-#!/bin/sh
+git #!/bin/sh
 
 echo "Installing OpenBSD dependencies"
 echo "NOTE: This file assumes that Xorg is installed and that sudo is installed."
@@ -22,5 +22,6 @@ sudo pkg_add gobjc
 sudo pkg_add gdb
 sudo pkg_add gnustep-libobjc2
 sudo pkg_add flite
+sudo pkg_add libcurl
 echo "Done..."
 exit 0

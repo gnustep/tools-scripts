@@ -20,5 +20,6 @@ sudo pkg install -y cairo
 sudo pkg install -y avahi
 sudo pkg install -y portaudio
 sudo pkg install -y flite
+sudo pkg install -y curl
 echo "Done..."
 exit 0

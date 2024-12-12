@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 PREFIX="git@github.com:gnustep/"
 FILES="libs-back libs-gui apps-projectcenter libs-palettes libs-boron apps-easydiff libs-opal libs-ec libs-mica libs-webservices libobjc2 libs-performance libs-base libs-sqlclient libs-corebase libs-dbuskit gitsvn-scripts plugins-themes-WinUXTheme plugins-themes-Gtk plugins-session plugins-gs-emacs libs-gscoredata apps-thematic apps-systempreferences tools-android android-examples tools-windows-development-installer tools-startup libs-gsweb tools-nfmake tools-installers tests-testsuite tests-retaincount tests-palettetest tests-gormtest libs-webserver libs-uikit libs-ucsdata libs-sysconfig apps-interfacecreator tests-examples libs-xcode libs-steptalk libs-smbkit libs-simplewebkit libs-ruby libs-renaissance libs-quartzcore libs-ppd libs-java libs-guile libs-gsldap libs-gsgd libs-gscrypt libs-gsantlr libs-gdl2 libs-corenetwork libs-coreimage gap libs-audiotoolbox apps-gworkspace apps-gsldapwebexplorer apps-gorm tools-make tools-scripts tools-model-main tools-charsets plugins-deprecated license libobjc webkit-cef apps-dock tools-bridge plugins-themes tools-windows-msvc"

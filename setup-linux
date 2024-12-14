@@ -41,12 +41,12 @@ if [ ${DISTRIB_ID} != Ubuntu ]; then
 fi
 
 # Install git and curl if needed...
-if [! -e /usr/bin/curl ]; then
+if [ ! -e /usr/bin/curl ]; then
    echo "Installing git"
    sudo ${COMMAND} install curl
 fi
 
-if [! -e /usr/bin/git ]; then
+if [ ! -e /usr/bin/git ]; then
    echo "Installing git"
    sudo ${COMMAND} install git
 fi

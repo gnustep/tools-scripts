@@ -43,7 +43,7 @@ echo "======== Create gnustep build directories ========"
 mkdir -p gnustep
 cd gnustep
 git clone git@github.com:gnustep/tools-scripts.git
-./tools-scripts/clone-essential-repos
+./tools-scripts/clone-all-repos
 
 echo "================ Install Dependencies ================"
 # Install dependencies

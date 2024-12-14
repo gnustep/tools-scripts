@@ -24,6 +24,7 @@ sudo ./netbsd_pkg_add flite
 sudo ./netbsd_pkg_add clang
 sudo ./netbsd_pkg_add cmake
 sudo ./netbsd_pkg_add objc
+sudo ./netbsd_pkg_add libcurl
  
 echo "Done..."
 exit 0

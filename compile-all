@@ -143,7 +143,6 @@ else
     export CC=${compiler}
     export CXX=${cxxcompiler}
     # export LDFLAGS=-ldispatch
-    export LDFLAGS="$LDFLAGS -ldispatch"
     echo "LDFLAGS=$LDFLAGS"
     echo "Build command: CCFLAGS=${cc_flags} CXX=${CXX} CC=${CC} ./configure --prefix=${prefix} --with-library-combo=ng-gnu-gnu --enable-objc-arc --enable-native-objc-exceptions --with-layout=gnustep ${make_flags}"
     CCFLAGS=${cc_flags} CXX=${CXX} CC=${CC} ./configure --prefix=${prefix} --with-library-combo=ng-gnu-gnu --enable-objc-arc --enable-native-objc-exceptions --with-layout=gnustep ${make_flags}
@@ -169,7 +168,9 @@ echo "======== Installing Base..."
 cd ../libs-base
 make distclean
 . $prefix/System/Library/Makefiles/GNUstep.sh
-$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes || exit 1
+LDFLAGS="$LDFLAGS -ldispatch" $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes || exit 1
+# Temporary until KVO issues are fixed...
+./configure --disable-newkvo
 if [ "true" == "$NEEDSROOT" ]; then
 ${SUDO} -u root ./install.sh $prefix $MAKE
 else

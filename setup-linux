@@ -3,6 +3,9 @@
 export USER=`whoami`
 COMMAND="apt"
 
+# Add distro specific variables...
+. /etc/lsb-release
+
 # Install SUDO if needed...
 if [ ! -e /usr/bin/sudo ]; then
    echo "Installing sudo..." 
@@ -15,6 +18,12 @@ if [ ! -e /usr/bin/sudo ]; then
    fi
 else
    echo "sudo command is already present."
+fi
+
+# Update root password...
+echo "Ubuntu's root password is not set, please set it..."
+if [ ${DISTRIB_ID} == "Ubuntu"]; then
+   sudo passwd root
 fi
 
 if [ ! -e /etc/sudoers.d/${USER} ]; then

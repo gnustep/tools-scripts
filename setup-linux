@@ -22,15 +22,15 @@ fi
 
 # Update root password...
 echo "Checking if root password is not set, please set it..."
-if [ $DISTRIB_ID == Ubuntu ]; then
+if [ "${DISTRIB_ID}" == "Ubuntu" ]; then
    STATUS=`sudo passwd root --status | cut -f2 -d' '`
-   if [ ${STATUS} == L]; then
+   if [ "${STATUS}" == "L" ]; then
       sudo passwd root
    fi
 fi
 
 # Add to sudoers
-if [ $DISTRIB_ID != Ubuntu ]; then
+if [ "${DISTRIB_ID}" != "Ubuntu" ]; then
    if [ ! -e /etc/sudoers.d/${USER} ]; then
       echo "Adding ${USER} to sudoers..."
       echo "Please enter the root user's password."

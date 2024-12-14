@@ -36,7 +36,7 @@ echo "Begin setup for ${KERNEL}"
 
 export USER=`whoami`
 curl -fsSL > ./setup-${KERNEL} https://raw.githubusercontent.com/gnustep/tools-scripts/master/setup-${KERNEL}
-. ./setup-${KERNEL}
+./setup-${KERNEL}
 rm ./setup-${KERNEL}
 
 echo "======== Create gnustep build directories ========"
@@ -58,6 +58,3 @@ echo "================ Post Installation ================"
 ./tools-scripts/post-install-${KERNEL}
 
 echo "Done..."
-
-
-

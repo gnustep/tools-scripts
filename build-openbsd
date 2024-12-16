@@ -1,12 +1,28 @@
 #!/bin/sh
 
-export CC=egcc
-export CXX=eg++
-export LD=ld.bfd
+if [ "X${WITH_ARC}" == "Xyes" ];then
+echo "BUIDLING WITH CLANG and ARC"
+GSMAKE_CC=clang
+GSMAKE_CXX=clang++
+GSMAKE_CPP="clang -E"
+GSMAKE_LD=ld
+GSMAKE_AS=llvm-as
+EXTRA_GSMAKE_FLAGS="--with-objc-lib-flag=-lobjc2 --enable-strict-v2-mode --with-runtime-abi=gnustep-2.2 --with-library-combo=ng-gnu-gnu GS_WITH_ARC=1"
+GSMAKE_CPPFLAGS="-I/usr/local/include -I/usr/local/include/gnustep"
+GSMAKE_LDFLAGS="-L/usr/local/lib -lc++abi -lobjc2 -pthread"
+else
+echo "BUIDLING WITH GCC"
+GSMAKE_CC=egcc
+GSMAKE_CXX=eg++
+GSMAKE_CPP="egcc -E"
+GSMAKE_LD=ld.bfd
+GSMAKE_AS=as
+EXTRA_GSMAKE_FLAGS=""
+GSMAKE_CPPFLAGS="-I/usr/local/include"
+GSMAKE_LDFLAGS="-L/usr/local/lib"
+fi
 export MAKE=gmake
 export SUDO=sudo
-# export CFLAGS=-I/usr/local/include/gnustep
-# export LDFLAGS=-L/usr/local/lib
 
 ROOT=/ 
 USR_ROOT=${ROOT}usr
@@ -22,13 +38,12 @@ echo ""
 
 CPUS=4
 SUDO='sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH'
-# KERNEL=`uname -s | awk '{print tolower($0)}'`
 scriptsdir="`pwd`/tools-scripts"
 
 # Build make
 cd tools-make
-make clean
-./configure --with-layout=gnustep CC=${CC} CXX=${CXX} LD=${LD} --prefix=${prefix}
+${MAKE} clean
+./configure --with-layout=gnustep --prefix="${prefix}" ${EXTRA_GSMAKE_FLAGS} CC="${GSMAKE_CC}" CXX="${GSMAKE_CXX}" CPP="${GSMAKE_CPP}" LD="${GSMAKE_LD}" AS="${GSMAKE_AS}" LDFLAGS="${GSMAKE_LDFLAGS}" CPPFLAGS="${GSMAKE_CPPFLAGS}"
 echo "======== Build make"
 ${MAKE}
 ${SUDO} -u root ${MAKE} install
@@ -37,29 +52,44 @@ ${SUDO} -u root ${MAKE} install
 # Build base
 echo "======== Build base"
 cd ../libs-base
+${SUDO} ${MAKE} clean
 ./configure --with-installation-domain=SYSTEM
-${MAKE} debug=yes messages=no -j4
+${MAKE} debug=yes messages=yes -j4
 ${SUDO} -u root ./install.sh ${GNUSTEP_ROOT} ${MAKE}
 echo "==="
 
 # Build gui
 echo "======== Build gui"
 cd ../libs-gui
-./configure
-LDFLAGS=${LDFLAGS} CC=${CC} CXX=${CXX} ${MAKE} debug=yes messages=no -j4
+${SUDO} ${MAKE} clean
+./configure --with-x --enable-speech
+${MAKE} debug=yes messages=yes -j4
 ${SUDO} -u root ./install.sh ${GNUSTEP_ROOT} ${MAKE}
 echo "==="
 
 # Build backend
 echo "======== Build back"
 cd ../libs-back
+${SUDO} ${MAKE} clean
 ./configure --enable-graphics=cairo
-LDFLAGS=${LDFLAGS} CC=${CC} CXX=${CXX} ${MAKE} debug=yes messages=no -j4
+${MAKE} debug=yes messages=yes -j4
 ${SUDO} -u root ./install.sh ${GNUSTEP_ROOT} ${MAKE}
 echo "==="
 
 # Set default backend
 # defaults write NSGlobalDomain GSBackend libgnustep-cairo
+
+echo "======== Build ProjectCenter"
+cd ../apps-projectcenter
+${SUDO} ${MAKE} clean
+${MAKE} debug=yes messages=yes
+${SUDO} ${MAKE} install
+
+echo "======== Build Gorm"
+cd ../apps-gorm
+${SUDO} ${MAKE} clean
+${MAKE} debug=yes messages=yes
+${SUDO} ${MAKE} install
 
 echo "Done."
 

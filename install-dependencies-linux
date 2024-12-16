@@ -45,6 +45,7 @@ install_debian()
     sudo apt --yes install libwayland-dev
     sudo apt --yes install libxkbcommon-dev
     sudo apt --yes install wayland-protocols
+    sudo apt --yes install libcurl4-gnutls-dev
     
     echo "-------"
     echo "Done..."
@@ -90,6 +91,7 @@ install_redhat()
 #    sudo yum -y install sphinxtrain
     sudo yum -y install openssl-devel
     sudo yum -y install gnutls-devel
+    sudo yum -y install libcurl4-gnutls-devel
 
     echo "-------"
     echo "Done..."

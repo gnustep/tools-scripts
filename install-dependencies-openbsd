@@ -1,4 +1,4 @@
-#!/bin/sh
+git #!/bin/sh
 
 # change to doas if you use doas
 SUDO=sudo

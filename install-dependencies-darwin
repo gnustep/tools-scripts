@@ -39,6 +39,7 @@ brew install cairo
 brew install portaudio
 brew install make
 brew install cmake
+# brew install libcurl
 
 #echo "------- Upgrade existing packages..."
 #brew upgrade

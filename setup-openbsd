@@ -5,12 +5,11 @@ echo "=== Setup OpenBSD"
 if [ ! -e /usr/local/bin/sudo ]; then
     echo "Installing sudo"
     echo "Enter root password"
-    su -m root -c 'pkg_add sudo'
-    if [ ! -e /etc/sudoers ]; then
-	echo "Add ${USER} to sudoers"
-	echo "Enter root password"
-	su -m root -c 'echo "${USER}    ALL=(ALL) SETENV: ALL" >> /etc/sudoers'
-    fi
+    su -m root -c 'pkg_add sudo--'
+    
+    echo "Add ${USER} to sudoers"
+    echo "Enter root password"
+    su -m root -c 'echo "${USER}    ALL=(ALL) SETENV: ALL" >> /etc/sudoers'
 fi
 
 # Make sure git is installed

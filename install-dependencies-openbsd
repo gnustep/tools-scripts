@@ -1,26 +1,16 @@
-#!/bin/sh
+git #!/bin/sh
+
+# change to doas if you use doas
+SUDO=sudo
+GCC_MAJOR=11
 
 echo "Installing OpenBSD dependencies"
 echo "NOTE: This file assumes that Xorg is installed and that sudo is installed."
-echo "      Also, the user must have sudo access to properly execute this script."
+echo "      Change the SUDO= variable at top of script to use 'doas' instead"
+echo "      Also, 'doas' or 'sudo' should be properly configured to allow running the script."
 echo "Installing..."
-sudo pkg_add gmake
-sudo pkg_add cmake
-sudo pkg_add windowmaker
-sudo pkg_add jpeg
-sudo pkg_add tiff
-sudo pkg_add png
-sudo pkg_add libxml
-sudo pkg_add libxslt
-sudo pkg_add gnutls
-sudo pkg_add libffi
-sudo pkg_add icu4c
-sudo pkg_add cairo
-sudo pkg_add avahi
-sudo pkg_add gcc
-sudo pkg_add gobjc
-sudo pkg_add gdb
-sudo pkg_add gnustep-libobjc2
-sudo pkg_add flite
+${SUDO} pkg_add curl git sudo-- gmake cmake windowmaker jpeg tiff png \
+	libxml gnutls libffi icu4c cairo avahi gcc%${GCC_MAJOR} \
+	gobjc%${GCC_MAJOR} gmp gdb gnustep-libobjc2 flite
 echo "Done..."
 exit 0

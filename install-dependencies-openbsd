@@ -1,4 +1,4 @@
-git #!/bin/sh
+#!/bin/sh
 
 # change to doas if you use doas
 SUDO=sudo
@@ -9,6 +9,6 @@ echo "NOTE: This file assumes that Xorg is installed and that sudo is installed.
 echo "      Change the SUDO= variable at top of script to use 'doas' instead"
 echo "      Also, 'doas' or 'sudo' should be properly configured to allow running the script."
 echo "Installing..."
-${SUDO} pkg_add curl git sudo-- gmake cmake windowmaker jpeg tiff png libiconv libxml libxslt gnutls libffi icu4c cairo avahi gcc%${GCC_MAJOR} gobjc%${GCC_MAJOR} gmp gdb gnustep-libobjc2 flite libao libsndfile giflib cups aspell
+${SUDO} pkg_add curl git sudo-- gmake cmake windowmaker jpeg tiff png libiconv libxml libxslt gnutls libffi icu4c cairo avahi gcc%${GCC_MAJOR} gobjc%${GCC_MAJOR} gmp gdb gnustep-libobjc2 flite libao libsndfile giflib cups aspell ImageMagick
 echo "Done..."
 exit 0

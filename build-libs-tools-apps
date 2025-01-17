@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Libraries/Apps/Tools
-libs_files="libs-xcode libs-ppd libs-steptalk libs-ucsdata libs-renaissance apps-gorm libs-gdl2 libs-gsweb"
+libs_files="libs-xcode libs-ppd libs-steptalk libs-ucsdata libs-renaissance apps-gorm libs-gdl2 libs-gsweb libs-java"
 tools_files="tools-charsets"
 apps_files="apps-systempreferences apps-gworkspace apps-projectcenter apps-thematic apps-easydiff"
 
@@ -21,10 +21,10 @@ build_and_install()
     fi
     if [ -f GNUmakefile ]; then
 	make -j${CPUS} debug=yes
-	if [ "$OS" == "Linux" ]; then
-	    sudo -- sh -c '. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install'
-	else
+	if [ "$OS" == *"MINGW6_NT"* ]; then
 	    . /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
+	else
+	    sudo -- sh -c '. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install'
         fi  
     fi
     cd ..

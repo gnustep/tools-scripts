@@ -21,7 +21,7 @@ build_and_install()
     fi
     if [ -f GNUmakefile ]; then
 	make -j${CPUS} debug=yes
-	if [ "$OS" == *"MINGW6_NT"* ]; then
+	if [ "$OS" == *"MINGW64_NT"* ]; then
 	    . /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 	else
 	    sudo -- sh -c '. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install'

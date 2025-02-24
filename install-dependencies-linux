@@ -54,11 +54,12 @@ install_debian()
 install_redhat()
 {
     echo "NOTE: Make sure you have done apt-get update and apt-get upgrade prior to running this script."
-    echo "Installing RedHat/CentOS/etc dependencies"
+    echo "Installing RedHat/CentOS/Fedora/etc dependencies"
     echo "-------"
 
     sudo yum update
-    
+
+    sudo yum -y install git
     sudo yum -y install gcc 
     sudo yum -y install gcc-objc
     sudo yum -y install clang

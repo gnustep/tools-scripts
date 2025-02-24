@@ -6,4 +6,5 @@
 # Run the script for the correct distro...
 sh ./tools-scripts/setup-linux-${ID}
 
-exit 0
+# Exit with the last result code...
+exit $?

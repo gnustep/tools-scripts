@@ -4,6 +4,6 @@
 . /etc/os-release
 
 # Run the script for the correct distro...
-sh -x ./tools-scripts/setup-linux-${ID}
+sh ./tools-scripts/setup-linux-${ID}
 
 exit 0

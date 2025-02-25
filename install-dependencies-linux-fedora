@@ -1,0 +1,45 @@
+#!/bin/bash
+
+echo "NOTE: Make sure you have done apt-get update and apt-get upgrade prior to running this script."
+echo "Installing RedHat/CentOS/Fedora/etc dependencies"
+echo "-------"
+
+sudo yum update
+
+sudo yum -y install git
+sudo yum -y install gcc 
+sudo yum -y install gcc-objc
+sudo yum -y install clang
+sudo yum -y install libjpeg-turbo-devel 
+sudo yum -y install libtiff-devel 
+sudo yum -y install libpng-devel
+sudo yum -y install libicns-devel
+sudo yum -y install ImageMagick-devel
+sudo yum -y install libxml2-devel
+sudo yum -y install libxslt-devel
+sudo yum -y install gnutls-devel
+sudo yum -y install libffi-devel
+sudo yum -y install libicu-devel
+sudo yum -y install cairo-devel
+sudo yum -y install libXft-devel
+sudo yum -y install avahi-devel
+sudo yum -y install flite-devel
+sudo yum -y install libXt-devel
+#    sudo yum -y install libportaudio-devel
+#    sudo yum -y install wmaker
+#    sudo yum -y install portaudio19-dev
+sudo yum -y install make
+sudo yum -y install cmake
+#    sudo yum -y install libblocksruntime-dev
+#    sudo yum -y install pocketsphinx
+#    sudo yum -y install pocketsphinx-en-us
+#    sudo yum -y install libpocketsphinx-dev
+#    sudo yum -y install libsphinxbase-dev
+#    sudo yum -y install sphinxbase-utils
+#    sudo yum -y install sphinxtrain
+sudo yum -y install openssl-devel
+sudo yum -y install gnutls-devel
+sudo yum -y install libcurl4-gnutls-devel
+
+echo "-------"
+echo "Done..."

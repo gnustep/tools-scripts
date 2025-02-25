@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./tools-scripts/install-dependencies-linux-fedora

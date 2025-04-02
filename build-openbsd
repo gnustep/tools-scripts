@@ -1,6 +1,5 @@
 #!/bin/sh
 
-if [ "X${WITH_ARC}" == "Xyes" ];then
 echo "BUIDLING WITH CLANG and ARC"
 GSMAKE_CC=clang
 GSMAKE_CXX=clang++
@@ -10,17 +9,6 @@ GSMAKE_AS=llvm-as
 EXTRA_GSMAKE_FLAGS="--with-objc-lib-flag=-lobjc2 --enable-strict-v2-mode --with-runtime-abi=gnustep-2.2 --with-library-combo=ng-gnu-gnu GS_WITH_ARC=1"
 GSMAKE_CPPFLAGS="-I/usr/local/include -I/usr/local/include/gnustep"
 GSMAKE_LDFLAGS="-L/usr/local/lib -lc++abi -lobjc2 -pthread"
-else
-echo "BUIDLING WITH GCC"
-GSMAKE_CC=egcc
-GSMAKE_CXX=eg++
-GSMAKE_CPP="egcc -E"
-GSMAKE_LD=ld.bfd
-GSMAKE_AS=as
-EXTRA_GSMAKE_FLAGS=""
-GSMAKE_CPPFLAGS="-I/usr/local/include"
-GSMAKE_LDFLAGS="-L/usr/local/lib"
-fi
 export MAKE=gmake
 export SUDO=sudo
 

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Libraries/Apps/Tools
 libs_files="libs-xcode libs-ppd libs-steptalk libs-ucsdata libs-renaissance apps-gorm libs-gdl2 libs-gsweb libs-java"
@@ -8,8 +8,15 @@ apps_files="apps-systempreferences apps-gworkspace apps-projectcenter apps-thema
 # OS
 OS=`uname -s`
 
+# OpenBSD?
 # number of processes
-CPUS=`nproc`
+if [ "$OS" == "OpenBSD" ]; then
+   CPUS=`sysctl hw.ncpu | sed 's/hw.ncpu\=//g'`
+   MAKE="gmake"
+else
+   CPUS=`nproc`
+   MAKE="make"
+fi
 
 # func..
 build_and_install()
@@ -20,11 +27,15 @@ build_and_install()
 	./configure
     fi
     if [ -f GNUmakefile ]; then
-	make -j${CPUS} debug=yes
+	$MAKE -j${CPUS} debug=yes
 	if [ "$OS" == *"MINGW64_NT"* ]; then
-	    . /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
+	    . /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 	else
-	    sudo -- sh -c '. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install'
+	    if [ "$OS" == "OpenBSD" ]; then
+	       sudo -- sh -c '. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && gmake GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install'
+	    else
+	       sudo -- sh -c '. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install'
+	    fi
         fi  
     fi
     cd ..

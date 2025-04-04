@@ -25,7 +25,6 @@ echo "Building GNUstep for OpenBSD"
 echo ""
 
 CPUS=4
-SUDO='sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH'
 scriptsdir="`pwd`/tools-scripts"
 
 # Build make
@@ -50,7 +49,7 @@ echo "==="
 echo "======== Build gui"
 cd ../libs-gui
 ${SUDO} ${MAKE} clean
-./configure --with-x --enable-speech
+./configure --with-x --enable-speech --enable-imagemagick
 ${MAKE} debug=yes messages=yes -j4
 ${SUDO} -u root ./install.sh ${GNUSTEP_ROOT} ${MAKE}
 echo "==="

@@ -45,7 +45,7 @@ git clone https://github.com/gnustep/tools-scripts
 
 echo "================ Install Dependencies ================"
 # Install dependencies
-./tools-scripts/install-dependencies-${KERNEL}
+./tools-scripts/install-dependencies-${KERNEL} || exit 1
 
 echo "================ Build ================"
 # Build it...

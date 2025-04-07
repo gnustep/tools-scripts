@@ -1,7 +1,18 @@
 #!/bin/sh
+# we have a new path
+export PATH=$PATH:/usr/GNUstep/System/Tools
 
-pwd
+. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh
+
 cd apps-gorm || exit 1
 make debug=yes
 sudo -E make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 
+echo
+echo "GNUstep web install complete. You will need to source in this file into your shell using this command (the leading . is required):"
+echo
+echo ". /usr/GNUstep/System/Library/Makefiles/GNUstep.sh"
+echo
+
+echo "Please add this to your ~/.bash_profile (or your shell's equivalent) so the GNUstep environment is always set."
+echo "Welcome to GNUstep!"

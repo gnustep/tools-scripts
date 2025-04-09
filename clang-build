@@ -1,12 +1,13 @@
 #!/bin/sh
 
-CLANG=${1:-clang}
-CLANGPP=${2:-clang++}
+export CLANG=${1:-clang}
+export CLANGPP=${2:-clang++}
 
 echo "Using..."
 echo ${CLANG}
 echo ${CLANGPP}
 echo "--"
 
-$(which bash) ./tools-scripts/compile-all "/usr/GNUstep" "${CLANG}" "${CLANGPP}"
-exit
+./tools-scripts/compile-all "/usr/GNUstep" "${CLANG}" "${CLANGPP}"
+
+exit $?

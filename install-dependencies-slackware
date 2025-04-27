@@ -1,0 +1,65 @@
+#!/bin/bash
+
+
+. /etc/os-release 
+version=${VERSION//[\.]/-}
+
+echo
+echo "The Slackware dependency relies on you (the user currently running gnustep-web-install) be part of the sudoers."
+echo "Also, you need to have slackpkg setup and configured to allow the script to resolve any missing dependencies."
+echo "If you are not currently a sudoer or do not have slackpkg setup, please exit here and configure these two items."
+echo
+read -p "Continue with the procedure? (Y/N): " confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] || exit 1
+echo
+
+echo "GNUstep / Slackware ${VERSION} dependency installation"
+echo "------------------------------------------------"
+echo
+
+
+if [[ "$version" != "15-0" ]]; then
+	echo "Only Slackware version 15.0 is supported at the moment"
+	exit
+fi
+
+# check if slackpkg is setup (a mirror has been chosen)
+
+mirror=$(grep -v '^#' /etc/slackpkg/mirrors)
+
+if [[ -z ${mirror} ]]; then
+	echo "slackpkg not setup"
+	exit 1
+else
+	echo "slackpkg mirror set to:"
+	echo
+   	echo "${mirror}"
+	echo
+	echo "We'll use that to install missing packages (if any)"
+	echo
+fi
+
+
+# s l a c k w a r e  15 package dependencies
+declare -A packages[15-0]="gcc gcc-objc llvm libjpeg-turbo libtiff libpng libxml2 libxslt "
+packages[15-0]+="gdb gnutls libffi icu4c cairo make makedepend windowmaker cmake "
+packages[15-0]+="libblockdev openssl openssl-solibs imagemagick "
+packages[15-0]+="libxkbcommon wayland freetype-2 "
+
+
+
+# because we want to cycle through the dependency list based on the slackware version, required a
+# slighlty more complex for loop using the array index and indirection (the ! before packages below is indirection)
+for pkg in ${packages["${version}"]}; do
+	if [[ -n $(find /var/log/packages/${pkg}*) ]]; then
+		printf 'Looking for package %-15s: %s\n' "$pkg" "found"
+	else
+		echo "Trying to install missing pkg ${pkg}"
+		sudo /usr/sbin/slackpkg install ${pkg}
+	fi
+done 
+
+echo
+echo "Slackware dependencies resolved, have fun!"
+
+
+

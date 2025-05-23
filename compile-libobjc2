@@ -12,6 +12,7 @@ fi
 echo "Build ObjC2 library..."
 
 cd libobjc2
+git pull
 rm -rf build # remove the dir if it exists...
 mkdir build
 cd build

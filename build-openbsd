@@ -69,17 +69,17 @@ ${SUDO} -u root ./install.sh ${GNUSTEP_ROOT} ${MAKE}
 echo "==="
 
 # Build applications...
-echo "======== Build ProjectCenter"
-cd ../apps-projectcenter
-${SUDO} ${MAKE} clean
-${MAKE} debug=yes -j${CPUS}
-${SUDO} ${MAKE} install
+# echo "======== Build ProjectCenter"
+# cd ../apps-projectcenter
+# ${SUDO} ${MAKE} clean
+# ${MAKE} debug=yes -j${CPUS}
+# ${SUDO} ${MAKE} install
 
-echo "======== Build Gorm"
-cd ../apps-gorm
-${SUDO} ${MAKE} clean
-${MAKE} debug=yes -j${CPUS}
-${SUDO} ${MAKE} install
+# echo "======== Build Gorm"
+# cd ../apps-gorm
+# ${SUDO} ${MAKE} clean
+# ${MAKE} debug=yes -j${CPUS}
+# ${SUDO} ${MAKE} install
 
 echo "Done."
 

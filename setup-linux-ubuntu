@@ -1,0 +1,38 @@
+#!/bin/sh
+
+# Install SUDO if needed...
+if [ ! -e /usr/bin/sudo ]; then
+   echo "Installing sudo..." 
+   if [ -e /usr/bin/apt ]; then
+      su -c "apt --yes install sudo"
+   fi
+else
+   echo "sudo command is already present."
+fi
+
+# Update root password...
+echo "Checking if root password is not set, please set it..."
+STATUS=`sudo passwd root --status | cut -f2 -d' '`
+if [ "${STATUS}" = "L" ]; then
+    sudo passwd root
+fi
+
+# Add to sudoers
+if [ ! -e /etc/sudoers.d/${USER} ]; then
+    echo "Adding ${USER} to sudoers..."
+    echo "Please enter the root user's password."
+    su -c 'echo "${USER}    ALL=(ALL:ALL) ALL" > /etc/sudoers.d/${USER}'
+else
+    echo "${USER} is already a member of sudo users."
+fi
+
+# Install git and curl if needed...
+if [ ! -e /usr/bin/curl ]; then
+   echo "Installing curl"
+   sudo apt --yes install curl
+fi
+
+if [ ! -e /usr/bin/git ]; then
+   echo "Installing git"
+   sudo apt --yes install git
+fi

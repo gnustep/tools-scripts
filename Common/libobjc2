@@ -1,17 +1,8 @@
 #!/bin/sh
-
-# determine make command
-which gmake
-if [ $? -eq 0 ]; then
-    export MAKE=gmake
-else
-    export MAKE=make
-fi
-
-# build libobjc2
 echo "Build ObjC2 library..."
 
 cd libobjc2
+git pull
 rm -rf build # remove the dir if it exists...
 mkdir build
 cd build

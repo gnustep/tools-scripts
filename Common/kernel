@@ -1,0 +1,3 @@
+#!/bin/sh
+
+export KERNEL=`uname -s | sed "s/\-.*//g" | awk '{print(tolower($0))}'`

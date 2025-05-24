@@ -1,0 +1,57 @@
+#!/bin/sh
+
+# Build libobjc2
+../tools-scripts/Common/libobjc2
+
+# Build make
+cd tools-make
+${MAKE} clean 2> /dev/null # stop it from complaining...
+./configure --with-layout=gnustep --prefix="${PREFIX}" ${EXTRA_GSMAKE_FLAGS} CC="${GSMAKE_CC}" CXX="${GSMAKE_CXX}" CPP="${GSMAKE_CPP}" LD="${GSMAKE_LD}" AS="${GSMAKE_AS}" LDFLAGS="${GSMAKE_LDFLAGS}" CPPFLAGS="${GSMAKE_CPPFLAGS}"
+echo "======== Build make"
+${MAKE} -j${CPUS}
+${SUDO} -u root ${MAKE} install
+. ${GNUSTEP_ROOT}/System/Library/Makefiles/GNUstep.sh
+
+# Build base
+echo "======== Build base"
+cd ../libs-base
+${SUDO} ${MAKE} clean
+./configure --with-installation-domain=SYSTEM
+${MAKE} debug=yes -j${CPUS}
+${SUDO} -u root ./install.sh ${GNUSTEP_ROOT} ${MAKE}
+echo "==="
+
+# Build gui
+echo "======== Build gui"
+cd ../libs-gui
+${SUDO} ${MAKE} clean
+./configure --with-x --enable-speech
+${MAKE} debug=yes -j${CPUS}
+${SUDO} -u root ./install.sh ${GNUSTEP_ROOT} ${MAKE}
+echo "==="
+
+# Build backend
+echo "======== Build back"
+cd ../libs-back
+${SUDO} ${MAKE} clean
+./configure --enable-graphics=cairo
+${MAKE} debug=yes -j${CPUS}
+${SUDO} -u root ./install.sh ${GNUSTEP_ROOT} ${MAKE}
+echo "==="
+
+# Build applications...
+# echo "======== Build ProjectCenter"
+# cd ../apps-projectcenter
+# ${SUDO} ${MAKE} clean
+# ${MAKE} debug=yes -j${CPUS}
+# ${SUDO} ${MAKE} install
+
+# echo "======== Build Gorm"
+# cd ../apps-gorm
+# ${SUDO} ${MAKE} clean
+# ${MAKE} debug=yes -j${CPUS}
+# ${SUDO} ${MAKE} install
+
+echo "Done."
+
+exit 0

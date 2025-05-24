@@ -1,0 +1,49 @@
+#!/bin/bash
+
+echo "NOTE: Make sure you have done apt update and apt upgrade prior to running this script."
+echo "Installing Debian/Ubuntu dependencies"
+echo "-------"
+
+sudo apt update
+sudo apt upgrade
+
+sudo apt --yes install gobjc 
+sudo apt --yes install gobjc++
+sudo apt --yes install clang
+sudo apt --yes install libjpeg-dev 
+sudo apt --yes install libtiff-dev 
+sudo apt --yes install libpng-dev 
+sudo apt --yes install libicns-dev
+sudo apt --yes install libmagickcore-dev
+sudo apt --yes install libxml2-dev 
+sudo apt --yes install libxslt-dev 
+sudo apt --yes install libgnutls-dev
+sudo apt --yes install libffi-dev 
+sudo apt --yes install libicu-dev 
+sudo apt --yes install libcairo2-dev
+sudo apt --yes install libxft-dev
+sudo apt --yes install libavahi-client-dev
+sudo apt --yes install flite-dev
+sudo apt --yes install libxt-dev
+sudo apt --yes install libportaudio-dev
+sudo apt --yes install wmaker
+sudo apt --yes install portaudio19-dev
+sudo apt --yes install make
+sudo apt --yes install cmake
+sudo apt --yes install gnutls-dev
+sudo apt --yes install libblocksruntime-dev
+sudo apt --yes install pocketsphinx
+sudo apt --yes install pocketsphinx-en-us
+sudo apt --yes install libpocketsphinx-dev
+sudo apt --yes install libsphinxbase-dev
+sudo apt --yes install sphinxbase-utils
+sudo apt --yes install sphinxtrain
+sudo apt --yes install libssl-dev
+sudo apt --yes install freeglut3-dev
+sudo apt --yes install libwayland-dev
+sudo apt --yes install libxkbcommon-dev
+sudo apt --yes install wayland-protocols
+sudo apt --yes install libcurl4-gnutls-dev
+    
+echo "-------"
+echo "Done..."

@@ -168,9 +168,9 @@ echo "======== Installing Base..."
 cd ../libs-base
 make distclean
 . $prefix/System/Library/Makefiles/GNUstep.sh
-LDFLAGS="$LDFLAGS -ldispatch" $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes || exit 1
 # Temporary until KVO issues are fixed...
 ./configure --disable-newkvo
+LDFLAGS="$LDFLAGS -ldispatch" $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes || exit 1
 if [ "true" == "$NEEDSROOT" ]; then
 ${SUDO} -u root ./install.sh $prefix $MAKE
 else

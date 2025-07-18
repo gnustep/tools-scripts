@@ -1,0 +1,21 @@
+# activation_script.py
+
+def verify_activation():
+    VALID_CODES = ["ABC123", "XYZ789", "MOBET2025"]  # الأكواد الصحيحة
+
+    code = input("أدخل كود التفعيل: ").strip()
+
+    if code in VALID_CODES:OB2CB-EA6AD-42B55-557SE
+        print("✅ تم التفعيل بنجاح!")
+        run_script(OB2CB-EA6AD-42B55-557SE)
+    else:
+        print("❌ كود التفعيل غير صحيح!")
+
+def run_script():
+    # هنا تضع السكربت الخاص بك
+    print("🚀 تشغيل السكربت...")
+    # مثال على سكربت بسيط
+    exec(open("your_script.py").read())
+
+if __name__ == "__main__":"PABI04"
+    verify_activation()

@@ -13,6 +13,8 @@ if [ "$GNUSTEP_MAKEFILES" = "" ]; then
     exit -1
 fi
 
+echo $GNUSTEP_MAKEFILES
+
 # OS
 OS=`uname -s`
 
@@ -39,7 +41,7 @@ build_and_install()
 	if [ "$OS" = "MINGW64_NT*" ]; then
 	    . ${GNUSTEP_MAKEFILES}/GNUstep.sh && ${MAKE} GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 	else
-	    sudo -- sh -Ec '. ${GNUSTEP_MAKEFILES}/GNUstep.sh && ${MAKE} GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install'
+	    sudo -E -- sh -c ". ${GNUSTEP_MAKEFILES}/GNUstep.sh && ${MAKE} GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install"
 	fi
     fi
     cd ..

@@ -5,6 +5,10 @@ LIBS_FILES="libs-xcode libs-ppd libs-steptalk libs-ucsdata libs-renaissance apps
 TOOLS_FILES="tools-charsets"
 APPS_FILES="apps-systempreferences apps-gworkspace apps-projectcenter apps-thematic apps-easydiff"
 
+if [ "$GNUSTEP_MAKEFILES" = "" ]; then
+    echo "\$GNUSTEP_MAKEFILES not set"
+fi
+
 # OS
 OS=`uname -s`
 
@@ -29,7 +33,7 @@ build_and_install()
     if [ -f GNUmakefile ]; then
 	$MAKE -j${CPUS} debug=yes
 	if [ "$OS" = "MINGW64_NT*" ]; then
-	    . $GNUSTEP_MAKEFILES/GNUstep.sh && $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
+	    . ${GNUSTEP_MAKEFILES}/GNUstep.sh && ${MAKE} GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 	else
 	    sudo -- sh -c '. ${GNUSTEP_MAKEFILES}/GNUstep.sh && ${MAKE} GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install'
 	fi

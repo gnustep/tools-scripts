@@ -114,6 +114,11 @@ get_system()
 get_system
 echo "You are using ${ID}"
 
+if [[ ${ID} == "slackware" ]]; then
+	./tools-scripts/install-dependencies-slackware || exit 1
+    exit	
+fi
+
 which apt > /dev/null
 if [ "$?" == "0" ]; then
     install_debian

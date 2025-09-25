@@ -46,7 +46,7 @@ install_debian()
     sudo apt --yes install libxkbcommon-dev
     sudo apt --yes install wayland-protocols
     sudo apt --yes install libcurl4-gnutls-dev
-    sudu apt --yes install ffmpeg
+    sudo apt --yes install ffmpeg
     sudo apt --yes install libavcodec-dev libavformat-dev libavdevice-dev libavfilter-dev libavutil-dev    
     sudo apt --yes install libao-dev
     

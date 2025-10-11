@@ -1,7 +1,0 @@
-#!/bin/sh
-
-echo "Installing Haiku dependencies"
-pkgman install curl_devel cmake jpeg tiff pnglite_devel libiconv_devel libxml2_devel libxslt_devel gnutls_devel libffi_devel cairo gcc llvm20_clang gmp gdb giflib aspell
-echo "Done..."
-
-exit 0

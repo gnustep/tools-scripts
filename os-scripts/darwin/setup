@@ -1,4 +1,58 @@
-#!/bin/sh
-export DYLD_LIBRARY_PATH=/usr/local/Cellar/gcc/10.2.0/lib/gcc/10:${DYLD_LIBRARY_PATH}
-export LD_LIBRARY_PATH=/usr/local/Cellar/gcc/10.2.0/lib/gcc/10:${LD_LIBRARY_PATH}
-echo ${DYLD_LIBRARY_PATH}
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Darwin setup: configure environment for building/running with X11 (XQuartz) and Homebrew
+# Detect Homebrew prefix (handle Apple Silicon /opt/homebrew and Intel /usr/local)
+BREW_PREFIX=""
+if command -v brew >/dev/null 2>&1; then
+	BREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
+fi
+if [ -z "$BREW_PREFIX" ]; then
+	if [ -d /opt/homebrew ]; then
+		BREW_PREFIX=/opt/homebrew
+	elif [ -d /usr/local ]; then
+		BREW_PREFIX=/usr/local
+	else
+		BREW_PREFIX=""
+	fi
+fi
+
+# X11 (XQuartz) prefix
+X11_PREFIX=/opt/X11
+
+# Preserve any existing GCC-specific library paths if present (legacy)
+if [ -n "${DYLD_LIBRARY_PATH:-}" ]; then
+	LEGACY_DYLD="$DYLD_LIBRARY_PATH"
+else
+	LEGACY_DYLD=""
+fi
+
+# PATH adjustments: brew + X11
+if [ -n "$BREW_PREFIX" ]; then
+	export PATH="$BREW_PREFIX/bin:$BREW_PREFIX/sbin:$PATH"
+fi
+export PATH="$X11_PREFIX/bin:$PATH"
+
+# pkg-config paths and compiler/linker flags
+export PKG_CONFIG_PATH="$BREW_PREFIX/lib/pkgconfig:$X11_PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
+export CPPFLAGS="-I$X11_PREFIX/include -I$BREW_PREFIX/include ${CPPFLAGS:-}"
+export LDFLAGS="-L$X11_PREFIX/lib -L$BREW_PREFIX/lib ${LDFLAGS:-}"
+
+# DYLD on macOS: prepend X11 libs but note SIP may restrict this in some contexts
+export DYLD_LIBRARY_PATH="$X11_PREFIX/lib:${LEGACY_DYLD}" 
+export LD_LIBRARY_PATH="$X11_PREFIX/lib:${LD_LIBRARY_PATH:-}"
+
+# DISPLAY: default to :0 for XQuartz if not already set
+: "${DISPLAY:=:0}"
+export DISPLAY
+
+# XAUTHORITY: prefer $HOME/.Xauthority if present
+if [ -z "${XAUTHORITY:-}" ] && [ -f "$HOME/.Xauthority" ]; then
+	export XAUTHORITY="$HOME/.Xauthority"
+fi
+
+echo "darwin/setup: configured X11 environment"
+echo "  BREW_PREFIX=${BREW_PREFIX:-(none)}"
+echo "  X11_PREFIX=${X11_PREFIX}"
+echo "  DISPLAY=${DISPLAY}"
+echo "  PKG_CONFIG_PATH=${PKG_CONFIG_PATH}"

@@ -1,0 +1,8 @@
+$!/bin/sh
+
+# Set environment for Haiku
+export PATH=/boot/system/bin:/boot/system/sbin:/bin:/sbin:/usr/bin:/usr/sbin:/boot/system/develop/tools:/boot/system/develop/bin
+export LD_LIBRARY_PATH=/boot/system/lib:/boot/system/develop/lib
+export C_INCLUDE_PATH=/boot/system/develop/headers
+export CPLUS_INCLUDE_PATH=/boot/system/develop/headers
+export MANPATH=/boot/system/documentation

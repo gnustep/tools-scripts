@@ -5,12 +5,35 @@ echo "NOTE: Make sure you have done brew update and brew upgrade prior to runnin
 echo "Installing macOS dependencies"
 echo "-------"
 
-# Install homebrew...
-if [ -e /usr/local/bin/brew ]; then
-    echo "Homebrew installed... continuing."
-else
-    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+# Locate or install Homebrew. Handle Intel (/usr/local) and Apple Silicon (/opt/homebrew).
+BREW=""
+if command -v brew >/dev/null 2>&1; then
+    BREW="$(command -v brew)"
+elif [ -x /usr/local/bin/brew ]; then
+    BREW=/usr/local/bin/brew
+elif [ -x /opt/homebrew/bin/brew ]; then
+    BREW=/opt/homebrew/bin/brew
 fi
+
+if [ -z "$BREW" ]; then
+    echo "Homebrew not found. Installing Homebrew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    # After install, try to find brew again
+    if [ -x /opt/homebrew/bin/brew ]; then
+        BREW=/opt/homebrew/bin/brew
+    elif [ -x /usr/local/bin/brew ]; then
+        BREW=/usr/local/bin/brew
+    else
+        BREW="$(command -v brew || true)"
+    fi
+fi
+
+if [ -z "$BREW" ]; then
+    echo "Error: Homebrew installation failed or brew not found on PATH." >&2
+    exit 1
+fi
+
+echo "Using Homebrew at: $BREW"
 
 # Create frameworks dir...
 if [ -e /usr/local/Frameworks ]; then
@@ -19,75 +42,50 @@ else
     sudo mkdir /usr/local/Frameworks
 fi 
 
-# Install dependencies...
+
 echo "-------"
-brew install gcc
-brew install jpeg 
-brew install libtiff 
-brew install libpng
-brew install libicns 
-brew install libxml2
-brew install libxslt
-brew install gnutls
-brew install libffi
-# brew install libicu # optional
-brew install cairo
-# brew install libxft  # provided by X11
-# brew install libavahi-client-dev  # optional
-# brew install flite-dev # optional
-# brew install libxt-dev  # provided by X11
-brew install portaudio
-brew install make
-brew install cmake
-# brew install libcurl
+# Ensure brew is up-to-date
+"$BREW" update || true
 
-echo "Done."
-#!/bin/sh
-
-# Inform the user. ;) 
-echo "NOTE: Make sure you have done brew update and brew upgrade prior to running this script."
-echo "Installing macOS dependencies"
-echo "-------"
-
-# Install homebrew...
-if [ -e /usr/local/bin/brew ]; then
-	echo "Homebrew installed... continuing."
-else
-	/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+echo "Installing X11 (XQuartz) via Homebrew Cask..."
+# XQuartz is a macOS app providing X11; requires cask install
+if ! "$BREW" list --cask --versions xquartz >/dev/null 2>&1; then
+    "$BREW" install --cask xquartz || true
 fi
 
-# Create frameworks dir...
-if [ -e /usr/local/Frameworks ]; then
-	echo "Frameworks directory present."
-else
-	sudo mkdir /usr/local/Frameworks
-fi 
+echo "Installing libraries for X11 and Cairo support"
+PKGS=( 
+    pkg-config
+    cairo
+    pango
+    pixman
+    libpng
+    libtiff
+    jpeg
+    fontconfig
+    freetype
+    libx11
+    libxft
+    libxext
+    libxrandr
+    libxcursor
+    xorgproto
+    libxml2
+    libxslt
+    gnutls
+    libffi
+    portaudio
+    cmake
+    make
+)
 
-# Install dependencies...
-echo "-------"
-brew install gcc
-brew install jpeg 
-brew install libtiff 
-brew install libpng
-brew install libicns 
-brew install libxml2
-brew install libxslt
-brew install gnutls
-brew install libffi
-# brew install libicu # optional
-brew install cairo
-# brew install libxft  # provided by X11
-# brew install libavahi-client-dev  # optional
-# brew install flite-dev # optional
-# brew install libxt-dev  # provided by X11
-brew install portaudio
-brew install make
-brew install cmake
-# brew install libcurl
+for p in "${PKGS[@]}"; do
+    echo "Installing $p"
+    "$BREW" install "$p" || true
+done
 
-#echo "------- Upgrade existing packages..."
-#brew upgrade
-#echo "-------"
-#echo "Done..."
+echo "Note: XQuartz may require logging out/in or a restart to finish installation."
+
+echo "Done."
 
 exit 0

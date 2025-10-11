@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-if [ -f "$REPO_ROOT/install-dependencies-haiku" ]; then
-  exec bash "$REPO_ROOT/install-dependencies-haiku" "$@"
-else
-  echo "install-dependencies-haiku not found in repo root" >&2
-  exit 1
-fi

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Set environment for FreeBSD
+export PATH=/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/usr/local/gcc10/bin
+export LD_LIBRARY_PATH=/usr/local/lib:/usr/local/lib/gcc10
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:/usr/local/libdata/pkgconfig
+export C_INCLUDE_PATH=/usr/local/include
+export CPLUS_INCLUDE_PATH=/usr/local/include
+export MANPATH=/usr/local/share/man:/usr/local/gcc10/share/man

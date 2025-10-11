@@ -1,58 +1,106 @@
-#!/bin/sh
-#!/bin/sh
+#!/usr/bin/env bash
+set -euo pipefail
 
-export CC=gcc-13
-export CXX=g++-13
+# Darwin build helper for GNUstep
+# Usage: build [prefix]
 
-# export CC=clang
-# export CXX=clang++
+PREFIX_ARG=${1-}
 
+# Default installation roots
 ROOT=/
 USR_ROOT=${ROOT}/opt
 GNUSTEP_ROOT=${USR_ROOT}/GNUstep
+if [ -n "$PREFIX_ARG" ]; then
+	GNUSTEP_ROOT="$PREFIX_ARG"
+fi
+
 export GNUSTEP_CONFIG_FILE=${USR_ROOT}/etc/GNUstep.conf
 export GNUSTEP_INSTALL_LD_SO_CONF=no
 
 echo "Installation directory is $GNUSTEP_ROOT"
 echo "Building GNUstep for Darwin"
-echo ""
 
-export PKG_CONFIG_PATH=${USR_ROOT}/local/lib/pkgconfig:${USR_ROOT}/lib/pkgconfig:${PKG_CONFIG_PATH}
+# Prefer clang on macOS unless CC/CXX are provided
+: ${CC:=}
+: ${CXX:=}
+if [ -z "${CC:-}" ]; then
+	if command -v clang >/dev/null 2>&1; then
+		export CC=clang
+	elif command -v gcc >/dev/null 2>&1; then
+		export CC=gcc
+	else
+		echo "No C compiler found (clang or gcc required)." >&2
+		exit 1
+	fi
+fi
+if [ -z "${CXX:-}" ]; then
+	if command -v clang++ >/dev/null 2>&1; then
+		export CXX=clang++
+	elif command -v g++ >/dev/null 2>&1; then
+		export CXX=g++
+	else
+		echo "No C++ compiler found (clang++ or g++ required)." >&2
+		exit 1
+	fi
+fi
 
-# Build make
-echo "======== Build make"
+# Jobs / parallelism
+if command -v nproc >/dev/null 2>&1; then
+	JOBS=$(nproc)
+else
+	JOBS=$(sysctl -n hw.ncpu 2>/dev/null || echo 1)
+fi
+
+# Ensure PKG_CONFIG_PATH includes our local tree
+export PKG_CONFIG_PATH=${USR_ROOT}/local/lib/pkgconfig:${USR_ROOT}/lib/pkgconfig:${PKG_CONFIG_PATH:-}
+
+fail_if_no_dir() {
+	if [ ! -d "$1" ]; then
+		echo "Directory $1 not found; expected to be in repo root." >&2
+		exit 1
+	fi
+}
+
+echo "Using CC=${CC} CXX=${CXX} JOBS=${JOBS}"
+
+# Build tools-make
+echo "======== Build tools-make"
+fail_if_no_dir tools-make
 cd tools-make
-./configure --with-library-combo=apple-gnu-gnu --with-layout=gnustep --prefix=${GNUSTEP_ROOT}
-# LDFLAGS=-L/usr/local/Cellar/gcc/10.2.0/lib/gcc/10/ CC=gcc-10 CXX=g++-10 DLYD_LIBRARY_PATH=/usr/local/Cellar/gcc/10.2.0/lib/gcc/10:${DYLD_LIBRARY_PATH} make install messages=no -j4
-make install messages=no -j4
-source ${GNUSTEP_ROOT}/System/Library/Makefiles/GNUstep.sh
+./configure --with-library-combo=apple-gnu-gnu --with-layout=gnustep --prefix="${GNUSTEP_ROOT}"
+make install -j"${JOBS}"
 
-# Build base
-echo "======== Build base"
+# Source the GNUstep environment from the install prefix if present
+if [ -f "${GNUSTEP_ROOT}/System/Library/Makefiles/GNUstep.sh" ]; then
+	# shellcheck disable=SC1090
+	. "${GNUSTEP_ROOT}/System/Library/Makefiles/GNUstep.sh"
+else
+	echo "Warning: ${GNUSTEP_ROOT}/System/Library/Makefiles/GNUstep.sh not found after installing tools-make." >&2
+fi
+
+# Build libs-base
+echo "======== Build libs-base"
+fail_if_no_dir ../libs-base
 cd ../libs-base
-# make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
-export CFLAGS+=-I/usr/local/include
+export CFLAGS="${CFLAGS-} -I/usr/local/include"
 ./configure --with-installation-domain=SYSTEM --disable-icu --disable-invocations
-make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=no -j4
+make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install -j"${JOBS}"
 
-# Build gui
-echo "======== Build gui"
+# Build libs-gui
+echo "======== Build libs-gui"
+fail_if_no_dir ../libs-gui
 cd ../libs-gui
-# make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
 ./configure
-CC=gcc-10 CXX=g++-10 DLYD_LIBRARY_PATH=/usr/local/Cellar/gcc/10.2.0/lib/gcc/10:${DYLD_LIBRARY_PATH} make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=no -j4
+make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install -j"${JOBS}"
 
-# Build backend
-echo "======== Build back"
+# Build libs-back
+echo "======== Build libs-back"
+fail_if_no_dir ../libs-back
 cd ../libs-back
-# make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM distclean
-./configure
-CC=gcc-10 CXX=g++-10 DLYD_LIBRARY_PATH=/usr/local/Cellar/gcc/10.2.0/lib/gcc/10:${DYLD_LIBRARY_PATH} make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install messages=no -j4
+./configure --enable-graphics=cairo || true
+make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install -j"${JOBS}"
 
-# Set default backend
-# defaults write NSGlobalDomain GSBackend libgnustep-cairo
-
-echo ""
+echo
 echo "Done."
 
 exit 0

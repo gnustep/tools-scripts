@@ -6,56 +6,6 @@ set -e
 echo "Copy patched headers"
 cp -v Patched/shlwapi.h /mingw64/include/shlwapi.h || true
 
-echo "Build tools-make"
-cd tools-make
-./configure --prefix=/mingw64
-make -j$(nproc || echo 1)
-make install
-
-echo "Build libs-base"
-cd ../libs-base
-./configure --prefix=/mingw64
-make -j$(nproc || echo 1)
-make install
-
-echo "Build libs-gui"
-cd ../libs-gui
-./configure --prefix=/mingw64
-make -j$(nproc || echo 1)
-make install
-
-echo "Done building mingw64 components"
-#!/bin/sh
-echo "Building for mingw64_nt"
-
-set -e
-
-echo "Copy patched headers"
-cp -v Patched/shlwapi.h /mingw64/include/shlwapi.h || true
-
-echo "Build tools-make"
-cd tools-make
-./configure --prefix=/mingw64
-make -j$(nproc || echo 1)
-make install
-
-echo "Build libs-base"
-cd ../libs-base
-./configure --prefix=/mingw64
-make -j$(nproc || echo 1)
-make install
-
-echo "Build libs-gui"
-cd ../libs-gui
-./configure --prefix=/mingw64
-make -j$(nproc || echo 1)
-make install
-
-echo "Done building mingw64 components"
-#!/bin/sh
-
-# GNUSTEP_MSYS=${MSYSTEM,,}/../
-
 export CC=gcc
 export CXX=g++
 

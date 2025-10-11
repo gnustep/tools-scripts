@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 echo "Install dependencies at MSYS2/MINGW64..."
 
 echo "0) Source Version Control"
@@ -23,9 +23,7 @@ echo "2) gnustep-base dependencies"
 pacman --noconfirm -S mingw-w64-x86_64-libxml2
 pacman --noconfirm -S mingw-w64-x86_64-gnutls
 pacman --noconfirm -S mingw-w64-x86_64-libxslt
-# pacman --noconfirm -S mingw-w64-x86_64-libobjc2
 pacman --noconfirm -S mingw-w64-x86_64-autotools
-# pacman --noconfirm -S mingw-w64-clang
 
 echo "3) gnustep-gui dependencies"
 pacman --noconfirm -S mingw-w64-x86_64-libjpeg-turbo
@@ -59,4 +57,4 @@ pacman --noconfirm -S asciidoc
 pacman --noconfirm -S mingw-w64-x86_64-lld
 
 echo "Done."
-# echo "Don't forget to run /mingw64_shell.bat to create a session to build in."
+echo "Don't forget to run /mingw64_shell.bat to create a session to build in."

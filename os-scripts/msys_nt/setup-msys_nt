@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+if [ -f "$REPO_ROOT/setup-msys_nt" ]; then
+  exec bash "$REPO_ROOT/setup-msys_nt" "$@"
+else
+  echo "setup-msys_nt not found in repo root" >&2
+  exit 1
+fi

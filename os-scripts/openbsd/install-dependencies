@@ -1,0 +1,7 @@
+#!/bin/sh
+echo "Install dependencies on OpenBSD"
+
+pkg_add git gmake autoconf automake libtool cmake ninja
+pkg_add libxml gnutls libxslt jpeg-turbo tiff giflib icu lcms sqlite3
+
+echo "Done."

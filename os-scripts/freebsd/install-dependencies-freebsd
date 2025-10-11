@@ -1,0 +1,34 @@
+#!/bin/sh
+
+echo "Installing FreeBSD dependencies"
+echo "NOTE: This file assumes that Xorg is installed and that sudo is installed."
+echo "      Also, the user must have sudo access to properly execute this script."
+echo "Installing..."
+sudo pkg install -y llvm
+sudo pkg install -y gmake
+sudo pkg install -y cmake
+sudo pkg install -y windowmaker
+sudo pkg install -y openjpeg
+sudo pkg install -y tiff
+sudo pkg install -y png
+sudo pkg install -y libxml2
+sudo pkg install -y libxslt
+sudo pkg install -y gnutls
+sudo pkg install -y libffi
+sudo pkg install -y icu
+sudo pkg install -y cairo
+sudo pkg install -y avahi
+sudo pkg install -y portaudio
+sudo pkg install -y flite
+sudo pkg install -y curl
+echo "Done..."
+exit 0
+#!/usr/bin/env bash
+set -euo pipefail
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+if [ -f "$REPO_ROOT/install-dependencies-freebsd" ]; then
+  exec bash "$REPO_ROOT/install-dependencies-freebsd" "$@"
+else
+  echo "install-dependencies-freebsd not found in repo root" >&2
+  exit 1
+fi

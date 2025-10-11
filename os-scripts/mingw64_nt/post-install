@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# (post-install placeholder for mingw64)
+
+echo "Post-install steps for mingw64 - edit as needed"

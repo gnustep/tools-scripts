@@ -1,0 +1,75 @@
+#!/bin/sh
+
+# Libraries/Apps/Tools
+LIBS_FILES="libs-xcode libs-ppd libs-steptalk libs-ucsdata libs-renaissance apps-gorm libs-gdl2 libs-gsweb libs-java"
+TOOLS_FILES="tools-charsets"
+APPS_FILES="apps-systempreferences apps-gworkspace apps-projectcenter apps-thematic apps-easydiff"
+
+# export
+export GNUSTEP_MAKEFILES
+
+if [ "$GNUSTEP_MAKEFILES" = "" ]; then
+    echo "\$GNUSTEP_MAKEFILES not set"
+    exit -1
+fi
+
+echo $GNUSTEP_MAKEFILES
+
+# OS
+OS=`uname -s`
+
+# OpenBSD?
+# number of processes
+if [ "$OS" = "OpenBSD" ]; then
+   CPUS=`sysctl hw.ncpu | sed 's/hw.ncpu\=//g'`
+   MAKE="gmake"
+else
+   CPUS=`nproc`
+   MAKE="make"
+fi
+
+# func..
+build_and_install()
+{
+    echo "***** Building ${1}..."
+    cd ${1}
+    if [ -f configure ]; then
+        ./configure
+    fi
+    if [ -f GNUmakefile ]; then
+        $MAKE -j${CPUS} debug=yes
+        if [ "$OS" = "MINGW64_NT*" ]; then
+            . ${GNUSTEP_MAKEFILES}/GNUstep.sh && ${MAKE} GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
+        else
+            sudo -E -- sh -c ". ${GNUSTEP_MAKEFILES}/GNUstep.sh && ${MAKE} GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install"
+        fi
+    fi
+    cd ..
+    echo "***** Done"
+    echo " "
+}
+
+install_files()
+{
+    for file in ${1}
+    do
+        build_and_install $file
+    done
+}
+
+do_install()
+{
+    . /usr/GNUstep/System/Library/Makefiles/GNUstep.sh
+
+    echo "======= Building libraries."
+    install_files "${LIBS_FILES}"
+
+    echo "======= Building tools."
+    install_files "${TOOLS_FILES}"
+
+    echo "======= Building applications."
+    install_files "${APPS_FILES}"
+}
+
+do_install
+exit 0

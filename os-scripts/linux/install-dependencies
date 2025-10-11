@@ -1,0 +1,128 @@
+#!/bin/bash
+
+install_debian()
+{
+    echo "NOTE: Make sure you have done apt-get update and apt-get upgrade prior to running this script."
+    echo "Installing Debian/Ubuntu dependencies"
+    echo "-------"
+
+    sudo apt update
+    sudo apt upgrade
+
+    sudo apt --yes install gobjc 
+    sudo apt --yes install gobjc++
+    sudo apt --yes install clang
+    sudo apt --yes install libjpeg-dev 
+    sudo apt --yes install libtiff-dev 
+    sudo apt --yes install libpng-dev 
+    sudo apt --yes install libicns-dev
+    sudo apt --yes install libmagickcore-dev
+    sudo apt --yes install libxml2-dev 
+    sudo apt --yes install libxslt-dev 
+    sudo apt --yes install libgnutls-dev
+    sudo apt --yes install libffi-dev 
+    sudo apt --yes install libicu-dev 
+    sudo apt --yes install libcairo2-dev
+    sudo apt --yes install libxft-dev
+    sudo apt --yes install libavahi-client-dev
+    sudo apt --yes install flite-dev
+    sudo apt --yes install libxt-dev
+    sudo apt --yes install libportaudio-dev
+    sudo apt --yes install wmaker
+    sudo apt --yes install portaudio19-dev
+    sudo apt --yes install make
+    sudo apt --yes install cmake
+    sudo apt --yes install gnutls-dev
+    sudo apt --yes install libblocksruntime-dev
+    sudo apt --yes install pocketsphinx
+    sudo apt --yes install pocketsphinx-en-us
+    sudo apt --yes install libpocketsphinx-dev
+    sudo apt --yes install libsphinxbase-dev
+    sudo apt --yes install sphinxbase-utils
+    sudo apt --yes install sphinxtrain
+    sudo apt --yes install libssl-dev
+    sudo apt --yes install freeglut3-dev
+    sudo apt --yes install libwayland-dev
+    sudo apt --yes install libxkbcommon-dev
+    sudo apt --yes install wayland-protocols
+    sudo apt --yes install libcurl4-gnutls-dev
+    sudu apt --yes install ffmpeg
+    sudo apt --yes install libavcodec-dev libavformat-dev libavdevice-dev libavfilter-dev libavutil-dev    
+    sudo apt --yes install libao-dev
+    
+    echo "-------"
+    echo "Done..."
+}
+
+install_redhat()
+{
+    echo "NOTE: Make sure you have done apt-get update and apt-get upgrade prior to running this script."
+    echo "Installing RedHat/CentOS/etc dependencies"
+    echo "-------"
+
+    sudo yum update
+    
+    sudo yum -y install gcc 
+    sudo yum -y install gcc-objc
+    sudo yum -y install clang
+    sudo yum -y install libjpeg-turbo-devel 
+    sudo yum -y install libtiff-devel 
+    sudo yum -y install libpng-devel
+    sudo yum -y install libicns-devel
+    sudo yum -y install ImageMagick-devel
+    sudo yum -y install libxml2-devel
+    sudo yum -y install libxslt-devel
+    sudo yum -y install gnutls-devel
+    sudo yum -y install libffi-devel
+    sudo yum -y install libicu-devel
+    sudo yum -y install cairo-devel
+    sudo yum -y install libXft-devel
+    sudo yum -y install avahi-devel
+    sudo yum -y install flite-devel
+    sudo yum -y install libXt-devel
+#    sudo yum -y install libportaudio-devel
+#    sudo yum -y install wmaker
+#    sudo yum -y install portaudio19-dev
+    sudo yum -y install make
+    sudo yum -y install cmake
+#    sudo yum -y install libblocksruntime-dev
+#    sudo yum -y install pocketsphinx
+#    sudo yum -y install pocketsphinx-en-us
+#    sudo yum -y install libpocketsphinx-dev
+#    sudo yum -y install libsphinxbase-dev
+#    sudo yum -y install sphinxbase-utils
+#    sudo yum -y install sphinxtrain
+    sudo yum -y install openssl-devel
+    sudo yum -y install gnutls-devel
+    sudo yum -y install libcurl4-gnutls-devel
+    sudo yum -y install epel-release
+    sudo yum localinstall --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-7.noarch.rpm
+    sudo yum install ffmpeg ffmpeg-devel
+    sudo yum -y install libao-devel
+    
+    echo "-------"
+    echo "Done..."
+}
+
+get_system()
+{
+    if [ -e /etc/os-release ]; then
+        . /etc/os-release
+    fi
+}
+
+get_system
+echo "You are using ${ID}"
+
+which apt > /dev/null
+if [ "$?" == "0" ]; then
+    install_debian
+else
+    which yum
+    if [ "$?" == "0" ]; then
+        install_redhat
+    else    
+        echo "Please report this to bugs-gnustep@gnu.org."
+        echo "Your linux os ${ID} is currently unsupported."
+    fi
+fi

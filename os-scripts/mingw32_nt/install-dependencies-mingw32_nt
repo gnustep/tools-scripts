@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 echo "Install dependencies at MSYS2/MINGW32..."
 
 echo "0) Source Version Control"
@@ -46,5 +46,13 @@ echo "7) ghostscript for printing support"
 pacman -S --noconfirm mingw-w64-x86_64-ghostscript
 
 echo "Done."
-echo "Don't forget to run /mingw32_shell.bat to create a session to build in"
-
+echo "Don't forget to run /mingw32_shell.bat to create a session to build in."
+#!/usr/bin/env bash
+set -euo pipefail
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+if [ -f "$REPO_ROOT/install-dependencies-mingw32_nt" ]; then
+  exec bash "$REPO_ROOT/install-dependencies-mingw32_nt" "$@"
+else
+  echo "install-dependencies-mingw32_nt not found in repo root" >&2
+  exit 1
+fi

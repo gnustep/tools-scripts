@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 echo "Install dependencies at MSYS2/MINGW64..."
 
 echo "0) Source Version Control"
@@ -16,7 +16,7 @@ pacman --noconfirm -S mingw-w64-x86_64-libtool
 pacman --noconfirm -S mingw-w64-x86_64-toolchain
 # pacman --noconfirm -S mingw-w64-x86_64-pkg-config
 pacman --noconfirm -S mingw-w64-x86_64-cmake
-pacman --noconfirm -S base-devel
+pacman --noconfitm -S base-devel
 
 echo "2) gnustep-base dependencies"
 #pacman --noconfirm -S mingw-w64-x86_64-libffi

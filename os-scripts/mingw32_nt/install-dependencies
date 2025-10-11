@@ -1,4 +1,13 @@
 #! /bin/sh
+echo "Install dependencies for mingw32_nt"
+
+pacman --noconfirm -S subversion git
+pacman --noconfirm -S tar unzip make autogen automake autoconf libtool mingw-w64-i686-toolchain
+pacman --noconfirm -S mingw-w64-i686-libxml2 mingw-w64-i686-gnutls mingw-w64-i686-libxslt
+pacman --noconfirm -S mingw-w64-i686-libjpeg-turbo mingw-w64-i686-libtiff mingw-w64-i686-giflib
+
+echo "done"
+#! /bin/sh
 echo "Install dependencies at MSYS2/MINGW32..."
 
 echo "0) Source Version Control"
@@ -47,4 +56,3 @@ pacman -S --noconfirm mingw-w64-x86_64-ghostscript
 
 echo "Done."
 echo "Don't forget to run /mingw32_shell.bat to create a session to build in"
-

@@ -1,0 +1,20 @@
+#!/bin/sh
+echo "Setting up for GNUstep install"
+pacman -S git
+
+echo "Add .bashrc code to initialize GNUstep"
+cat >> ~/.bashrc << EOF
+
+echo "Setting up GNUstep environment on $(uname -s)"
+. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh
+
+EOF
+#!/usr/bin/env bash
+set -euo pipefail
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+if [ -f "$REPO_ROOT/setup-mingw64_nt" ]; then
+  exec bash "$REPO_ROOT/setup-mingw64_nt" "$@"
+else
+  echo "setup-mingw64_nt not found in repo root" >&2
+  exit 1
+fi

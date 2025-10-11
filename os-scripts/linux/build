@@ -1,0 +1,55 @@
+#!/bin/bash
+
+libs_files="libs-xcode"
+apps_files="apps-gorm plugins-themes-WinUXTheme"
+
+# OS
+OS=`uname -s`
+
+# number of processes
+CPUS=`nproc`
+
+# func..
+build_and_install()
+{
+    echo "***** Building ${1}..."
+    cd ${1}
+    if [ -f configure ]; then
+        ./configure
+    fi
+    if [ -f GNUmakefile ]; then
+        make -j${CPUS} debug=yes
+        if [ "$OS" == "Linux" ]; then
+            sudo -- sh -c '. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install'
+        else
+            . /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
+        fi  
+    fi
+    cd ..
+    echo "***** Done"
+}
+
+install_files()
+{
+    for file in ${1}
+    do
+        build_and_install $file
+    done
+}
+
+do_install()
+{
+    . /usr/GNUstep/System/Library/Makefiles/GNUstep.sh
+
+    echo "======= Building libraries."
+    install_files ${libs_files}
+
+#    echo "======= Building tools."
+#    install_files ${tools_files}
+
+    echo "======= Building applications."
+    install_files ${apps_files}
+}
+
+do_install
+exit 0

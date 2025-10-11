@@ -1,0 +1,9 @@
+#!/bin/bash
+
+CPUS=`nproc`
+SUDO='sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH'
+KERNEL=`uname -s | awk '{print tolower($0)}'`
+scriptsdir="`pwd`/tools-scripts"
+
+# minimal excerpt copied from root script; keep as utility
+echo "compile-all placeholder"

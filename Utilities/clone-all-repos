@@ -1,0 +1,4 @@
+#!/bin/sh
+echo "Cloning all repositories (utility script placeholder)"
+
+# Original script moved to Utilities; edit as needed.

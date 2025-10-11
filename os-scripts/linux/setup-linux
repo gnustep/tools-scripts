@@ -1,0 +1,61 @@
+#!/bin/sh
+
+export USER=`whoami`
+COMMAND="apt"
+
+# Add distro specific variables...
+. /etc/lsb-release
+
+# Install SUDO if needed...
+if [ ! -e /usr/bin/sudo ]; then
+   echo "Installing sudo..." 
+   if [ -e /usr/bin/apt ]; then
+      su -c "apt install sudo"
+
+   else
+      su -c "rpm install sudo"
+      COMMAND="rpm"
+   fi
+else
+   echo "sudo command is already present."
+fi
+
+# Update root password...
+echo "Checking if root password is not set, please set it..."
+if [ "${DISTRIB_ID}" = "Ubuntu" ]; then
+   STATUS=`sudo passwd root --status | cut -f2 -d' '`
+   if [ "${STATUS}" = "L" ]; then
+      sudo passwd root
+   fi
+fi
+
+# Add to sudoers
+if [ "${DISTRIB_ID}" != "Ubuntu" ]; then
+   if [ ! -e /etc/sudoers.d/${USER} ]; then
+      echo "Adding ${USER} to sudoers..."
+      echo "Please enter the root user's password."
+      su -c 'echo "${USER}    ALL=(ALL:ALL) ALL" > /etc/sudoers.d/${USER}'
+   else
+      echo "${USER} is already a member of sudo users."
+   fi
+fi
+
+# Install git and curl if needed...
+if [ ! -e /usr/bin/curl ]; then
+   echo "Installing git"
+   sudo ${COMMAND} install curl
+fi
+
+if [ ! -e /usr/bin/git ]; then
+   echo "Installing git"
+   sudo ${COMMAND} install git
+fi
+#!/usr/bin/env bash
+set -euo pipefail
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+if [ -f "$REPO_ROOT/setup-linux" ]; then
+  exec bash "$REPO_ROOT/setup-linux" "$@"
+else
+  echo "setup-linux not found in repo root" >&2
+  exit 1
+fi

@@ -3,8 +3,9 @@ GNUstep scripts
 
 The purpose of these scripts is to simplify GNUstep installation and dependency management.  
 
-Usage:
+Usage
 ---
+
 * Make sure that the tools-scripts directory is in the same directory as make, base, gui & back.
   (if you are using SVN this should be done already)
 * make certain that when you execute these scripts you are in the directory above.
@@ -17,14 +18,15 @@ Usage:
 * A few scripts: whitespace-cleanup, process-files, and cleanup should be executed inside the repo
   directory.
 
-The purposes of all of the scripts is as follows:
+The purposes of all of the scripts is as follows
 ---
+
 * clang-build - Build GNUstep using clang
 * compile-all - Build GNUstep.  With no options it will build using gcc and the built in runtime.
 * windows-build - Legacy script builds GNUstep on Windows under MinGW32.
-* build-* - Builds GNUstep for the given operating system represented by *
-* install-dependencies-* - installs the dependencies for a given system represented by *
-* setup-* - sets up the build for the system represented by *
+* build-*- Builds GNUstep for the given operating system represented by*
+* install-dependencies-*- installs the dependencies for a given system represented by*
+* setup-*- sets up the build for the system represented by*
 * windows-package - packages a GNUstep application so that it can run WITHOUT having GNUstep installed
 * clone-essential-repos - uses SSL to update the essential repos
 * clone-essential-repos-https - uses HTTPS to update the essential repos
@@ -34,15 +36,13 @@ The purposes of all of the scripts is as follows:
 * process-files - run the specified command on the current files that have been changed.
 * cleanup - whitespace cleanup and, likely, other cleanups to be done on currently changed files.
 
-
-
 Install GNUstep dev environment
 ===
 
- * use ssh-agent forwarding, or have your key for GitHub locally on your dev machine and
+* use ssh-agent forwarding, or have your key for GitHub locally on your dev machine and
    start ssh-agent locally.
- * have sudo configured, you may or may not want to use NOPASSWD
- * have the SSH key from GitHub accepted
+* have sudo configured, you may or may not want to use NOPASSWD
+* have the SSH key from GitHub accepted
 
 Assume an empty development VM, i.e. Linux, OpenBSD, you name it:
 
@@ -52,10 +52,13 @@ cd ~/gnustep
 ```
 
 with curl already installed:
+
 ```
 curl -fsSL > gnustep-web-install-dev https://raw.githubusercontent.com/gnustep/tools-scripts/refs/heads/master/gnustep-web-install-dev
 ```
+
 or on OpenBSD with ftp:
+
 ```
 ftp -o gnustep-web-install-dev https://raw.githubusercontent.com/gnustep/tools-scripts/refs/heads/master/gnustep-web-install-dev
 ```
@@ -76,7 +79,27 @@ Once it finished, source GNUstep.sh and start developing:
 
 . /usr/GNUstep/System/Library/Makefiles/GNUstep.sh
 
-
 Please report any bugs you find with this set of scripts.
 
 Thank you... GC
+
+Dispatcher and per-OS scripts
+---
+
+This repository now includes a small dispatcher `run-for-os.sh` at the repository root.
+It detects the host environment (or accepts an explicit target) and runs the appropriate
+install/setup/build/post-install script for that platform. Examples:
+
+```bash
+# auto-detect the platform and run the install step
+./run-for-os.sh install
+
+# explicitly run the build step for mingw64_nt
+./run-for-os.sh build mingw64_nt
+```
+
+A helper exists to make all per-OS wrappers executable (run once after checkout):
+
+```bash
+./make-scripts-executable.sh
+```

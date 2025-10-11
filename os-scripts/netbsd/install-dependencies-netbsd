@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+if [ -f "$REPO_ROOT/install-dependencies-netbsd" ]; then
+  exec bash "$REPO_ROOT/install-dependencies-netbsd" "$@"
+else
+  echo "install-dependencies-netbsd not found in repo root" >&2
+  exit 1
+fi

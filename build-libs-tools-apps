@@ -1,16 +1,26 @@
 #!/bin/sh
 
 # Libraries/Apps/Tools
-libs_files="libs-xcode libs-ppd libs-steptalk libs-ucsdata libs-renaissance apps-gorm libs-gdl2 libs-gsweb libs-java"
-tools_files="tools-charsets"
-apps_files="apps-systempreferences apps-gworkspace apps-projectcenter apps-thematic apps-easydiff"
+LIBS_FILES="libs-xcode libs-ppd libs-steptalk libs-ucsdata libs-renaissance apps-gorm libs-gdl2 libs-gsweb libs-java"
+TOOLS_FILES="tools-charsets"
+APPS_FILES="apps-systempreferences apps-gworkspace apps-projectcenter apps-thematic apps-easydiff"
+
+# export
+export GNUSTEP_MAKEFILES
+
+if [ "$GNUSTEP_MAKEFILES" = "" ]; then
+    echo "\$GNUSTEP_MAKEFILES not set"
+    exit -1
+fi
+
+echo $GNUSTEP_MAKEFILES
 
 # OS
 OS=`uname -s`
 
 # OpenBSD?
 # number of processes
-if [ "$OS" == "OpenBSD" ]; then
+if [ "$OS" = "OpenBSD" ]; then
    CPUS=`sysctl hw.ncpu | sed 's/hw.ncpu\=//g'`
    MAKE="gmake"
 else
@@ -28,15 +38,11 @@ build_and_install()
     fi
     if [ -f GNUmakefile ]; then
 	$MAKE -j${CPUS} debug=yes
-	if [ "$OS" == *"MINGW64_NT"* ]; then
-	    . /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
+	if [ "$OS" = "MINGW64_NT*" ]; then
+	    . ${GNUSTEP_MAKEFILES}/GNUstep.sh && ${MAKE} GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 	else
-	    if [ "$OS" == "OpenBSD" ]; then
-	       sudo -- sh -c '. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && gmake GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install'
-	    else
-	       sudo -- sh -c '. /usr/GNUstep/System/Library/Makefiles/GNUstep.sh && make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install'
-	    fi
-        fi  
+	    sudo -E -- sh -c ". ${GNUSTEP_MAKEFILES}/GNUstep.sh && ${MAKE} GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install"
+	fi
     fi
     cd ..
     echo "***** Done"
@@ -56,13 +62,13 @@ do_install()
     . /usr/GNUstep/System/Library/Makefiles/GNUstep.sh
 
     echo "======= Building libraries."
-    install_files "${libs_files}"
+    install_files "${LIBS_FILES}"
 
     echo "======= Building tools."
-    install_files "${tools_files}"
+    install_files "${TOOLS_FILES}"
 
     echo "======= Building applications."
-    install_files "${apps_files}"
+    install_files "${APPS_FILES}"
 }
 
 do_install

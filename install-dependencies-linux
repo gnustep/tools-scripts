@@ -46,6 +46,9 @@ install_debian()
     sudo apt --yes install libxkbcommon-dev
     sudo apt --yes install wayland-protocols
     sudo apt --yes install libcurl4-gnutls-dev
+    sudu apt --yes install ffmpeg
+    sudo apt --yes install libavcodec-dev libavformat-dev libavdevice-dev libavfilter-dev libavutil-dev    
+    sudo apt --yes install libao-dev
     
     echo "-------"
     echo "Done..."
@@ -92,7 +95,11 @@ install_redhat()
     sudo yum -y install openssl-devel
     sudo yum -y install gnutls-devel
     sudo yum -y install libcurl4-gnutls-devel
-
+    sudo yum -y install epel-release
+    sudo yum localinstall --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-7.noarch.rpm
+    sudo yum install ffmpeg ffmpeg-devel
+    sudo yum -y install libao-devel
+    
     echo "-------"
     echo "Done..."
 }

@@ -1,0 +1,4 @@
+#!/bin/sh
+# Wrapper: forward to canonical script under os-scripts/mingw64_nt
+REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
+exec "$REPO_ROOT/os-scripts/mingw64_nt/post-install" "$@"

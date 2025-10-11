@@ -1,49 +1,11 @@
 #!/bin/sh
-
-# Inform the user. ;) 
-echo "NOTE: Make sure you have done brew update and brew upgrade prior to running this script."
-echo "Installing macOS dependencies"
-echo "-------"
-
-# Install homebrew...
-if [ -e /usr/local/bin/brew ]; then
-	echo "Homebrew installed... continuing."
-else
-	/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-fi
-
-# Create frameworks dir...
-if [ -e /usr/local/Frameworks ]; then
-	echo "Frameworks directory present."
-else
-	sudo mkdir /usr/local/Frameworks
-fi 
-
-# Install dependencies...
-echo "-------"
-brew install gcc
-brew install jpeg 
-brew install libtiff 
-brew install libpng
-brew install libicns 
-brew install libxml2
-brew install libxslt
-brew install gnutls
-brew install libffi
-# brew install libicu # optional
-brew install cairo
-# brew install libxft  # provided by X11
-# brew install libavahi-client-dev  # optional
-# brew install flite-dev # optional
-# brew install libxt-dev  # provided by X11
-brew install portaudio
-brew install make
-brew install cmake
-# brew install libcurl
-
-#echo "------- Upgrade existing packages..."
-#brew upgrade
-#echo "-------"
-#echo "Done..."
-
-exit 0
+# This file was migrated to os-scripts/darwin/install-dependencies
+# The canonical script now lives at:
+#   tools-scripts/os-scripts/darwin/install-dependencies
+# To run it:
+#   ./tools-scripts/os-scripts/darwin/install-dependencies
+# To remove this file locally after pulling the branch, run:
+#   git rm tools-scripts/install-dependencies-darwin
+#   git commit -m "Remove top-level darwin install-dependencies (migrated to os-scripts)"
+REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
+exec "$REPO_ROOT/os-scripts/darwin/install-dependencies" "$@"

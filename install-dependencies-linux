@@ -104,6 +104,48 @@ install_redhat()
     echo "Done..."
 }
 
+install_opensuse()
+{
+    echo "NOTE: Make sure you have done apt-get update and apt-get upgrade prior to running this script."
+    echo "Installing openSUSE/SLE/etc dependencies"
+    echo "-------"
+
+    sudo zypper update -y
+    
+    packages=(
+        gcc 
+        gcc-objc
+        clang
+        libjpeg62-devel
+        libturbojpeg0
+        libtiff-devel 
+        libpng-devel
+        libicns-devel
+        ImageMagick-devel
+        libxml2-devel
+        libxslt-devel
+        gnutls-devel
+        libffi-devel
+        libicu-devel
+        cairo-devel
+        libXft-devel
+        avahi-devel
+        flite-devel
+        libXt-devel
+        portaudio-devel
+        wmaker
+        make
+        cmake
+        pocketsphinx
+        pocketsphinx-devel
+    )
+
+    sudo zypper install "${packages[@]}"
+
+    echo "-------"
+    echo "Done..."
+}
+
 get_system()
 {
     if [ -e /etc/os-release ]; then
@@ -120,10 +162,14 @@ if [ "$?" == "0" ]; then
 else
     which yum
     if [ "$?" == "0" ]; then
-	install_redhat
+        install_redhat
     else    
-	echo "Please report this to bugs-gnustep@gnu.org."
-        echo "Your linux os ${ID} is currently unsupported."
-    fi
+        which zypper
+        if [ "$?" == "0" ]; then
+            install_opensuse
+        else
+            echo "Please report this to bugs-gnustep@gnu.org."
+            echo "Your linux os ${ID} is currently unsupported."
+        fi
 fi
 

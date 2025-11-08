@@ -4,7 +4,11 @@ export USER=`whoami`
 COMMAND="apt"
 
 # Add distro specific variables...
-. /etc/lsb-release
+if [[ -f /etc/lsb-release ]]; then
+	. /etc/lsb-release
+elif [[ -f /etc/os-release ]]; then
+	. /etc/os-release
+fi
 
 # Install SUDO if needed...
 if [ ! -e /usr/bin/sudo ]; then
@@ -29,15 +33,18 @@ if [ "${DISTRIB_ID}" = "Ubuntu" ]; then
    fi
 fi
 
-# Add to sudoers
-if [ "${DISTRIB_ID}" != "Ubuntu" ]; then
-   if [ ! -e /etc/sudoers.d/${USER} ]; then
-      echo "Adding ${USER} to sudoers..."
-      echo "Please enter the root user's password."
-      su -c 'echo "${USER}    ALL=(ALL:ALL) ALL" > /etc/sudoers.d/${USER}'
-   else
-      echo "${USER} is already a member of sudo users."
-   fi
+# Add to sudoers. slackware dependency install will prompt user to set it up
+# prior to completing the gnustep-web-install 
+if [ "${ID}" != "slackware" ]; then
+  if [ "${DISTRIB_ID}" != "Ubuntu" ]; then
+     if [ ! -e /etc/sudoers.d/${USER} ]; then
+        echo "Adding ${USER} to sudoers..."
+        echo "Please enter the root user's password."
+        su -c 'echo "${USER}    ALL=(ALL:ALL) ALL" > /etc/sudoers.d/${USER}'
+     else
+        echo "${USER} is already a member of sudo users."
+     fi
+  fi
 fi
 
 # Install git and curl if needed...

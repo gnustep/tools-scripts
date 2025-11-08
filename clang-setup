@@ -66,6 +66,7 @@ cmake ../ \
   -DCMAKE_INSTALL_DATAROOTDIR="$(gnustep-config --variable=GNUSTEP_SYSTEM_LIBRARY)" \
   -DTESTS=OFF
 make -j${CPUS}
+echo "$(gnustep-config  --variable=GNUSTEP_SYSTEM_LIBRARIES)" | sudo tee -a /etc/ld.so.conf.d/GNUstep.conf > /dev/null
 ${SUDO} -E make install && ${SUDO} ldconfig
 fi
 

@@ -1,0 +1,39 @@
+name: Build GNUstep (CI)
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    name: Build using stock script
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Running only the non-dev version for now, as the dev version assumes
+      # ssh keys are set up. This should be possible to set up with GitHub
+      # Actions, but let's keep it simple for now.
+      - name: Run the script per README instructions (non-dev version)
+        shell: bash
+        run: |
+          # Sourcing so we get the pipefail propagate.
+          (set -euo pipefail ; export MANAGE_SUDO=no ; . gnustep-web-install) | tee /tmp/gs-build.log
+          # We should process the log here to see if we can recognize critical
+          # errors.
+
+          # Otherwise let's see if some expected binaries are present.
+          if [ ! -x "/usr/local/GNUstep/bin/gnustep-config" ] ; then
+            echo "gnustep-config not found!"
+            exit 1
+          fi
+          if [ ! -x "/usr/local/GNUstep/bin/gorm" ] ; then
+            echo "gorm not found!"
+            exit 1
+          fi

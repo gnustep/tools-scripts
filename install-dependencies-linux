@@ -171,5 +171,5 @@ else
             echo "Please report this to bugs-gnustep@gnu.org."
             echo "Your linux os ${ID} is currently unsupported."
         fi
+    fi
 fi
-

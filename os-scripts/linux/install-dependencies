@@ -46,7 +46,7 @@ install_debian()
     sudo apt --yes install libxkbcommon-dev
     sudo apt --yes install wayland-protocols
     sudo apt --yes install libcurl4-gnutls-dev
-    sudu apt --yes install ffmpeg
+    sudo apt --yes install ffmpeg
     sudo apt --yes install libavcodec-dev libavformat-dev libavdevice-dev libavfilter-dev libavutil-dev    
     sudo apt --yes install libao-dev
     
@@ -104,6 +104,48 @@ install_redhat()
     echo "Done..."
 }
 
+install_opensuse()
+{
+    echo "NOTE: Make sure you have done apt-get update and apt-get upgrade prior to running this script."
+    echo "Installing openSUSE/SLE/etc dependencies"
+    echo "-------"
+
+    sudo zypper update -y
+    
+    packages=(
+        gcc 
+        gcc-objc
+        clang
+        libjpeg62-devel
+        libturbojpeg0
+        libtiff-devel 
+        libpng-devel
+        libicns-devel
+        ImageMagick-devel
+        libxml2-devel
+        libxslt-devel
+        gnutls-devel
+        libffi-devel
+        libicu-devel
+        cairo-devel
+        libXft-devel
+        avahi-devel
+        flite-devel
+        libXt-devel
+        portaudio-devel
+        wmaker
+        make
+        cmake
+        pocketsphinx
+        pocketsphinx-devel
+    )
+
+    sudo zypper install "${packages[@]}"
+
+    echo "-------"
+    echo "Done..."
+}
+
 get_system()
 {
     if [ -e /etc/os-release ]; then
@@ -122,7 +164,17 @@ else
     if [ "$?" == "0" ]; then
         install_redhat
     else    
+<<<<<<< HEAD:os-scripts/linux/install-dependencies
         echo "Please report this to bugs-gnustep@gnu.org."
         echo "Your linux os ${ID} is currently unsupported."
     fi
+=======
+        which zypper
+        if [ "$?" == "0" ]; then
+            install_opensuse
+        else
+            echo "Please report this to bugs-gnustep@gnu.org."
+            echo "Your linux os ${ID} is currently unsupported."
+        fi
+>>>>>>> 0be21a799017242b9484b1ba79d9bcb8d5fd8c5b:install-dependencies-linux
 fi

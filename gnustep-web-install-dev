@@ -35,20 +35,34 @@ echo " "
 export KERNEL=`uname -s | sed "s/\-.*//g" | awk '{print(tolower($0))}'`
 echo "Begin setup for ${KERNEL}"
 
-export USER=`whoami`
-if [ "X${KERNEL}" == "Xopenbsd" ];then
-  ftp -o ./setup-${KERNEL} https://raw.githubusercontent.com/gnustep/tools-scripts/master/setup-${KERNEL}
+if [ ! -f ./setup-${KERNEL} ] ; then
+  # Download the setup script only if not already present (e.g. CI).
+  export USER=`whoami`
+  if [ "X${KERNEL}" == "Xopenbsd" ];then
+    ftp -o ./setup-${KERNEL} https://raw.githubusercontent.com/gnustep/tools-scripts/master/setup-${KERNEL}
+  else
+    curl -fsSL > ./setup-${KERNEL} https://raw.githubusercontent.com/gnustep/tools-scripts/master/setup-${KERNEL}
+  fi
+  ./setup-${KERNEL}
+  rm ./setup-${KERNEL}
 else
-  curl -fsSL > ./setup-${KERNEL} https://raw.githubusercontent.com/gnustep/tools-scripts/master/setup-${KERNEL}
+  # Else, assume inside CI.
+  # For CI purposes, default to failing. Using bashism is fine here, for now.
+  set -euo pipefail
+  ./setup-${KERNEL}
 fi
 
-./setup-${KERNEL}
-rm ./setup-${KERNEL}
-
 echo "======== Create gnustep build directories ========"
-mkdir -p gnustep
-cd gnustep
-git clone git@github.com:gnustep/tools-scripts.git
+if [ ! -e .git ] ; then
+  # Default outside CI.
+  mkdir -p gnustep
+  cd gnustep
+  git clone git@github.com:gnustep/tools-scripts.git
+else
+  # Inside CI we are already in the repo.
+  # Just go to the parent directory, tools-scripts will exist.
+  cd ..
+fi
 ./tools-scripts/clone-all-repos
 
 echo "================ Install Dependencies ================"

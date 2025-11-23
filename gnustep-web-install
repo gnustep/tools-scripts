@@ -33,14 +33,29 @@ export KERNEL=`uname -s | sed "s/\-.*//g" | awk '{print(tolower($0))}'`
 echo "Begin setup for ${KERNEL}"
 
 export USER=`whoami`
-curl -fsSL > ./setup-${KERNEL} https://raw.githubusercontent.com/gnustep/tools-scripts/master/setup-${KERNEL}
-. ./setup-${KERNEL}
-rm ./setup-${KERNEL}
+if [ ! -f ./setup-${KERNEL} ] ; then
+  # Download the setup script only if not already present (e.g. CI).
+  curl -fsSL > ./setup-${KERNEL} https://raw.githubusercontent.com/gnustep/tools-scripts/master/setup-${KERNEL}
+  . ./setup-${KERNEL}
+  rm ./setup-${KERNEL}
+else
+  # Assume inside CI.
+  # For CI purposes, default to failing. Using bashism is fine here, for now.
+  set -euo pipefail
+  . ./setup-${KERNEL}
+fi
 
 echo "======== Create gnustep build directories ========"
-mkdir -p gnustep
-cd gnustep
-git clone https://github.com/gnustep/tools-scripts
+if [ ! -e .git ] ; then
+  # Default outside CI.
+  mkdir -p gnustep
+  cd gnustep
+  git clone https://github.com/gnustep/tools-scripts
+else
+  # Inside CI we are already in the repo.
+  # Just go to the parent directory, tools-scripts will exist.
+  cd ..
+fi
 ./tools-scripts/clone-essential-repos-https
 
 echo "================ Install Dependencies ================"

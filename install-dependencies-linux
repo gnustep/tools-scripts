@@ -70,7 +70,13 @@ install_debian()
 	sudo apt -y install curl
 	sudo apt -y install libtcmalloc-minimal4
 	sudo apt -y install zenity
-	
+
+# GSS, 17-Feb-26: ld.gold linker deprecated with later versions of debian; package only appears to be available if needed
+    AptSearch=$(apt-cache policy binutils-gold)
+    if [[ ! "$AptSearch" == *"Candidate: (none)"* ]]; then
+      sudo apt install -y binutils-gold
+    fi
+
     echo "-------"
     echo "Done..."
 }

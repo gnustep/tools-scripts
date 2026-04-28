@@ -61,7 +61,7 @@ echo "==> Installing Homebrew dependencies"
 
 "$BREW" install \
   autoconf automake libtool pkgconf gsed gawk coreutils \
-  gcc make \
+  gcc make cmake ninja llvm \
   libffi openssl@3 libxml2 icu4c zlib bdw-gc \
   jpeg-turbo libpng libtiff cairo fontconfig freetype \
   libx11 libxext libxt libxmu libxft libxrender libxfixes libxcursor libxrandr
@@ -88,14 +88,70 @@ clone_or_update libs-base  libs-base  "$LIBS_BASE_TAG"
 clone_or_update libs-gui   libs-gui   "$LIBS_GUI_TAG"
 clone_or_update libs-back  libs-back  "$LIBS_BACK_TAG"
 
+if [[ ! -d libobjc2/.git ]]; then
+  git clone "https://github.com/gnustep/libobjc2.git" libobjc2
+fi
+
+git -C libobjc2 fetch --all --prune
+LIBOBJC2_BRANCH="$(git -C libobjc2 symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##')"
+if [[ -z "$LIBOBJC2_BRANCH" ]]; then
+  LIBOBJC2_BRANCH=master
+fi
+git -C libobjc2 checkout "$LIBOBJC2_BRANCH"
+git -C libobjc2 pull --ff-only origin "$LIBOBJC2_BRANCH"
+
+patch_libobjc2_for_darwin() {
+  if [[ "$(uname -s)" != "Darwin" ]]; then
+    return
+  fi
+
+  local cmake_file="$SRCROOT/libobjc2/CMakeLists.txt"
+  local aarch64_asm_file="$SRCROOT/libobjc2/objc_msgSend.aarch64.S"
+
+  if grep -q -- '-fobjc-runtime=gnustep-' "$cmake_file"; then
+    # Clang on modern Darwin can crash lowering COMDATs with forced GNUstep runtime.
+    # For libobjc2 itself, rely on default Darwin runtime codegen.
+    perl -0pi -e 's/;-fobjc-runtime=gnustep-[0-9]+\.[0-9]+//g' "$cmake_file"
+  fi
+
+  # Darwin arm64 assembler expects @PAGE / @PAGEOFF relocations.
+  perl -0pi -e 's#adrp\s+x10,\s+CDECL\(SmallObjectClasses\)(?:@PAGE)?#adrp   x10, CDECL(SmallObjectClasses)@PAGE#g' "$aarch64_asm_file"
+  perl -0pi -e 's#add\s+x10,\s+x10,\s+(?::lo12:)?CDECL\(SmallObjectClasses\)(?:@PAGEOFF)?#add    x10, x10, CDECL(SmallObjectClasses)@PAGEOFF#g' "$aarch64_asm_file"
+}
+
+patch_libobjc2_for_darwin
+
 # Common compiler and linker environment.
-export CC="${CC:-clang}"
-export CXX="${CXX:-clang++}"
-export OBJC="${OBJC:-clang}"
-export OBJCXX="${OBJCXX:-clang++}"
+HOMEBREW_LLVM_BIN="$BREW_PREFIX/opt/llvm/bin"
+if [[ ! -x "$HOMEBREW_LLVM_BIN/clang" || ! -x "$HOMEBREW_LLVM_BIN/clang++" ]]; then
+  echo "Homebrew LLVM clang not found at $HOMEBREW_LLVM_BIN"
+  echo "Try: $BREW install llvm"
+  exit 1
+fi
+
+export PATH="$HOMEBREW_LLVM_BIN:$BREW_PREFIX/opt/icu4c/bin:$BREW_PREFIX/opt/libxml2/bin:$PATH"
+export CC="${CC:-$HOMEBREW_LLVM_BIN/clang}"
+export CXX="${CXX:-$HOMEBREW_LLVM_BIN/clang++}"
+export OBJC="${OBJC:-$HOMEBREW_LLVM_BIN/clang}"
+export OBJCXX="${OBJCXX:-$HOMEBREW_LLVM_BIN/clang++}"
+export CMAKE_C_COMPILER="$CC"
+export CMAKE_CXX_COMPILER="$CXX"
+export CMAKE_OBJC_COMPILER="$OBJC"
+export CMAKE_OBJCXX_COMPILER="$OBJCXX"
+
+LIBOBJC2_CC="$CC"
+LIBOBJC2_CXX="$CXX"
+LIBOBJC2_OBJC="$OBJC"
+LIBOBJC2_OBJCXX="$OBJCXX"
+
+if [[ "$(uname -s)" == "Darwin" && "${LIBOBJC2_USE_XCODE_CLANG:-1}" == "1" ]]; then
+  LIBOBJC2_CC="/usr/bin/clang"
+  LIBOBJC2_CXX="/usr/bin/clang++"
+  LIBOBJC2_OBJC="/usr/bin/clang"
+  LIBOBJC2_OBJCXX="/usr/bin/clang++"
+fi
 
 export PKG_CONFIG="$BREW_PREFIX/bin/pkg-config"
-export PATH="$BREW_PREFIX/opt/icu4c/bin:$BREW_PREFIX/opt/libxml2/bin:$PATH"
 export PKG_CONFIG_PATH="$BREW_PREFIX/opt/icu4c/lib/pkgconfig:$BREW_PREFIX/opt/libxml2/lib/pkgconfig:$BREW_PREFIX/opt/libffi/lib/pkgconfig:$X11_PREFIX/lib/pkgconfig:$BREW_PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
 export ACLOCAL_PATH="$BREW_PREFIX/share/aclocal:${ACLOCAL_PATH:-}"
 
@@ -158,6 +214,33 @@ build_tools_make() {
   echo "LIBRARY_COMBO=$(gnustep-config --variable=LIBRARY_COMBO)"
 }
 
+build_libobjc2() {
+  echo "==> Building libobjc2 ($LIBOBJC2_BRANCH)"
+  cd "$SRCROOT/libobjc2"
+
+  rm -rf build
+  mkdir -p build
+  cd build
+
+  cmake .. \
+    -G Ninja \
+    -Wno-dev \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_INSTALL_PREFIX="$PREFIX" \
+    -DGNUSTEP_INSTALL_TYPE=LOCAL \
+    -DCMAKE_C_COMPILER="$LIBOBJC2_CC" \
+    -DCMAKE_CXX_COMPILER="$LIBOBJC2_CXX" \
+    -DCMAKE_OBJC_COMPILER="$LIBOBJC2_OBJC" \
+    -DCMAKE_OBJCXX_COMPILER="$LIBOBJC2_OBJCXX" \
+    -DCMAKE_ASM_COMPILER="$LIBOBJC2_CC" \
+    -DCMAKE_PREFIX_PATH="$BREW_PREFIX;$PREFIX"
+
+  ninja -j"$JOBS"
+  sudo ninja install
+
+  echo "libobjc2 local libs: $(gnustep-config --variable=GNUSTEP_LOCAL_LIBRARIES)"
+}
+
 build_lib() {
   local name="$1"
   shift
@@ -177,6 +260,7 @@ build_lib() {
 }
 
 build_tools_make
+build_libobjc2
 
 # Base first after make.
 build_lib libs-base

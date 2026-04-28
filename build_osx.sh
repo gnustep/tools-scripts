@@ -95,12 +95,13 @@ export OBJC="${OBJC:-clang}"
 export OBJCXX="${OBJCXX:-clang++}"
 
 export PKG_CONFIG="$BREW_PREFIX/bin/pkg-config"
-export PKG_CONFIG_PATH="$X11_PREFIX/lib/pkgconfig:$BREW_PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
+export PATH="$BREW_PREFIX/opt/icu4c/bin:$BREW_PREFIX/opt/libxml2/bin:$PATH"
+export PKG_CONFIG_PATH="$BREW_PREFIX/opt/icu4c/lib/pkgconfig:$BREW_PREFIX/opt/libxml2/lib/pkgconfig:$BREW_PREFIX/opt/libffi/lib/pkgconfig:$X11_PREFIX/lib/pkgconfig:$BREW_PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
 export ACLOCAL_PATH="$BREW_PREFIX/share/aclocal:${ACLOCAL_PATH:-}"
 
 # Put Homebrew and XQuartz first.
-export CPPFLAGS="-I$PREFIX/include -I$BREW_PREFIX/include -I$X11_PREFIX/include ${CPPFLAGS:-}"
-export LDFLAGS="-L$PREFIX/lib -L$BREW_PREFIX/lib -L$X11_PREFIX/lib ${LDFLAGS:-}"
+export CPPFLAGS="-I$PREFIX/include -I$BREW_PREFIX/include -I$BREW_PREFIX/opt/icu4c/include -I$BREW_PREFIX/opt/libxml2/include -I$BREW_PREFIX/opt/libffi/include -I$X11_PREFIX/include ${CPPFLAGS:-}"
+export LDFLAGS="-L$PREFIX/lib -L$BREW_PREFIX/lib -L$BREW_PREFIX/opt/icu4c/lib -L$BREW_PREFIX/opt/libxml2/lib -L$BREW_PREFIX/opt/libffi/lib -L$X11_PREFIX/lib ${LDFLAGS:-}"
 
 # Helpful runtime path for tools built during the process.
 export DYLD_LIBRARY_PATH="$PREFIX/lib:$BREW_PREFIX/lib:$X11_PREFIX/lib:${DYLD_LIBRARY_PATH:-}"
@@ -111,6 +112,7 @@ export CPATH="$PREFIX/include:$BREW_PREFIX/include:$X11_PREFIX/include:${CPATH:-
 MAKE_CONFIGURE_FLAGS=(
   "--prefix=$PREFIX"
   "--with-layout=gnustep"
+  "--with-library-combo=gnu-gnu-gnu"
   "--enable-native-objc-exceptions"
   "--disable-strip"
 )
@@ -153,6 +155,7 @@ build_tools_make() {
 
   echo "GNUSTEP_MAKEFILES=$GNUSTEP_MAKEFILES"
   gnustep-config --variable=GNUSTEP_MAKEFILES
+  echo "LIBRARY_COMBO=$(gnustep-config --variable=LIBRARY_COMBO)"
 }
 
 build_lib() {

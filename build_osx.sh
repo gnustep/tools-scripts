@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 set -euo pipefail
 
 ###############################################################################
@@ -19,7 +19,6 @@ set -euo pipefail
 PREFIX="${PREFIX:-/opt/GNUstep}"
 SRCROOT="${SRCROOT:-$HOME/src/gnustep-core}"
 JOBS="${JOBS:-$(sysctl -n hw.ncpu 2>/dev/null || echo 4)}"
-ZSH_VERSION=`zsh --version`
 
 # Latest stable tags as of the cited upstream release pages.
 TOOLS_MAKE_TAG="${TOOLS_MAKE_TAG:-make-2_9_3}"
@@ -121,6 +120,23 @@ LIB_CONFIGURE_FLAGS=(
   "--disable-strip"
 )
 
+source_gnustep_env() {
+  # GNUstep.sh is not nounset-safe, so source it with -u temporarily disabled.
+  local had_nounset=0
+
+  if [[ $- == *u* ]]; then
+    had_nounset=1
+    set +u
+  fi
+
+  # shellcheck disable=SC1091
+  . "$PREFIX/System/Library/Makefiles/GNUstep.sh"
+
+  if [[ $had_nounset -eq 1 ]]; then
+    set -u
+  fi
+}
+
 build_tools_make() {
   echo "==> Building tools-make"
   cd "$SRCROOT/tools-make"
@@ -132,10 +148,8 @@ build_tools_make() {
   make debug=yes
   sudo make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 
-  # shellcheck disable=SC1091
-  unset ZSH_VERSION
   echo "Sourcing $PREFIX/System/Library/Makefiles/GNUstep.sh"
-  . "$PREFIX/System/Library/Makefiles/GNUstep.sh"
+  source_gnustep_env
 
   echo "GNUSTEP_MAKEFILES=$GNUSTEP_MAKEFILES"
   gnustep-config --variable=GNUSTEP_MAKEFILES
@@ -143,7 +157,7 @@ build_tools_make() {
 
 build_lib() {
   local name="$1"
-  local extra_flags=("${@:2}")
+  shift
 
   echo "==> Building $name"
   cd "$SRCROOT/$name"
@@ -151,11 +165,10 @@ build_lib() {
   make distclean >/dev/null 2>&1 || true
 
   # Ensure GNUstep environment is loaded for all downstream builds.
-  # shellcheck disable=SC1091
   echo "Sourcing $PREFIX/System/Library/Makefiles/GNUstep.sh"
-  . "$PREFIX/System/Library/Makefiles/GNUstep.sh"
+  source_gnustep_env
 
-  ./configure "${LIB_CONFIGURE_FLAGS[@]}" "${extra_flags[@]}"
+  ./configure "${LIB_CONFIGURE_FLAGS[@]}" "$@"
   make -j"$JOBS" debug=yes
   sudo make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 }
@@ -174,8 +187,7 @@ build_lib libs-back \
   "--with-tiff-library=$BREW_PREFIX/lib"
 
 # Refresh environment one last time.
-# shellcheck disable=SC1091
-. "$PREFIX/System/Library/Makefiles/GNUstep.sh"
+source_gnustep_env
 
 echo
 echo "==> Build complete"

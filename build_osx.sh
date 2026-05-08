@@ -355,7 +355,7 @@ build_tools_make() {
   local make_ccflags="${CCFLAGS:-}"
 
   CC="$CC" CXX="$CXX" CCFLAGS="$make_ccflags" ./configure "${MAKE_CONFIGURE_FLAGS[@]}"
-  make debug=yes
+  make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes
   sudo make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 
   if [[ "$(uname -s)" == "Darwin" ]]; then
@@ -397,7 +397,7 @@ build_lib() {
   fi
 
   ./configure "${LIB_CONFIGURE_FLAGS[@]}" "${extra_args[@]}"
-  make -j"$JOBS" debug=yes
+  make -j"$JOBS" GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes
   sudo make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 }
 

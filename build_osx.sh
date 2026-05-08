@@ -136,9 +136,35 @@ patch_gdomap_for_modern_sdk() {
   perl -pi -e 's/void\s+\(\*ifun\)\(\)/void (*ifun)(int)/' "$gdomap"
 }
 
+patch_nsobject_for_gnu_runtime() {
+  # objc_create_block_classes_as_subclasses_of is a libobjc2-only function.
+  # When using libobjc-gnu the symbol is absent and calling it crashes at PC=0.
+  # Guard both the extern declaration and the call with #ifndef __GNU_LIBOBJC__.
+  local nsobject="$SRCROOT/libs-base/Source/NSObject.m"
+  if [[ ! -f "$nsobject" ]]; then
+    return
+  fi
+
+  # Guard the extern declaration (two-line form: "extern BOOL\nobjc_create_block...")
+  perl -0pi -e 's|(extern BOOL\s+objc_create_block_classes_as_subclasses_of\(Class super\);)|#ifndef __GNU_LIBOBJC__\n$1\n#endif|g' "$nsobject"
+
+  # Guard the call site inside +load
+  perl -pi -e 's|^(\s+)(objc_create_block_classes_as_subclasses_of\(self\);)|$1#ifndef __GNU_LIBOBJC__\n$1$2\n$1#endif|' "$nsobject"
+
+  # GSWeakInit is implemented in ObjectiveC2 weak runtime sources and is not
+  # available when building against libobjc-gnu on macOS.
+  perl -pi -e 's|^(\s+)(GSWeakInit\(\);)|$1#ifndef __GNU_LIBOBJC__\n$1$2\n$1#endif|' "$nsobject"
+
+  # objc_delete_weak_refs is also provided by the ObjectiveC2 weak runtime.
+  # The GNU runtime build links it as unresolved, so skip weak-ref cleanup in
+  # the fallback release path instead of crashing on a null call.
+  perl -pi -e 's|^(\s+)(objc_delete_weak_refs\(anObject\);)|$1#ifndef __GNU_LIBOBJC__\n$1$2\n$1#endif|' "$nsobject"
+}
+
 patch_tools_make_for_darwin_gcc
 patch_libs_base_for_darwin_gcc
 patch_gdomap_for_modern_sdk
+patch_nsobject_for_gnu_runtime
 
 # Common compiler and linker environment: GCC + GNU Objective-C runtime only.
 GCC_CC="$(ls -1 "$BREW_PREFIX"/bin/gcc-[0-9]* 2>/dev/null | sort -V | tail -n1)"
@@ -149,8 +175,6 @@ if [[ -z "$GCC_CC" || -z "$GCC_CXX" ]]; then
   echo "Try: $BREW install gcc"
   exit 1
 fi
-
-export PATH="$BREW_PREFIX/opt/icu4c/bin:$BREW_PREFIX/opt/libxml2/bin:$PATH"
 export CC="$GCC_CC"
 export CXX="$GCC_CXX"
 export OBJC="$GCC_CC"

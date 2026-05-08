@@ -89,7 +89,7 @@ clone_or_update libs-base  libs-base  "$LIBS_BASE_TAG"
 clone_or_update libs-gui   libs-gui   "$LIBS_GUI_TAG"
 clone_or_update libs-back  libs-back  "$LIBS_BACK_TAG"
 
-# Common compiler and linker environment: GCC + legacy Apple Objective-C runtime only.
+# Common compiler and linker environment: GCC + GNU Objective-C runtime only.
 GCC_CC="$(ls -1 "$BREW_PREFIX"/bin/gcc-[0-9]* 2>/dev/null | sort -V | tail -n1)"
 GCC_CXX="$(ls -1 "$BREW_PREFIX"/bin/g++-[0-9]* 2>/dev/null | sort -V | tail -n1)"
 
@@ -106,23 +106,39 @@ export OBJC="$GCC_CC"
 export OBJCXX="$GCC_CXX"
 
 GCC_LIBOBJC_PATH="$($CC -print-file-name=libobjc-gnu.dylib 2>/dev/null || true)"
-if [[ -z "$GCC_LIBOBJC_PATH" || "$GCC_LIBOBJC_PATH" == "libobjc-gnu.dylib" ]]; then
-  GCC_LIBOBJC_PATH="$($CC -print-file-name=libobjc.dylib 2>/dev/null || true)"
-fi
 GCC_LIBGCC_S_PATH="$($CC -print-file-name=libgcc_s.1.1.dylib 2>/dev/null || true)"
+GCC_CELLAR_DIR="$($BREW --cellar gcc 2>/dev/null || true)"
+GCC_GNU_RUNTIME_HEADER=""
 GCC_LIBOBJC_DIR=""
 GCC_LIBGCC_DIR=""
-OBJC_RUNTIME_LIB_FLAG="-lobjc"
+GCC_GNU_RUNTIME_INCLUDE_DIR=""
+OBJC_RUNTIME_LIB_FLAG="-lobjc-gnu"
 
-if [[ -n "$GCC_LIBOBJC_PATH" && "$GCC_LIBOBJC_PATH" != "libobjc.dylib" ]]; then
+if [[ -n "$GCC_LIBOBJC_PATH" && "$GCC_LIBOBJC_PATH" != "libobjc-gnu.dylib" ]]; then
   GCC_LIBOBJC_DIR="$(dirname "$GCC_LIBOBJC_PATH")"
 fi
-if [[ "$GCC_LIBOBJC_PATH" == *"libobjc-gnu.dylib" ]]; then
-  OBJC_RUNTIME_LIB_FLAG="-lobjc-gnu"
+if [[ -z "$GCC_LIBOBJC_DIR" ]]; then
+  echo "Homebrew GCC GNU Objective-C runtime not found."
+  echo "Expected libobjc-gnu.dylib via: $CC -print-file-name=libobjc-gnu.dylib"
+  exit 1
+fi
+if [[ -d "$GCC_CELLAR_DIR" ]]; then
+  GCC_GNU_RUNTIME_HEADER="$(find "$GCC_CELLAR_DIR" -path '*include-gnu-runtime/objc/runtime.h' | sort | tail -n1)"
+fi
+if [[ -n "$GCC_GNU_RUNTIME_HEADER" ]]; then
+  GCC_GNU_RUNTIME_INCLUDE_DIR="$(dirname "$(dirname "$GCC_GNU_RUNTIME_HEADER")")"
+fi
+if [[ -z "$GCC_GNU_RUNTIME_INCLUDE_DIR" ]]; then
+  echo "Homebrew GCC GNU Objective-C runtime headers not found."
+  echo "Expected include-gnu-runtime/objc/runtime.h under: $GCC_CELLAR_DIR"
+  exit 1
 fi
 if [[ -n "$GCC_LIBGCC_S_PATH" && "$GCC_LIBGCC_S_PATH" != "libgcc_s.1.1.dylib" ]]; then
   GCC_LIBGCC_DIR="$(dirname "$GCC_LIBGCC_S_PATH")"
 fi
+
+echo "==> Using GNU Objective-C runtime from $GCC_LIBOBJC_DIR"
+echo "==> Using GNU Objective-C headers from $GCC_GNU_RUNTIME_INCLUDE_DIR"
 
 export PKG_CONFIG="$BREW_PREFIX/bin/pkg-config"
 export PKG_CONFIG_PATH="$BREW_PREFIX/opt/icu4c/lib/pkgconfig:$BREW_PREFIX/opt/libxml2/lib/pkgconfig:$BREW_PREFIX/opt/libffi/lib/pkgconfig:$X11_PREFIX/lib/pkgconfig:$BREW_PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
@@ -130,7 +146,7 @@ export ACLOCAL_PATH="$BREW_PREFIX/share/aclocal:${ACLOCAL_PATH:-}"
 
 # Bootstrap with Homebrew and XQuartz only. Do not expose an existing GNUstep
 # prefix here because stale libobjc2 headers/libs can poison compiler probes.
-export CPPFLAGS="-D__GNU_LIBOBJC__=1 -I$BREW_PREFIX/include -I$BREW_PREFIX/opt/icu4c/include -I$BREW_PREFIX/opt/libxml2/include -I$BREW_PREFIX/opt/libffi/include -I$X11_PREFIX/include ${CPPFLAGS:-}"
+export CPPFLAGS="-D__GNU_LIBOBJC__=1 -I$GCC_GNU_RUNTIME_INCLUDE_DIR -I$BREW_PREFIX/include -I$BREW_PREFIX/opt/icu4c/include -I$BREW_PREFIX/opt/libxml2/include -I$BREW_PREFIX/opt/libffi/include -I$X11_PREFIX/include ${CPPFLAGS:-}"
 export LDFLAGS="-L$BREW_PREFIX/lib -L$BREW_PREFIX/opt/icu4c/lib -L$BREW_PREFIX/opt/libxml2/lib -L$BREW_PREFIX/opt/libffi/lib -L$X11_PREFIX/lib ${LDFLAGS:-}"
 
 if [[ -n "$GCC_LIBOBJC_DIR" ]]; then
@@ -145,7 +161,7 @@ fi
 # Helpful runtime path for bootstrap tools built during the process.
 export DYLD_LIBRARY_PATH="$BREW_PREFIX/lib:$X11_PREFIX/lib:${DYLD_LIBRARY_PATH:-}"
 export LIBRARY_PATH="$BREW_PREFIX/lib:$X11_PREFIX/lib:${LIBRARY_PATH:-}"
-export CPATH="$BREW_PREFIX/include:$X11_PREFIX/include:${CPATH:-}"
+export CPATH="$GCC_GNU_RUNTIME_INCLUDE_DIR:$BREW_PREFIX/include:$X11_PREFIX/include:${CPATH:-}"
 
 if [[ -n "$GCC_LIBOBJC_DIR" ]]; then
   export DYLD_LIBRARY_PATH="$GCC_LIBOBJC_DIR:$DYLD_LIBRARY_PATH"

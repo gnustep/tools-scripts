@@ -105,18 +105,92 @@ export CXX="$GCC_CXX"
 export OBJC="$GCC_CC"
 export OBJCXX="$GCC_CXX"
 
+GCC_LIBOBJC_PATH="$($CC -print-file-name=libobjc-gnu.dylib 2>/dev/null || true)"
+if [[ -z "$GCC_LIBOBJC_PATH" || "$GCC_LIBOBJC_PATH" == "libobjc-gnu.dylib" ]]; then
+  GCC_LIBOBJC_PATH="$($CC -print-file-name=libobjc.dylib 2>/dev/null || true)"
+fi
+GCC_LIBGCC_S_PATH="$($CC -print-file-name=libgcc_s.1.1.dylib 2>/dev/null || true)"
+GCC_LIBOBJC_DIR=""
+GCC_LIBGCC_DIR=""
+OBJC_RUNTIME_LIB_FLAG="-lobjc"
+
+if [[ -n "$GCC_LIBOBJC_PATH" && "$GCC_LIBOBJC_PATH" != "libobjc.dylib" ]]; then
+  GCC_LIBOBJC_DIR="$(dirname "$GCC_LIBOBJC_PATH")"
+fi
+if [[ "$GCC_LIBOBJC_PATH" == *"libobjc-gnu.dylib" ]]; then
+  OBJC_RUNTIME_LIB_FLAG="-lobjc-gnu"
+fi
+if [[ -n "$GCC_LIBGCC_S_PATH" && "$GCC_LIBGCC_S_PATH" != "libgcc_s.1.1.dylib" ]]; then
+  GCC_LIBGCC_DIR="$(dirname "$GCC_LIBGCC_S_PATH")"
+fi
+
 export PKG_CONFIG="$BREW_PREFIX/bin/pkg-config"
 export PKG_CONFIG_PATH="$BREW_PREFIX/opt/icu4c/lib/pkgconfig:$BREW_PREFIX/opt/libxml2/lib/pkgconfig:$BREW_PREFIX/opt/libffi/lib/pkgconfig:$X11_PREFIX/lib/pkgconfig:$BREW_PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
 export ACLOCAL_PATH="$BREW_PREFIX/share/aclocal:${ACLOCAL_PATH:-}"
 
-# Put Homebrew and XQuartz first.
-export CPPFLAGS="-I$PREFIX/System/Library/Headers -I$PREFIX/include -I$BREW_PREFIX/include -I$BREW_PREFIX/opt/icu4c/include -I$BREW_PREFIX/opt/libxml2/include -I$BREW_PREFIX/opt/libffi/include -I$X11_PREFIX/include ${CPPFLAGS:-}"
-export LDFLAGS="-L$PREFIX/System/Library/Libraries -L$PREFIX/lib -L$BREW_PREFIX/lib -L$BREW_PREFIX/opt/icu4c/lib -L$BREW_PREFIX/opt/libxml2/lib -L$BREW_PREFIX/opt/libffi/lib -L$X11_PREFIX/lib ${LDFLAGS:-}"
+# Bootstrap with Homebrew and XQuartz only. Do not expose an existing GNUstep
+# prefix here because stale libobjc2 headers/libs can poison compiler probes.
+export CPPFLAGS="-D__GNU_LIBOBJC__=1 -I$BREW_PREFIX/include -I$BREW_PREFIX/opt/icu4c/include -I$BREW_PREFIX/opt/libxml2/include -I$BREW_PREFIX/opt/libffi/include -I$X11_PREFIX/include ${CPPFLAGS:-}"
+export LDFLAGS="-L$BREW_PREFIX/lib -L$BREW_PREFIX/opt/icu4c/lib -L$BREW_PREFIX/opt/libxml2/lib -L$BREW_PREFIX/opt/libffi/lib -L$X11_PREFIX/lib ${LDFLAGS:-}"
 
-# Helpful runtime path for tools built during the process.
-export DYLD_LIBRARY_PATH="$PREFIX/System/Library/Libraries:$PREFIX/lib:$BREW_PREFIX/lib:$X11_PREFIX/lib:${DYLD_LIBRARY_PATH:-}"
-export LIBRARY_PATH="$PREFIX/System/Library/Libraries:$PREFIX/lib:$BREW_PREFIX/lib:$X11_PREFIX/lib:${LIBRARY_PATH:-}"
-export CPATH="$PREFIX/System/Library/Headers:$PREFIX/include:$BREW_PREFIX/include:$X11_PREFIX/include:${CPATH:-}"
+if [[ -n "$GCC_LIBOBJC_DIR" ]]; then
+  export LDFLAGS="-L$GCC_LIBOBJC_DIR $LDFLAGS"
+  export LDFLAGS="-Wl,-rpath,$GCC_LIBOBJC_DIR $LDFLAGS"
+fi
+if [[ -n "$GCC_LIBGCC_DIR" && "$GCC_LIBGCC_DIR" != "$GCC_LIBOBJC_DIR" ]]; then
+  export LDFLAGS="-L$GCC_LIBGCC_DIR $LDFLAGS"
+  export LDFLAGS="-Wl,-rpath,$GCC_LIBGCC_DIR $LDFLAGS"
+fi
+
+# Helpful runtime path for bootstrap tools built during the process.
+export DYLD_LIBRARY_PATH="$BREW_PREFIX/lib:$X11_PREFIX/lib:${DYLD_LIBRARY_PATH:-}"
+export LIBRARY_PATH="$BREW_PREFIX/lib:$X11_PREFIX/lib:${LIBRARY_PATH:-}"
+export CPATH="$BREW_PREFIX/include:$X11_PREFIX/include:${CPATH:-}"
+
+if [[ -n "$GCC_LIBOBJC_DIR" ]]; then
+  export DYLD_LIBRARY_PATH="$GCC_LIBOBJC_DIR:$DYLD_LIBRARY_PATH"
+  export LIBRARY_PATH="$GCC_LIBOBJC_DIR:$LIBRARY_PATH"
+fi
+if [[ -n "$GCC_LIBGCC_DIR" && "$GCC_LIBGCC_DIR" != "$GCC_LIBOBJC_DIR" ]]; then
+  export DYLD_LIBRARY_PATH="$GCC_LIBGCC_DIR:$DYLD_LIBRARY_PATH"
+  export LIBRARY_PATH="$GCC_LIBGCC_DIR:$LIBRARY_PATH"
+fi
+
+export CFLAGS="-D__GNU_LIBOBJC__=1 ${CFLAGS:-}"
+export OBJCFLAGS="-D__GNU_LIBOBJC__=1 -fgnu-runtime ${OBJCFLAGS:-}"
+
+purge_installed_libobjc2() {
+  echo "==> Removing libobjc2 artifacts from $PREFIX"
+
+  local targets=(
+    "$PREFIX/System/Library/Headers/objc"
+    "$PREFIX/Local/Library/Headers/objc"
+    "$PREFIX/System/Library/Libraries/libobjc.4.6.dylib"
+    "$PREFIX/System/Library/Libraries/libobjc.dylib"
+    "$PREFIX/System/Library/Libraries/libobjc.a"
+    "$PREFIX/System/Library/Libraries/pkgconfig/libobjc.pc"
+    "$PREFIX/System/Library/Libraries/cmake/libobjc"
+    "$PREFIX/Local/Library/Libraries/libobjc.4.6.dylib"
+    "$PREFIX/Local/Library/Libraries/libobjc.dylib"
+    "$PREFIX/Local/Library/Libraries/libobjc.a"
+    "$PREFIX/Local/Library/Libraries/pkgconfig/libobjc.pc"
+    "$PREFIX/Local/Library/Libraries/cmake/libobjc"
+  )
+
+  local existing=()
+  local target
+  for target in "${targets[@]}"; do
+    if [[ -e "$target" ]]; then
+      existing+=("$target")
+    fi
+  done
+
+  if [[ ${#existing[@]} -eq 0 ]]; then
+    return
+  fi
+
+  sudo rm -rf "${existing[@]}"
+}
 
 # Use a straightforward GNUstep layout under one prefix.
 MAKE_CONFIGURE_FLAGS=(
@@ -127,8 +201,8 @@ MAKE_CONFIGURE_FLAGS=(
 
 if [[ "$(uname -s)" == "Darwin" ]]; then
   MAKE_CONFIGURE_FLAGS+=(
-    "--with-library-combo=apple-gnu-gnu"
-    "--with-objc-lib-flag=-lobjc"
+    "--with-library-combo=gnu-gnu-gnu"
+    "--with-objc-lib-flag=$OBJC_RUNTIME_LIB_FLAG"
     "--disable-objc-arc"
     "--enable-native-objc-exceptions"
   )
@@ -170,6 +244,38 @@ source_gnustep_env() {
   fi
 
   apply_preferred_compiler_env
+}
+
+check_objc_compiler() {
+  echo "==> Checking Objective-C compiler/runtime"
+
+  local probe_src
+  local probe_bin
+  probe_src="$(mktemp /tmp/gnustep-objc-check.XXXXXX.m)"
+  probe_bin="$(mktemp /tmp/gnustep-objc-check.XXXXXX)"
+
+  cat > "$probe_src" <<'EOF'
+#include <objc/Object.h>
+int main(void) { return 0; }
+EOF
+
+  if ! "$OBJC" $OBJCFLAGS "$probe_src" "$OBJC_RUNTIME_LIB_FLAG" $LDFLAGS -o "$probe_bin" >/tmp/gnustep-objc-probe.log 2>&1; then
+    echo "Objective-C compile/link test failed with compiler: $OBJC"
+    echo "OBJCFLAGS: ${OBJCFLAGS:-}"
+    echo "OBJCLIB: $OBJC_RUNTIME_LIB_FLAG"
+    tail -n 50 /tmp/gnustep-objc-probe.log || true
+    rm -f "$probe_src" "$probe_bin"
+    exit 1
+  fi
+
+  if ! "$probe_bin" >/dev/null 2>&1; then
+    echo "Objective-C runtime execution test failed."
+    echo "DYLD_LIBRARY_PATH: ${DYLD_LIBRARY_PATH:-}"
+    rm -f "$probe_src" "$probe_bin"
+    exit 1
+  fi
+
+  rm -f "$probe_src" "$probe_bin"
 }
 
 build_tools_make() {
@@ -216,6 +322,8 @@ build_lib() {
   sudo make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 }
 
+purge_installed_libobjc2
+check_objc_compiler
 build_tools_make
 
 

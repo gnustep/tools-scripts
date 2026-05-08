@@ -17,7 +17,12 @@ set -euo pipefail
 ###############################################################################
 
 PREFIX="${PREFIX:-/opt/GNUstep}"
-SRCROOT="${SRCROOT:-$HOME/src/gnustep-core}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DEFAULT_SRCROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+if [[ ! -d "$DEFAULT_SRCROOT/tools-make" || ! -d "$DEFAULT_SRCROOT/libs-base" || ! -d "$DEFAULT_SRCROOT/libs-gui" || ! -d "$DEFAULT_SRCROOT/libs-back" ]]; then
+  DEFAULT_SRCROOT="$HOME/src/gnustep-core"
+fi
+SRCROOT="${SRCROOT:-$DEFAULT_SRCROOT}"
 JOBS="${JOBS:-$(sysctl -n hw.ncpu 2>/dev/null || echo 4)}"
 
 # Latest stable tags as of the cited upstream release pages.
@@ -88,6 +93,52 @@ clone_or_update tools-make tools-make "$TOOLS_MAKE_TAG"
 clone_or_update libs-base  libs-base  "$LIBS_BASE_TAG"
 clone_or_update libs-gui   libs-gui   "$LIBS_GUI_TAG"
 clone_or_update libs-back  libs-back  "$LIBS_BACK_TAG"
+
+patch_tools_make_for_darwin_gcc() {
+  if [[ "$(uname -s)" != "Darwin" ]]; then
+    return
+  fi
+
+  local target_make="$SRCROOT/tools-make/target.make"
+
+  if [[ -f "$target_make" ]]; then
+    perl -0pi -e 's/-Wl,-noall_load\s+//g' "$target_make"
+  fi
+}
+
+patch_libs_base_for_darwin_gcc() {
+  if [[ "$(uname -s)" != "Darwin" ]]; then
+    return
+  fi
+
+  local foundation_header="$SRCROOT/libs-base/Headers/Foundation/Foundation.h"
+
+  if [[ -f "$foundation_header" ]]; then
+    perl -0pi -e 's/#ifdef __has_include\n#  if __has_include\(<CoreFoundation\/CoreFoundation\.h>\)\n#    include <CoreFoundation\/CoreFoundation\.h>\n#  endif\n#  if __has_include\(<dispatch\/dispatch\.h>\)\n#    include <dispatch\/dispatch\.h>\n#  endif\n#endif/#if defined(__has_include) \&\& !defined(__GNU_LIBOBJC__)\n#  if __has_include(<CoreFoundation\/CoreFoundation.h>)\n#    include <CoreFoundation\/CoreFoundation.h>\n#  endif\n#  if __has_include(<dispatch\/dispatch.h>)\n#    include <dispatch\/dispatch.h>\n#  endif\n#endif/g' "$foundation_header"
+  fi
+}
+
+patch_gdomap_for_modern_sdk() {
+  # gdomap.c uses K&R-style declarations incompatible with modern macOS SDK signal().
+  # Fix: add explicit `int sig` parameter to dump_tables and change ifun type to void(*)(int).
+  local gdomap="$SRCROOT/libs-base/Tools/gdomap.c"
+  if [[ ! -f "$gdomap" ]]; then
+    return
+  fi
+
+  # Fix forward declaration:  static void dump_tables();  -> static void dump_tables(int sig);
+  perl -pi -e 's/^(static void\s+dump_tables)\(\);$/$1(int sig);/' "$gdomap"
+
+  # Fix definition:  dump_tables()  ->  dump_tables(int sig)
+  perl -pi -e 's/^(dump_tables)\(\)$/$1(int sig)/' "$gdomap"
+
+  # Fix ifun local variable type: void (*ifun)() -> void (*ifun)(int)
+  perl -pi -e 's/void\s+\(\*ifun\)\(\)/void (*ifun)(int)/' "$gdomap"
+}
+
+patch_tools_make_for_darwin_gcc
+patch_libs_base_for_darwin_gcc
+patch_gdomap_for_modern_sdk
 
 # Common compiler and linker environment: GCC + GNU Objective-C runtime only.
 GCC_CC="$(ls -1 "$BREW_PREFIX"/bin/gcc-[0-9]* 2>/dev/null | sort -V | tail -n1)"
@@ -306,6 +357,13 @@ build_tools_make() {
   CC="$CC" CXX="$CXX" CCFLAGS="$make_ccflags" ./configure "${MAKE_CONFIGURE_FLAGS[@]}"
   make debug=yes
   sudo make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
+
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    local installed_target_make="$PREFIX/System/Library/Makefiles/target.make"
+    if [[ -f "$installed_target_make" ]]; then
+      sudo perl -0pi -e 's/-Wl,-noall_load\s+//g' "$installed_target_make"
+    fi
+  fi
 
   echo "Sourcing $PREFIX/System/Library/Makefiles/GNUstep.sh"
   source_gnustep_env

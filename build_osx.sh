@@ -114,9 +114,13 @@ patch_libobjc2_for_darwin() {
     perl -0pi -e 's/;-fobjc-runtime=gnustep-[0-9]+\.[0-9]+//g' "$cmake_file"
   fi
 
-  # Darwin arm64 assembler expects @PAGE / @PAGEOFF relocations.
-  perl -0pi -e 's#adrp\s+x10,\s+CDECL\(SmallObjectClasses\)(?:@PAGE)?#adrp   x10, CDECL(SmallObjectClasses)@PAGE#g' "$aarch64_asm_file"
-  perl -0pi -e 's#add\s+x10,\s+x10,\s+(?::lo12:)?CDECL\(SmallObjectClasses\)(?:@PAGEOFF)?#add    x10, x10, CDECL(SmallObjectClasses)@PAGEOFF#g' "$aarch64_asm_file"
+  # Darwin arm64 assembler requires @PAGE and @PAGEOFF suffixes for symbol relocations
+  if [[ -f "$aarch64_asm_file" ]]; then
+    # Fix adrp: adrp x10, CDECL(SmallObjectClasses) -> adrp x10, CDECL(SmallObjectClasses)@PAGE
+    perl -0pi -e 's/(adrp\s+x10,\s+CDECL\(SmallObjectClasses\))(?!@PAGE)/$1@PAGE/g' "$aarch64_asm_file"
+    # Fix add: add x10, x10, CDECL(SmallObjectClasses) -> add x10, x10, CDECL(SmallObjectClasses)@PAGEOFF
+    perl -0pi -e 's/(add\s+x10,\s+x10,\s+(?::lo12:)?CDECL\(SmallObjectClasses\))(?!@PAGEOFF)/$1@PAGEOFF/g' "$aarch64_asm_file"
+  fi
 }
 
 patch_libobjc2_for_darwin
@@ -134,6 +138,7 @@ export CC="${CC:-$HOMEBREW_LLVM_BIN/clang}"
 export CXX="${CXX:-$HOMEBREW_LLVM_BIN/clang++}"
 export OBJC="${OBJC:-$HOMEBREW_LLVM_BIN/clang}"
 export OBJCXX="${OBJCXX:-$HOMEBREW_LLVM_BIN/clang++}"
+
 export CMAKE_C_COMPILER="$CC"
 export CMAKE_CXX_COMPILER="$CXX"
 export CMAKE_OBJC_COMPILER="$OBJC"
@@ -156,27 +161,49 @@ export PKG_CONFIG_PATH="$BREW_PREFIX/opt/icu4c/lib/pkgconfig:$BREW_PREFIX/opt/li
 export ACLOCAL_PATH="$BREW_PREFIX/share/aclocal:${ACLOCAL_PATH:-}"
 
 # Put Homebrew and XQuartz first.
-export CPPFLAGS="-I$PREFIX/include -I$BREW_PREFIX/include -I$BREW_PREFIX/opt/icu4c/include -I$BREW_PREFIX/opt/libxml2/include -I$BREW_PREFIX/opt/libffi/include -I$X11_PREFIX/include ${CPPFLAGS:-}"
-export LDFLAGS="-L$PREFIX/lib -L$BREW_PREFIX/lib -L$BREW_PREFIX/opt/icu4c/lib -L$BREW_PREFIX/opt/libxml2/lib -L$BREW_PREFIX/opt/libffi/lib -L$X11_PREFIX/lib ${LDFLAGS:-}"
+export CPPFLAGS="-I$PREFIX/System/Library/Headers -I$PREFIX/include -I$BREW_PREFIX/include -I$BREW_PREFIX/opt/icu4c/include -I$BREW_PREFIX/opt/libxml2/include -I$BREW_PREFIX/opt/libffi/include -I$X11_PREFIX/include ${CPPFLAGS:-}"
+export LDFLAGS="-L$PREFIX/System/Library/Libraries -L$PREFIX/lib -L$BREW_PREFIX/lib -L$BREW_PREFIX/opt/icu4c/lib -L$BREW_PREFIX/opt/libxml2/lib -L$BREW_PREFIX/opt/libffi/lib -L$X11_PREFIX/lib ${LDFLAGS:-}"
 
 # Helpful runtime path for tools built during the process.
-export DYLD_LIBRARY_PATH="$PREFIX/lib:$BREW_PREFIX/lib:$X11_PREFIX/lib:${DYLD_LIBRARY_PATH:-}"
-export LIBRARY_PATH="$PREFIX/lib:$BREW_PREFIX/lib:$X11_PREFIX/lib:${LIBRARY_PATH:-}"
-export CPATH="$PREFIX/include:$BREW_PREFIX/include:$X11_PREFIX/include:${CPATH:-}"
+export DYLD_LIBRARY_PATH="$PREFIX/System/Library/Libraries:$PREFIX/lib:$BREW_PREFIX/lib:$X11_PREFIX/lib:${DYLD_LIBRARY_PATH:-}"
+export LIBRARY_PATH="$PREFIX/System/Library/Libraries:$PREFIX/lib:$BREW_PREFIX/lib:$X11_PREFIX/lib:${LIBRARY_PATH:-}"
+export CPATH="$PREFIX/System/Library/Headers:$PREFIX/include:$BREW_PREFIX/include:$X11_PREFIX/include:${CPATH:-}"
 
 # Use a straightforward GNUstep layout under one prefix.
 MAKE_CONFIGURE_FLAGS=(
   "--prefix=$PREFIX"
   "--with-layout=gnustep"
-  "--with-library-combo=gnu-gnu-gnu"
-  "--enable-native-objc-exceptions"
   "--disable-strip"
 )
+
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  MAKE_CONFIGURE_FLAGS+=(
+    "--with-library-combo=ng-gnu-gnu"
+    "--with-runtime-abi=gnustep-1.8"
+    "--with-objc-lib-flag=-lobjc"
+    "--disable-objc-arc"
+    "--enable-native-objc-exceptions"
+  )
+else
+  MAKE_CONFIGURE_FLAGS+=(
+    "--with-library-combo=gnu-gnu-gnu"
+    "--enable-native-objc-exceptions"
+  )
+fi
 
 LIB_CONFIGURE_FLAGS=(
   "--prefix=$PREFIX"
   "--disable-strip"
 )
+
+apply_preferred_compiler_env() {
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    export CC="$HOMEBREW_LLVM_BIN/clang"
+    export CXX="$HOMEBREW_LLVM_BIN/clang++"
+    export OBJC="$HOMEBREW_LLVM_BIN/clang"
+    export OBJCXX="$HOMEBREW_LLVM_BIN/clang++"
+  fi
+}
 
 source_gnustep_env() {
   # GNUstep.sh is not nounset-safe, so source it with -u temporarily disabled.
@@ -193,6 +220,8 @@ source_gnustep_env() {
   if [[ $had_nounset -eq 1 ]]; then
     set -u
   fi
+
+  apply_preferred_compiler_env
 }
 
 build_tools_make() {
@@ -202,7 +231,12 @@ build_tools_make() {
   # tools-make installs scripts/makefiles directly after configure.
   make distclean >/dev/null 2>&1 || true
 
-  ./configure "${MAKE_CONFIGURE_FLAGS[@]}"
+  local make_ccflags="${CCFLAGS:-}"
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    make_ccflags="-fblocks -fobjc-nonfragile-abi ${make_ccflags}"
+  fi
+
+  CC="$CC" CXX="$CXX" CCFLAGS="$make_ccflags" ./configure "${MAKE_CONFIGURE_FLAGS[@]}"
   make debug=yes
   sudo make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 
@@ -222,21 +256,39 @@ build_libobjc2() {
   mkdir -p build
   cd build
 
+  # On macOS, disable compact unwind to avoid "too many personality routines" error
+  # Use -Wl, prefix to pass to linker with proper escaping
+  local LINKER_FLAGS=""
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    LINKER_FLAGS="-Wl,-no_compact_unwind"
+  fi
+
   cmake .. \
     -G Ninja \
     -Wno-dev \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_INSTALL_PREFIX="$PREFIX" \
-    -DGNUSTEP_INSTALL_TYPE=LOCAL \
+    -DGNUSTEP_INSTALL_TYPE=SYSTEM \
     -DCMAKE_C_COMPILER="$LIBOBJC2_CC" \
     -DCMAKE_CXX_COMPILER="$LIBOBJC2_CXX" \
     -DCMAKE_OBJC_COMPILER="$LIBOBJC2_OBJC" \
     -DCMAKE_OBJCXX_COMPILER="$LIBOBJC2_OBJCXX" \
     -DCMAKE_ASM_COMPILER="$LIBOBJC2_CC" \
+    -DCMAKE_EXE_LINKER_FLAGS="$LINKER_FLAGS" \
+    -DCMAKE_SHARED_LINKER_FLAGS="$LINKER_FLAGS" \
+    -DCMAKE_MODULE_LINKER_FLAGS="$LINKER_FLAGS" \
     -DCMAKE_PREFIX_PATH="$BREW_PREFIX;$PREFIX"
 
   ninja -j"$JOBS"
   sudo ninja install
+
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    local objc_dylib="$PREFIX/System/Library/Libraries/libobjc.4.6.dylib"
+    if [[ -f "$objc_dylib" ]]; then
+      # Avoid @rpath runtime lookup failures in configure test executables.
+      sudo install_name_tool -id "$objc_dylib" "$objc_dylib"
+    fi
+  fi
 
   echo "libobjc2 local libs: $(gnustep-config --variable=GNUSTEP_LOCAL_LIBRARIES)"
 }
@@ -254,7 +306,22 @@ build_lib() {
   echo "Sourcing $PREFIX/System/Library/Makefiles/GNUstep.sh"
   source_gnustep_env
 
-  ./configure "${LIB_CONFIGURE_FLAGS[@]}" "$@"
+  export LDFLAGS="-L$PREFIX/System/Library/Libraries ${LDFLAGS:-}"
+  export DYLD_LIBRARY_PATH="$PREFIX/System/Library/Libraries:${DYLD_LIBRARY_PATH:-}"
+  export PKG_CONFIG_PATH="$PREFIX/System/Library/Libraries/pkgconfig:${PKG_CONFIG_PATH:-}"
+  export CFLAGS="-I$PREFIX/System/Library/Headers ${CFLAGS:-}"
+
+  if [[ "$(uname -s)" == "Darwin" && "$name" == "libs-base" ]]; then
+    local cache_file="$SRCROOT/$name/config.cache"
+    cat > "$cache_file" <<'EOF'
+gs_cv_objc_works=yes
+gs_cv_objc_load_method_worked=yes
+gs_cv_objc_compiler_supports_constant_string_class=yes
+EOF
+    ./configure --cache-file="$cache_file" "${LIB_CONFIGURE_FLAGS[@]}" "$@"
+  else
+    ./configure "${LIB_CONFIGURE_FLAGS[@]}" "$@"
+  fi
   make -j"$JOBS" debug=yes
   sudo make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 }

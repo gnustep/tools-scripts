@@ -318,6 +318,7 @@ build_tools_make() {
 build_lib() {
   local name="$1"
   shift
+  local extra_args=("$@")
 
   echo "==> Building $name"
   cd "$SRCROOT/$name"
@@ -333,7 +334,11 @@ build_lib() {
   export PKG_CONFIG_PATH="$PREFIX/System/Library/Libraries/pkgconfig:${PKG_CONFIG_PATH:-}"
   export CFLAGS="-I$PREFIX/System/Library/Headers ${CFLAGS:-}"
 
-  ./configure "${LIB_CONFIGURE_FLAGS[@]}" "$@"
+  if [[ "$name" == "libs-base" ]]; then
+    extra_args+=("--disable-libdispatch")
+  fi
+
+  ./configure "${LIB_CONFIGURE_FLAGS[@]}" "${extra_args[@]}"
   make -j"$JOBS" debug=yes
   sudo make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 }

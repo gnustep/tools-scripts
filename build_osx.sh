@@ -161,10 +161,49 @@ patch_nsobject_for_gnu_runtime() {
   perl -pi -e 's|^(\s+)(objc_delete_weak_refs\(anObject\);)|$1#ifndef __GNU_LIBOBJC__\n$1$2\n$1#endif|' "$nsobject"
 }
 
+patch_nszone_for_darwin_gcc() {
+  # On Darwin/GCC with the GNU runtime, having @"default" directly in the
+  # default_zone static initializer can corrupt the first field (malloc fn ptr)
+  # after relocations. Keep the static initializer POD-only and assign the
+  # NSString name in a constructor instead.
+  local nszone="$SRCROOT/libs-base/Source/NSZone.m"
+  if [[ ! -f "$nszone" ]]; then
+    return
+  fi
+
+  perl -0pi -e 's/default_stats, 0, @"default", 0/default_stats, 0, 0, 0/g' "$nszone"
+
+  if ! grep -q 'init_default_zone_name' "$nszone"; then
+    perl -0pi -e 's|(static NSZone default_zone =\n\{\n\s*default_malloc, default_realloc, default_free, default_recycle,\n\s*default_check, default_lookup, default_stats, 0, 0, 0\n\};\n)|$1\n__attribute__((constructor)) static void\ninit_default_zone_name (void)\n{\n  default_zone.name = @"default";\n}\n|s' "$nszone"
+  fi
+
+  # Avoid indirect call through default_zone.malloc on Darwin/GCC if that slot
+  # gets corrupted by relocations. Use default_malloc directly for the default zone.
+  perl -0pi -e 's~GS_DECLARE void\*\nNSZoneMalloc \(NSZone \*zone, NSUInteger size\)\n\{\n  if \(!zone\)\n    zone = NSDefaultMallocZone\(\);\n  return \(zone->malloc\)\(zone, size\);\n\}~GS_DECLARE void*\nNSZoneMalloc (NSZone *zone, NSUInteger size)\n{\n  if (!zone || zone == NSDefaultMallocZone())\n    return default_malloc(NSDefaultMallocZone(), size);\n  return (zone->malloc)(zone, size);\n\}~s' "$nszone"
+}
+
+patch_nsautoreleasepool_for_gnu_runtime() {
+  local arp="$SRCROOT/libs-base/Source/NSAutoreleasePool.m"
+  if [[ ! -f "$arp" ]]; then
+    return
+  fi
+
+  # A non-default zone can be propagated into pool allocation and later crash
+  # via invalid zone->malloc. Force default zone unconditionally.
+  perl -0pi -e 's|#ifdef __GNU_LIBOBJC__\n\s*p = \(NSAutoreleasePool\*\)NSAllocateObject \(self, 0, NSDefaultMallocZone\(\)\);\n\s*#else\n\s*p = \(NSAutoreleasePool\*\)NSAllocateObject \(self, 0, zone\);\n\s*#endif|  p = (NSAutoreleasePool*)NSAllocateObject (self, 0, NSDefaultMallocZone());|g' "$arp"
+  perl -0pi -e 's|p = \(NSAutoreleasePool\*\)NSAllocateObject \(self, 0, zone\);|  p = (NSAutoreleasePool*)NSAllocateObject (self, 0, NSDefaultMallocZone());|g' "$arp"
+
+  # Avoid cached IMP invocation for +new; use direct ObjC messaging path.
+  perl -0pi -e 's|#ifdef __GNU_LIBOBJC__\n\s*return \[\[self allocWithZone: NSDefaultMallocZone\(\)\] init\];\n\s*#else\n\s*arp = \(\*allocImp\)\(self, @selector\(allocWithZone:\), NSDefaultMallocZone\(\)\);\n\s*return \(\*initImp\)\(arp, @selector\(init\)\);\n\s*#endif|  return [[self allocWithZone: NSDefaultMallocZone()] init];|g' "$arp"
+  perl -0pi -e 's|arp = \(\*allocImp\)\(self, @selector\(allocWithZone:\), NSDefaultMallocZone\(\)\);\n\s*return \(\*initImp\)\(arp, @selector\(init\)\);|  return [[self allocWithZone: NSDefaultMallocZone()] init];|g' "$arp"
+}
+
 patch_tools_make_for_darwin_gcc
 patch_libs_base_for_darwin_gcc
 patch_gdomap_for_modern_sdk
 patch_nsobject_for_gnu_runtime
+patch_nszone_for_darwin_gcc
+patch_nsautoreleasepool_for_gnu_runtime
 
 # Common compiler and linker environment: GCC + GNU Objective-C runtime only.
 GCC_CC="$(ls -1 "$BREW_PREFIX"/bin/gcc-[0-9]* 2>/dev/null | sort -V | tail -n1)"

@@ -94,6 +94,37 @@ clone_or_update libs-base  libs-base  "$LIBS_BASE_TAG"
 clone_or_update libs-gui   libs-gui   "$LIBS_GUI_TAG"
 clone_or_update libs-back  libs-back  "$LIBS_BACK_TAG"
 
+reset_patch_targets() {
+  if [[ -d "$SRCROOT/tools-make/.git" ]]; then
+    git -C "$SRCROOT/tools-make" checkout -- target.make
+  fi
+
+  if [[ -d "$SRCROOT/libs-base/.git" ]]; then
+    git -C "$SRCROOT/libs-base" checkout -- \
+      Headers/Foundation/Foundation.h \
+      Tools/gdomap.c \
+      Source/NSNotificationCenter.m \
+      Source/NSObject.m \
+      Source/NSZone.m \
+      Source/NSAutoreleasePool.m
+  fi
+
+  if [[ -d "$SRCROOT/libs-gui/.git" ]]; then
+    git -C "$SRCROOT/libs-gui" checkout -- \
+      Tools/gclose.m \
+      Tools/gcloseall.m \
+      Tools/gopen.m \
+      Tools/make_services.m \
+      Tools/set_show_service.m
+  fi
+
+  if [[ -d "$SRCROOT/libs-back/.git" ]]; then
+    git -C "$SRCROOT/libs-back" checkout -- \
+      Tools/font_cacher.m \
+      Tools/gpbs.m
+  fi
+}
+
 patch_tools_make_for_darwin_gcc() {
   if [[ "$(uname -s)" != "Darwin" ]]; then
     return
@@ -119,53 +150,55 @@ patch_libs_base_for_darwin_gcc() {
 }
 
 patch_gdomap_for_modern_sdk() {
-  # gdomap.c uses K&R-style declarations incompatible with modern macOS SDK signal().
-  # Fix: add explicit `int sig` parameter to dump_tables and change ifun type to void(*)(int).
   local gdomap="$SRCROOT/libs-base/Tools/gdomap.c"
   if [[ ! -f "$gdomap" ]]; then
     return
   fi
 
-  # Fix forward declaration:  static void dump_tables();  -> static void dump_tables(int sig);
   perl -pi -e 's/^(static void\s+dump_tables)\(\);$/$1(int sig);/' "$gdomap"
-
-  # Fix definition:  dump_tables()  ->  dump_tables(int sig)
   perl -pi -e 's/^(dump_tables)\(\)$/$1(int sig)/' "$gdomap"
-
-  # Fix ifun local variable type: void (*ifun)() -> void (*ifun)(int)
   perl -pi -e 's/void\s+\(\*ifun\)\(\)/void (*ifun)(int)/' "$gdomap"
 }
 
 patch_nsobject_for_gnu_runtime() {
-  # objc_create_block_classes_as_subclasses_of is a libobjc2-only function.
-  # When using libobjc-gnu the symbol is absent and calling it crashes at PC=0.
-  # Guard both the extern declaration and the call with #ifndef __GNU_LIBOBJC__.
   local nsobject="$SRCROOT/libs-base/Source/NSObject.m"
   if [[ ! -f "$nsobject" ]]; then
     return
   fi
 
-  # Guard the extern declaration (two-line form: "extern BOOL\nobjc_create_block...")
-  perl -0pi -e 's|(extern BOOL\s+objc_create_block_classes_as_subclasses_of\(Class super\);)|#ifndef __GNU_LIBOBJC__\n$1\n#endif|g' "$nsobject"
+  if rg -q 'extern BOOL[[:space:]]+objc_create_block_classes_as_subclasses_of\(Class super\);' "$nsobject"; then
+    perl -0pi -e 's|(extern BOOL\s+objc_create_block_classes_as_subclasses_of\(Class super\);)|#ifndef __GNU_LIBOBJC__\n$1\n#endif|g' "$nsobject"
+  fi
+  if rg -q '^\s+objc_create_block_classes_as_subclasses_of\(self\);' "$nsobject"; then
+    perl -pi -e 's|^(\s+)(objc_create_block_classes_as_subclasses_of\(self\);)|$1#ifndef __GNU_LIBOBJC__\n$1$2\n$1#endif|' "$nsobject"
+  fi
+  if rg -q '^\s+GSWeakInit\(\);' "$nsobject"; then
+    perl -pi -e 's|^(\s+)(GSWeakInit\(\);)|$1#ifndef __GNU_LIBOBJC__\n$1$2\n$1#endif|' "$nsobject"
+  fi
+  if rg -q '^\s+objc_delete_weak_refs\(anObject\);' "$nsobject"; then
+    perl -pi -e 's|^(\s+)(objc_delete_weak_refs\(anObject\);)|$1#ifndef __GNU_LIBOBJC__\n$1$2\n$1#endif|' "$nsobject"
+  fi
+}
 
-  # Guard the call site inside +load
-  perl -pi -e 's|^(\s+)(objc_create_block_classes_as_subclasses_of\(self\);)|$1#ifndef __GNU_LIBOBJC__\n$1$2\n$1#endif|' "$nsobject"
+patch_nsnotificationcenter_for_gnu_runtime() {
+  local center="$SRCROOT/libs-base/Source/NSNotificationCenter.m"
+  if [[ ! -f "$center" ]]; then
+    return
+  fi
 
-  # GSWeakInit is implemented in ObjectiveC2 weak runtime sources and is not
-  # available when building against libobjc-gnu on macOS.
-  perl -pi -e 's|^(\s+)(GSWeakInit\(\);)|$1#ifndef __GNU_LIBOBJC__\n$1$2\n$1#endif|' "$nsobject"
+  if ! rg -q 'GSNotificationObserverInit' "$center"; then
+    perl -0pi -e 's|(#define\s+ENDOBS\s+\(\(Observation\*\)-1\)\n)|$1\n#if defined(__GNU_LIBOBJC__)\nstatic inline void\nGSNotificationObserverInit(id *slot, id value)\n{\n  *slot = value;\n}\n\nstatic inline id\nGSNotificationObserverLoad(id *slot)\n{\n  return *slot;\n}\n\nstatic inline id\nGSNotificationObserverLoadRetained(id *slot)\n{\n  return [*slot retain];\n}\n\nstatic inline void\nGSNotificationObserverDestroy(id *slot)\n{\n  *slot = nil;\n}\n#else\nstatic inline void\nGSNotificationObserverInit(id *slot, id value)\n{\n  objc_initWeak(slot, value);\n}\n\nstatic inline id\nGSNotificationObserverLoad(id *slot)\n{\n  return objc_loadWeak(slot);\n}\n\nstatic inline id\nGSNotificationObserverLoadRetained(id *slot)\n{\n  return objc_loadWeakRetained(slot);\n}\n\nstatic inline void\nGSNotificationObserverDestroy(id *slot)\n{\n  objc_destroyWeak(slot);\n}\n#endif\n|s' "$center"
+  fi
 
-  # objc_delete_weak_refs is also provided by the ObjectiveC2 weak runtime.
-  # The GNU runtime build links it as unresolved, so skip weak-ref cleanup in
-  # the fallback release path instead of crashing on a null call.
-  perl -pi -e 's|^(\s+)(objc_delete_weak_refs\(anObject\);)|$1#ifndef __GNU_LIBOBJC__\n$1$2\n$1#endif|' "$nsobject"
+  perl -0pi -e 's/objc_initWeak\(&obs->observer, o\);/GSNotificationObserverInit\(&obs->observer, o\);/g' "$center"
+  perl -0pi -e 's/objc_loadWeak\(&o->observer\)/GSNotificationObserverLoad\(&o->observer\)/g' "$center"
+  perl -0pi -e 's/objc_destroyWeak\(&o->observer\);/GSNotificationObserverDestroy\(&o->observer\);/g' "$center"
+  perl -0pi -e 's/objc_loadWeak\(&list->observer\)/GSNotificationObserverLoad\(&list->observer\)/g' "$center"
+  perl -0pi -e 's/objc_loadWeak\(&tmp->next->observer\)/GSNotificationObserverLoad\(&tmp->next->observer\)/g' "$center"
+  perl -0pi -e 's/objc_loadWeakRetained\(&o->observer\)/GSNotificationObserverLoadRetained\(&o->observer\)/g' "$center"
 }
 
 patch_nszone_for_darwin_gcc() {
-  # On Darwin/GCC with the GNU runtime, having @"default" directly in the
-  # default_zone static initializer can corrupt the first field (malloc fn ptr)
-  # after relocations. Keep the static initializer POD-only and assign the
-  # NSString name in a constructor instead.
   local nszone="$SRCROOT/libs-base/Source/NSZone.m"
   if [[ ! -f "$nszone" ]]; then
     return
@@ -177,8 +210,6 @@ patch_nszone_for_darwin_gcc() {
     perl -0pi -e 's|(static NSZone default_zone =\n\{\n\s*default_malloc, default_realloc, default_free, default_recycle,\n\s*default_check, default_lookup, default_stats, 0, 0, 0\n\};\n)|$1\n__attribute__((constructor)) static void\ninit_default_zone_name (void)\n{\n  default_zone.name = @"default";\n}\n|s' "$nszone"
   fi
 
-  # Avoid indirect call through default_zone.malloc on Darwin/GCC if that slot
-  # gets corrupted by relocations. Use default_malloc directly for the default zone.
   perl -0pi -e 's~GS_DECLARE void\*\nNSZoneMalloc \(NSZone \*zone, NSUInteger size\)\n\{\n  if \(!zone\)\n    zone = NSDefaultMallocZone\(\);\n  return \(zone->malloc\)\(zone, size\);\n\}~GS_DECLARE void*\nNSZoneMalloc (NSZone *zone, NSUInteger size)\n{\n  if (!zone || zone == NSDefaultMallocZone())\n    return default_malloc(NSDefaultMallocZone(), size);\n  return (zone->malloc)(zone, size);\n\}~s' "$nszone"
 }
 
@@ -188,22 +219,58 @@ patch_nsautoreleasepool_for_gnu_runtime() {
     return
   fi
 
-  # A non-default zone can be propagated into pool allocation and later crash
-  # via invalid zone->malloc. Force default zone unconditionally.
-  perl -0pi -e 's|#ifdef __GNU_LIBOBJC__\n\s*p = \(NSAutoreleasePool\*\)NSAllocateObject \(self, 0, NSDefaultMallocZone\(\)\);\n\s*#else\n\s*p = \(NSAutoreleasePool\*\)NSAllocateObject \(self, 0, zone\);\n\s*#endif|  p = (NSAutoreleasePool*)NSAllocateObject (self, 0, NSDefaultMallocZone());|g' "$arp"
-  perl -0pi -e 's|p = \(NSAutoreleasePool\*\)NSAllocateObject \(self, 0, zone\);|  p = (NSAutoreleasePool*)NSAllocateObject (self, 0, NSDefaultMallocZone());|g' "$arp"
+  if ! rg -q 'GSAutoreleasePointerLooksValid' "$arp"; then
+    perl -0pi -e 's~/\* Easy access to the thread variables belonging to NSAutoreleasePool\. \*/\n#define ARP_THREAD_VARS \(&\(\(GSCurrentThread\(\)\)\->_autorelease_vars\)\)~/* Easy access to the thread variables belonging to NSAutoreleasePool. */\n#define ARP_THREAD_VARS (&((GSCurrentThread())->_autorelease_vars))\n\n#if defined(__APPLE__) && defined(__GNU_LIBOBJC__)\nstatic inline BOOL\nGSAutoreleasePointerLooksValid(const void *pointer)\n{\n  uintptr_t value = (uintptr_t)pointer;\n\n  if (value == 0)\n    {\n      return NO;\n    }\n  if ((value & 0x7) != 0)\n    {\n      return NO;\n    }\n  return ((value >> 48) == 0 || (value >> 48) == 0xffff);\n}\n#endif~s' "$arp"
+  fi
 
-  # Avoid cached IMP invocation for +new; use direct ObjC messaging path.
-  perl -0pi -e 's|#ifdef __GNU_LIBOBJC__\n\s*return \[\[self allocWithZone: NSDefaultMallocZone\(\)\] init\];\n\s*#else\n\s*arp = \(\*allocImp\)\(self, @selector\(allocWithZone:\), NSDefaultMallocZone\(\)\);\n\s*return \(\*initImp\)\(arp, @selector\(init\)\);\n\s*#endif|  return [[self allocWithZone: NSDefaultMallocZone()] init];|g' "$arp"
-  perl -0pi -e 's|arp = \(\*allocImp\)\(self, @selector\(allocWithZone:\), NSDefaultMallocZone\(\)\);\n\s*return \(\*initImp\)\(arp, @selector\(init\)\);|  return [[self allocWithZone: NSDefaultMallocZone()] init];|g' "$arp"
+  if rg -q 'c = object_getClass\(anObject\);' "$arp" && ! rg -q 'invalid class encountered in autorelease pool' "$arp"; then
+    perl -0pi -e 's|\t      anObject = objects\[i\];\n\t      objects\[i\] = nil;\n              if \(anObject == nil\)\n                \{\n                  fprintf\(stderr,\n                    "nil object encountered in autorelease pool\\n"\);\n                  continue;\n                \}\n\t      c = object_getClass\(anObject\);\n              if \(c == 0\)\n                \{\n                  \[NSException raise: NSInternalInconsistencyException\n                    format: \@"nul class for object in autorelease pool"\];\n                \}|\t      anObject = objects[i];\n\t      objects[i] = nil;\n              if (anObject == nil)\n                {\n                  fprintf(stderr,\n                    "nil object encountered in autorelease pool\\n");\n                  continue;\n                }\n\t      #if defined(__APPLE__) && defined(__GNU_LIBOBJC__)\n\t      if (NO == GSAutoreleasePointerLooksValid(anObject))\n\t        {\n\t          volatile struct autorelease_array_list *remaining = released;\n\n\t          fprintf(stderr,\n\t            "invalid object encountered in autorelease pool: %p\\n",\n\t            anObject);\n\t          while (remaining != 0)\n\t            {\n\t              remaining->count = 0;\n\t              remaining = remaining->next;\n\t            }\n\t          _released_count = 0;\n\t          break;\n\t        }\n\t      #endif\n\t      c = object_getClass(anObject);\n              if (c == 0)\n                {\n                  [NSException raise: NSInternalInconsistencyException\n                    format: @"nul class for object in autorelease pool"];\n                }\n\t      #if defined(__APPLE__) && defined(__GNU_LIBOBJC__)\n\t      if (NO == GSAutoreleasePointerLooksValid(c))\n\t        {\n\t          volatile struct autorelease_array_list *remaining = released;\n\n\t          fprintf(stderr,\n\t            "invalid class encountered in autorelease pool: object=%p class=%p\\n",\n\t            anObject, c);\n\t          while (remaining != 0)\n\t            {\n\t              remaining->count = 0;\n\t              remaining = remaining->next;\n\t            }\n\t          _released_count = 0;\n\t          break;\n\t        }\n\t      #endif|s' "$arp"
+  fi
+
+  perl -pi -e 's/NSAllocateObject \(self, 0, zone\)/NSAllocateObject (self, 0, NULL)/g' "$arp"
+
+  if rg -q '^\+ \(id\) new$' "$arp"; then
+    perl -0pi -e 's|\+ \(id\) new\n\{\n  static IMP\s+allocImp = 0;\n  static IMP\s+initImp = 0;\n  id\s+arp;\n\n  if \(0 == allocImp\)\n    \{\n      allocImp\n\s*= \[NSAutoreleasePool methodForSelector: \@selector\(allocWithZone:\)\];\n      initImp\n\s*= \[NSAutoreleasePool instanceMethodForSelector: \@selector\(init\)\];\n    \}\n  arp = \(\*allocImp\)\(self, \@selector\(allocWithZone:\), NSDefaultMallocZone\(\)\);\n  return \(\*initImp\)\(arp, \@selector\(init\)\);\n\}|+ (id) new\n{\n  return [[self allocWithZone: NULL] init];\n}|s' "$arp"
+  fi
 }
 
+patch_nsautoreleasepool_runtime_safety() {
+  local arp="$SRCROOT/libs-base/Source/NSAutoreleasePool.m"
+  if [[ ! -f "$arp" ]]; then
+    return
+  fi
+
+  perl -0pi -e 's|#if defined\(__APPLE__\) && defined\(__GNU_LIBOBJC__\)\n\s*if \(NO == GSAutoreleasePointerLooksValid\(anObject\)\)\n\s*\{\n\s*volatile struct autorelease_array_list \*remaining = released;\n\n\s*fprintf\(stderr,\n\s*"invalid object encountered in autorelease pool: %p\\n",\n\s*anObject\);\n\s*while \(remaining != 0\)\n\s*\{\n\s*remaining->count = 0;\n\s*remaining = remaining->next;\n\s*\}\n\s*_released_count = 0;\n\s*break;\n\s*\}\n\s*#endif|#if defined(__APPLE__) && defined(__GNU_LIBOBJC__)\n      if (NO == GSAutoreleasePointerLooksValid(anObject))\n        {\n          fprintf(stderr,\n            "invalid object encountered in autorelease pool: %p\\n",\n            anObject);\n          continue;\n        }\n      #endif|s; s|#if defined\(__APPLE__\) && defined\(__GNU_LIBOBJC__\)\n\s*if \(NO == GSAutoreleasePointerLooksValid\(c\)\)\n\s*\{\n\s*volatile struct autorelease_array_list \*remaining = released;\n\n\s*fprintf\(stderr,\n\s*"invalid class encountered in autorelease pool: object=%p class=%p\\n",\n\s*anObject, c\);\n\s*while \(remaining != 0\)\n\s*\{\n\s*remaining->count = 0;\n\s*remaining = remaining->next;\n\s*\}\n\s*_released_count = 0;\n\s*break;\n\s*\}\n\s*#endif|#if defined(__APPLE__) && defined(__GNU_LIBOBJC__)\n      if (NO == GSAutoreleasePointerLooksValid(c))\n        {\n          fprintf(stderr,\n            "invalid class encountered in autorelease pool: object=%p class=%p\\n",\n            anObject, c);\n          continue;\n        }\n      #endif|s' "$arp"
+}
+
+patch_tool_processinfo_init_guards() {
+  local roots=(
+    "$SRCROOT/libs-base/Tools"
+    "$SRCROOT/libs-gui/Tools"
+    "$SRCROOT/libs-back/Tools"
+  )
+
+  local root
+  local file
+  for root in "${roots[@]}"; do
+    [[ -d "$root" ]] || continue
+
+    while IFS= read -r file; do
+      perl -0pi -e 's|#ifdef GS_PASS_ARGUMENTS\n([ \t]*\[NSProcessInfo initializeWithArguments:[^\n]*\];)\n[ \t]*#endif|$1|g' "$file"
+    done < <(rg -l '#ifdef GS_PASS_ARGUMENTS' "$root")
+  done
+}
+
+reset_patch_targets
 patch_tools_make_for_darwin_gcc
 patch_libs_base_for_darwin_gcc
 patch_gdomap_for_modern_sdk
 patch_nsobject_for_gnu_runtime
+patch_nsnotificationcenter_for_gnu_runtime
 patch_nszone_for_darwin_gcc
 patch_nsautoreleasepool_for_gnu_runtime
+patch_nsautoreleasepool_runtime_safety
+patch_tool_processinfo_init_guards
 
 # Common compiler and linker environment: GCC + GNU Objective-C runtime only.
 GCC_CC="$(ls -1 "$BREW_PREFIX"/bin/gcc-[0-9]* 2>/dev/null | sort -V | tail -n1)"
@@ -255,13 +322,13 @@ echo "==> Using GNU Objective-C runtime from $GCC_LIBOBJC_DIR"
 echo "==> Using GNU Objective-C headers from $GCC_GNU_RUNTIME_INCLUDE_DIR"
 
 export PKG_CONFIG="$BREW_PREFIX/bin/pkg-config"
-export PKG_CONFIG_PATH="$BREW_PREFIX/opt/icu4c/lib/pkgconfig:$BREW_PREFIX/opt/libxml2/lib/pkgconfig:$BREW_PREFIX/opt/libffi/lib/pkgconfig:$X11_PREFIX/lib/pkgconfig:$BREW_PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
-export ACLOCAL_PATH="$BREW_PREFIX/share/aclocal:${ACLOCAL_PATH:-}"
+export PKG_CONFIG_PATH="$BREW_PREFIX/opt/icu4c/lib/pkgconfig:$BREW_PREFIX/opt/libxml2/lib/pkgconfig:$BREW_PREFIX/opt/libffi/lib/pkgconfig:$X11_PREFIX/lib/pkgconfig:$BREW_PREFIX/lib/pkgconfig${EXTRA_PKG_CONFIG_PATH:+:$EXTRA_PKG_CONFIG_PATH}"
+export ACLOCAL_PATH="$BREW_PREFIX/share/aclocal${EXTRA_ACLOCAL_PATH:+:$EXTRA_ACLOCAL_PATH}"
 
 # Bootstrap with Homebrew and XQuartz only. Do not expose an existing GNUstep
 # prefix here because stale libobjc2 headers/libs can poison compiler probes.
-export CPPFLAGS="-D__GNU_LIBOBJC__=1 -I$GCC_GNU_RUNTIME_INCLUDE_DIR -I$BREW_PREFIX/include -I$BREW_PREFIX/opt/icu4c/include -I$BREW_PREFIX/opt/libxml2/include -I$BREW_PREFIX/opt/libffi/include -I$X11_PREFIX/include ${CPPFLAGS:-}"
-export LDFLAGS="-L$BREW_PREFIX/lib -L$BREW_PREFIX/opt/icu4c/lib -L$BREW_PREFIX/opt/libxml2/lib -L$BREW_PREFIX/opt/libffi/lib -L$X11_PREFIX/lib ${LDFLAGS:-}"
+export CPPFLAGS="-D__GNU_LIBOBJC__=1 -I$GCC_GNU_RUNTIME_INCLUDE_DIR -I$BREW_PREFIX/include -I$BREW_PREFIX/opt/icu4c/include -I$BREW_PREFIX/opt/libxml2/include -I$BREW_PREFIX/opt/libffi/include -I$X11_PREFIX/include${EXTRA_CPPFLAGS:+ $EXTRA_CPPFLAGS}"
+export LDFLAGS="-L$BREW_PREFIX/lib -L$BREW_PREFIX/opt/icu4c/lib -L$BREW_PREFIX/opt/libxml2/lib -L$BREW_PREFIX/opt/libffi/lib -L$X11_PREFIX/lib${EXTRA_LDFLAGS:+ $EXTRA_LDFLAGS}"
 
 if [[ -n "$GCC_LIBOBJC_DIR" ]]; then
   export LDFLAGS="-L$GCC_LIBOBJC_DIR $LDFLAGS"
@@ -273,9 +340,9 @@ if [[ -n "$GCC_LIBGCC_DIR" && "$GCC_LIBGCC_DIR" != "$GCC_LIBOBJC_DIR" ]]; then
 fi
 
 # Helpful runtime path for bootstrap tools built during the process.
-export DYLD_LIBRARY_PATH="$BREW_PREFIX/lib:$X11_PREFIX/lib:${DYLD_LIBRARY_PATH:-}"
-export LIBRARY_PATH="$BREW_PREFIX/lib:$X11_PREFIX/lib:${LIBRARY_PATH:-}"
-export CPATH="$GCC_GNU_RUNTIME_INCLUDE_DIR:$BREW_PREFIX/include:$X11_PREFIX/include:${CPATH:-}"
+export DYLD_LIBRARY_PATH="$BREW_PREFIX/lib:$X11_PREFIX/lib${EXTRA_DYLD_LIBRARY_PATH:+:$EXTRA_DYLD_LIBRARY_PATH}"
+export LIBRARY_PATH="$BREW_PREFIX/lib:$X11_PREFIX/lib${EXTRA_LIBRARY_PATH:+:$EXTRA_LIBRARY_PATH}"
+export CPATH="$GCC_GNU_RUNTIME_INCLUDE_DIR:$BREW_PREFIX/include:$X11_PREFIX/include${EXTRA_CPATH:+:$EXTRA_CPATH}"
 
 if [[ -n "$GCC_LIBOBJC_DIR" ]]; then
   export DYLD_LIBRARY_PATH="$GCC_LIBOBJC_DIR:$DYLD_LIBRARY_PATH"
@@ -286,8 +353,84 @@ if [[ -n "$GCC_LIBGCC_DIR" && "$GCC_LIBGCC_DIR" != "$GCC_LIBOBJC_DIR" ]]; then
   export LIBRARY_PATH="$GCC_LIBGCC_DIR:$LIBRARY_PATH"
 fi
 
-export CFLAGS="-D__GNU_LIBOBJC__=1 ${CFLAGS:-}"
-export OBJCFLAGS="-D__GNU_LIBOBJC__=1 -fgnu-runtime ${OBJCFLAGS:-}"
+export CFLAGS="-D__GNU_LIBOBJC__=1${EXTRA_CFLAGS:+ $EXTRA_CFLAGS}"
+export OBJCFLAGS="-D__GNU_LIBOBJC__=1 -fgnu-runtime${EXTRA_OBJCFLAGS:+ $EXTRA_OBJCFLAGS}"
+export GNUSTEP_MAKE_SERVICES="${GNUSTEP_MAKE_SERVICES:-/usr/bin/true}"
+
+BASE_PKG_CONFIG="$PKG_CONFIG"
+BASE_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+BASE_ACLOCAL_PATH="$ACLOCAL_PATH"
+BASE_CPPFLAGS="$CPPFLAGS"
+BASE_LDFLAGS="$LDFLAGS"
+BASE_DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH"
+BASE_LIBRARY_PATH="$LIBRARY_PATH"
+BASE_CPATH="$CPATH"
+BASE_CFLAGS="$CFLAGS"
+BASE_OBJCFLAGS="$OBJCFLAGS"
+
+reset_bootstrap_env() {
+  export PKG_CONFIG="$BASE_PKG_CONFIG"
+  export PKG_CONFIG_PATH="$BASE_PKG_CONFIG_PATH"
+  export ACLOCAL_PATH="$BASE_ACLOCAL_PATH"
+  export CPPFLAGS="$BASE_CPPFLAGS"
+  export LDFLAGS="$BASE_LDFLAGS"
+  export DYLD_LIBRARY_PATH="$BASE_DYLD_LIBRARY_PATH"
+  export LIBRARY_PATH="$BASE_LIBRARY_PATH"
+  export CPATH="$BASE_CPATH"
+  export CFLAGS="$BASE_CFLAGS"
+  export OBJCFLAGS="$BASE_OBJCFLAGS"
+  apply_preferred_compiler_env
+}
+
+run_as_root() {
+  if [[ -n "${SUDO_ASKPASS:-}" ]]; then
+    sudo -A "$@"
+  else
+    sudo "$@"
+  fi
+}
+
+ensure_prefix_permissions() {
+  local dirs=(
+    "$PREFIX"
+    "$PREFIX/System"
+    "$PREFIX/System/Library"
+    "$PREFIX/System/Library/Headers"
+    "$PREFIX/System/Library/Libraries"
+    "$PREFIX/Local"
+    "$PREFIX/Local/Library"
+    "$PREFIX/Local/Library/Headers"
+    "$PREFIX/Local/Library/Libraries"
+    "$PREFIX/Local/Library/Libraries/pkgconfig"
+  )
+
+  local existing=()
+  local dir
+  for dir in "${dirs[@]}"; do
+    if [[ -d "$dir" ]]; then
+      existing+=("$dir")
+    fi
+  done
+
+  if [[ ${#existing[@]} -gt 0 ]]; then
+    run_as_root chmod 755 "${existing[@]}"
+  fi
+
+  local trees=(
+    "$PREFIX/System/Library/Headers"
+    "$PREFIX/System/Library/Libraries"
+    "$PREFIX/Local/Library/Headers"
+    "$PREFIX/Local/Library/Libraries"
+  )
+
+  local tree
+  for tree in "${trees[@]}"; do
+    if [[ -d "$tree" ]]; then
+      run_as_root find "$tree" -type d -exec chmod 755 {} +
+      run_as_root find "$tree" -type f -exec chmod 644 {} +
+    fi
+  done
+}
 
 purge_installed_libobjc2() {
   echo "==> Removing libobjc2 artifacts from $PREFIX"
@@ -319,7 +462,7 @@ purge_installed_libobjc2() {
     return
   fi
 
-  sudo rm -rf "${existing[@]}"
+  run_as_root rm -rf "${existing[@]}"
 }
 
 # Use a straightforward GNUstep layout under one prefix.
@@ -415,16 +558,19 @@ build_tools_make() {
   # tools-make installs scripts/makefiles directly after configure.
   make distclean >/dev/null 2>&1 || true
 
+  reset_bootstrap_env
+
   local make_ccflags="${CCFLAGS:-}"
 
   CC="$CC" CXX="$CXX" CCFLAGS="$make_ccflags" ./configure "${MAKE_CONFIGURE_FLAGS[@]}"
   make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes
-  sudo make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
+  run_as_root make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
+  ensure_prefix_permissions
 
   if [[ "$(uname -s)" == "Darwin" ]]; then
     local installed_target_make="$PREFIX/System/Library/Makefiles/target.make"
     if [[ -f "$installed_target_make" ]]; then
-      sudo perl -0pi -e 's/-Wl,-noall_load\s+//g' "$installed_target_make"
+      run_as_root perl -0pi -e 's/-Wl,-noall_load\s+//g' "$installed_target_make"
     fi
   fi
 
@@ -450,18 +596,22 @@ build_lib() {
   echo "Sourcing $PREFIX/System/Library/Makefiles/GNUstep.sh"
   source_gnustep_env
 
-  export LDFLAGS="-L$PREFIX/System/Library/Libraries ${LDFLAGS:-}"
-  export DYLD_LIBRARY_PATH="$PREFIX/System/Library/Libraries:${DYLD_LIBRARY_PATH:-}"
-  export PKG_CONFIG_PATH="$PREFIX/System/Library/Libraries/pkgconfig:${PKG_CONFIG_PATH:-}"
-  export CFLAGS="-I$PREFIX/System/Library/Headers ${CFLAGS:-}"
+  reset_bootstrap_env
+
+  export CPPFLAGS="-I$PREFIX/System/Library/Headers $CPPFLAGS"
+  export LDFLAGS="-L$PREFIX/System/Library/Libraries $LDFLAGS"
+  export DYLD_LIBRARY_PATH="$PREFIX/System/Library/Libraries:$DYLD_LIBRARY_PATH"
+  export PKG_CONFIG_PATH="$PREFIX/System/Library/Libraries/pkgconfig:$PKG_CONFIG_PATH"
 
   if [[ "$name" == "libs-base" ]]; then
     extra_args+=("--disable-libdispatch")
+    extra_args+=("--disable-importing-config-file")
   fi
 
   ./configure "${LIB_CONFIGURE_FLAGS[@]}" "${extra_args[@]}"
   make -j"$JOBS" GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes
-  sudo make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
+  run_as_root make GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
+  ensure_prefix_permissions
 }
 
 purge_installed_libobjc2

@@ -322,18 +322,25 @@ patch_nsautoreleasepool_for_gnu_runtime() {
 # patch_nsautoreleasepool_runtime_safety
 #
 # Refines the GSAutoreleasePointerLooksValid guard blocks that were inserted by
-# patch_nsautoreleasepool_for_gnu_runtime.  The initial insertion uses a
-# loop-breaking strategy (resetting counts and calling break) which can leave
-# other pool entries undrained.  This patch replaces those blocks with simpler
-# "continue" statements so that the drain loop skips invalid entries instead of
-# aborting, improving resilience when stale pointers appear in a pool.
+# patch_nsautoreleasepool_for_gnu_runtime.  The initial insertion zeroes all
+# remaining pool lists and breaks, which is overly aggressive.  This patch
+# replaces those blocks with a plain break so that only the current
+# autorelease_array_list's iteration is stopped.  The outer loop continues to
+# the next (valid) array_list, and the existing "released->count = 0" statement
+# that follows the inner loop cleans up the current list.
+#
+# Using break (rather than continue, which was tried earlier) is critical:
+# if the pool's count field is garbage (e.g. because Apple ObjC runtime objects
+# contaminated the pool's backing memory), continue would iterate through the
+# entire garbage range, making thousands of out-of-bounds reads and ultimately
+# following a corrupt ->next pointer into a segfault.  break exits immediately.
 patch_nsautoreleasepool_runtime_safety() {
   local arp="$SRCROOT/libs-base/Source/NSAutoreleasePool.m"
   if [[ ! -f "$arp" ]]; then
     return
   fi
 
-  perl -0pi -e 's|#if defined\(__APPLE__\) && defined\(__GNU_LIBOBJC__\)\n\s*if \(NO == GSAutoreleasePointerLooksValid\(anObject\)\)\n\s*\{\n\s*volatile struct autorelease_array_list \*remaining = released;\n\n\s*fprintf\(stderr,\n\s*"invalid object encountered in autorelease pool: %p\\n",\n\s*anObject\);\n\s*while \(remaining != 0\)\n\s*\{\n\s*remaining->count = 0;\n\s*remaining = remaining->next;\n\s*\}\n\s*_released_count = 0;\n\s*break;\n\s*\}\n\s*#endif|#if defined(__APPLE__) && defined(__GNU_LIBOBJC__)\n      if (NO == GSAutoreleasePointerLooksValid(anObject))\n        {\n          fprintf(stderr,\n            "invalid object encountered in autorelease pool: %p\\n",\n            anObject);\n          continue;\n        }\n      #endif|s; s|#if defined\(__APPLE__\) && defined\(__GNU_LIBOBJC__\)\n\s*if \(NO == GSAutoreleasePointerLooksValid\(c\)\)\n\s*\{\n\s*volatile struct autorelease_array_list \*remaining = released;\n\n\s*fprintf\(stderr,\n\s*"invalid class encountered in autorelease pool: object=%p class=%p\\n",\n\s*anObject, c\);\n\s*while \(remaining != 0\)\n\s*\{\n\s*remaining->count = 0;\n\s*remaining = remaining->next;\n\s*\}\n\s*_released_count = 0;\n\s*break;\n\s*\}\n\s*#endif|#if defined(__APPLE__) && defined(__GNU_LIBOBJC__)\n      if (NO == GSAutoreleasePointerLooksValid(c))\n        {\n          fprintf(stderr,\n            "invalid class encountered in autorelease pool: object=%p class=%p\\n",\n            anObject, c);\n          continue;\n        }\n      #endif|s' "$arp"
+  perl -0pi -e 's|#if defined\(__APPLE__\) && defined\(__GNU_LIBOBJC__\)\n\s*if \(NO == GSAutoreleasePointerLooksValid\(anObject\)\)\n\s*\{\n\s*volatile struct autorelease_array_list \*remaining = released;\n\n\s*fprintf\(stderr,\n\s*"invalid object encountered in autorelease pool: %p\\n",\n\s*anObject\);\n\s*while \(remaining != 0\)\n\s*\{\n\s*remaining->count = 0;\n\s*remaining = remaining->next;\n\s*\}\n\s*_released_count = 0;\n\s*break;\n\s*\}\n\s*#endif|#if defined(__APPLE__) && defined(__GNU_LIBOBJC__)\n      if (NO == GSAutoreleasePointerLooksValid(anObject))\n        {\n          fprintf(stderr,\n            "invalid object encountered in autorelease pool: %p\\n",\n            anObject);\n          break;\n        }\n      #endif|s; s|#if defined\(__APPLE__\) && defined\(__GNU_LIBOBJC__\)\n\s*if \(NO == GSAutoreleasePointerLooksValid\(c\)\)\n\s*\{\n\s*volatile struct autorelease_array_list \*remaining = released;\n\n\s*fprintf\(stderr,\n\s*"invalid class encountered in autorelease pool: object=%p class=%p\\n",\n\s*anObject, c\);\n\s*while \(remaining != 0\)\n\s*\{\n\s*remaining->count = 0;\n\s*remaining = remaining->next;\n\s*\}\n\s*_released_count = 0;\n\s*break;\n\s*\}\n\s*#endif|#if defined(__APPLE__) && defined(__GNU_LIBOBJC__)\n      if (NO == GSAutoreleasePointerLooksValid(c))\n        {\n          fprintf(stderr,\n            "invalid class encountered in autorelease pool: object=%p class=%p\\n",\n            anObject, c);\n          break;\n        }\n      #endif|s' "$arp"
 }
 
 # patch_tool_processinfo_init_guards
@@ -460,6 +467,20 @@ fi
 export CFLAGS="-D__GNU_LIBOBJC__=1${EXTRA_CFLAGS:+ $EXTRA_CFLAGS}"
 export OBJCFLAGS="-D__GNU_LIBOBJC__=1 -fgnu-runtime${EXTRA_OBJCFLAGS:+ $EXTRA_OBJCFLAGS}"
 export GNUSTEP_MAKE_SERVICES="${GNUSTEP_MAKE_SERVICES:-/usr/bin/true}"
+
+# libobjc shim: create a directory where libobjc.dylib is a symlink to
+# libobjc-gnu.dylib.  Placing this directory first in LDFLAGS means that any
+# "-lobjc" flag emitted by GNUstep Make or a dependency resolves to the GNU
+# runtime rather than Apple's /usr/lib/libobjc.A.dylib.  This prevents Apple
+# ObjC runtime objects from being linked into GNUstep tools, which would
+# otherwise cause foreign-format pointers to contaminate GNUstep's autorelease
+# pools and lead to the pool drain crashes seen with make_services.
+OBJC_SHIM_DIR="$(mktemp -d /tmp/gnustep-objc-shim.XXXXXX)"
+ln -sf "$GCC_LIBOBJC_DIR/libobjc-gnu.dylib" "$OBJC_SHIM_DIR/libobjc.dylib"
+trap 'rm -rf "$OBJC_SHIM_DIR" 2>/dev/null || true' EXIT
+export LDFLAGS="-L$OBJC_SHIM_DIR $LDFLAGS"
+export DYLD_LIBRARY_PATH="$OBJC_SHIM_DIR:$DYLD_LIBRARY_PATH"
+export LIBRARY_PATH="$OBJC_SHIM_DIR:$LIBRARY_PATH"
 
 BASE_PKG_CONFIG="$PKG_CONFIG"
 BASE_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
@@ -700,11 +721,28 @@ check_objc_compiler() {
 int main(void) { return 0; }
 EOF
 
-  if ! "$OBJC" $OBJCFLAGS "$probe_src" "$OBJC_RUNTIME_LIB_FLAG" $LDFLAGS -o "$probe_bin" >/tmp/gnustep-objc-probe.log 2>&1; then
+  # CPPFLAGS must be passed explicitly so the GNU runtime headers in
+  # GCC_GNU_RUNTIME_INCLUDE_DIR are found before any Apple SDK paths.
+  # Without this, #include <objc/Object.h> can resolve to Apple's header.
+  if ! "$OBJC" $OBJCFLAGS $CPPFLAGS "$probe_src" "$OBJC_RUNTIME_LIB_FLAG" $LDFLAGS -o "$probe_bin" >/tmp/gnustep-objc-probe.log 2>&1; then
     echo "Objective-C compile/link test failed with compiler: $OBJC"
     echo "OBJCFLAGS: ${OBJCFLAGS:-}"
+    echo "CPPFLAGS:  ${CPPFLAGS:-}"
     echo "OBJCLIB: $OBJC_RUNTIME_LIB_FLAG"
     tail -n 50 /tmp/gnustep-objc-probe.log || true
+    rm -f "$probe_src" "$probe_bin"
+    exit 1
+  fi
+
+  # Verify the linked binary does not reference Apple's libobjc.dylib.
+  # If it does, the wrong ObjC runtime was pulled in (e.g. via a default
+  # rpath or because -lobjc-gnu resolved to the Apple shim).
+  if otool -L "$probe_bin" 2>/dev/null | grep -q '/usr/lib/libobjc\.'; then
+    echo "ERROR: probe binary links against Apple's libobjc — wrong runtime."
+    echo "Linked libraries:"
+    otool -L "$probe_bin" || true
+    echo "GCC_LIBOBJC_DIR: ${GCC_LIBOBJC_DIR:-}"
+    echo "LDFLAGS: ${LDFLAGS:-}"
     rm -f "$probe_src" "$probe_bin"
     exit 1
   fi
@@ -712,6 +750,8 @@ EOF
   if ! "$probe_bin" >/dev/null 2>&1; then
     echo "Objective-C runtime execution test failed."
     echo "DYLD_LIBRARY_PATH: ${DYLD_LIBRARY_PATH:-}"
+    echo "Linked libraries:"
+    otool -L "$probe_bin" 2>/dev/null || true
     rm -f "$probe_src" "$probe_bin"
     exit 1
   fi

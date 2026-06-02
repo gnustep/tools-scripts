@@ -2,7 +2,8 @@
 
 #
 # Run this script as root to configure, compile and install
-# gnustep-make, gnustep-base, gnustep-gui, gnustep-back
+# gnustep-make, gnustep-base, gnustep-corebase, gnustep-gui,
+# opal, and the opal gnustep-back backend
 # with a single command
 #
 # Examples:
@@ -177,6 +178,19 @@ else
 $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM install
 fi
 
+# Install corebase
+echo "======== Installing CoreBase..."
+cd ../libs-corebase
+make distclean
+. $prefix/System/Library/Makefiles/GNUstep.sh
+./configure
+$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes || exit 1
+if [ "true" == "$NEEDSROOT" ]; then
+${SUDO} -u root $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM install
+else
+$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM install
+fi
+
 # Install gui
 echo "======== Installing GUI..."
 cd ../libs-gui
@@ -197,16 +211,17 @@ make distclean
 . $prefix/System/Library/Makefiles/GNUstep.sh
 $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes
 if [ "true" == "$NEEDSROOT" ]; then
-${SUDO} -u root ./install.sh $prefix $MAKE
+${SUDO} -u root $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM install
 else
-$MAKE
+$MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM install
 fi
 
 # Install back
-echo "======== Installing Backend..."
+echo "======== Installing Opal Backend..."
 cd ../libs-back
 make distclean
 . $prefix/System/Library/Makefiles/GNUstep.sh
+./configure --enable-graphics=opal
 $MAKE GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes
 if [ "true" == "$NEEDSROOT" ]; then
 ${SUDO} -u root ./install.sh $prefix $MAKE

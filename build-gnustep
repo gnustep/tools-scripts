@@ -1,0 +1,222 @@
+#!/bin/sh
+
+set -e
+
+PROGRAM=$(basename "$0")
+SCRIPT_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd)
+WORKSPACE_DIR=$(CDPATH= cd "${SCRIPT_DIR}/.." && pwd)
+
+PLATFORM=
+STAGES=
+CLONE_SET=essential
+CLONE_TRANSPORT=ssh
+DRY_RUN=no
+
+ESSENTIAL_REPOS="tools-make libs-back libs-gui libobjc2 libs-base libs-corebase plugins-themes-WinUXTheme tools-scripts libs-xcode apps-gorm plugins-session"
+ALL_REPOS="libs-back libs-gui apps-projectcenter libs-palettes libs-boron apps-easydiff libs-opal libs-ec libs-mica libs-webservices libobjc2 libs-performance libs-base libs-sqlclient libs-corebase libs-dbuskit gitsvn-scripts plugins-themes-WinUXTheme plugins-themes-Gtk plugins-session plugins-gs-emacs libs-gscoredata apps-thematic apps-systempreferences tools-android android-examples tools-windows-development-installer tools-startup libs-gsweb tools-nfmake tools-installers tests-testsuite tests-retaincount tests-palettetest tests-gormtest libs-webserver libs-uikit libs-ucsdata libs-sysconfig apps-interfacecreator tests-examples libs-xcode libs-steptalk libs-smbkit libs-simplewebkit libs-ruby libs-renaissance libs-quartzcore libs-ppd libs-java libs-guile libs-gsldap libs-gsgd libs-gscrypt libs-gsantlr libs-gdl2 libs-corenetwork libs-coreimage gap libs-audiotoolbox apps-gworkspace apps-gsldapwebexplorer apps-gorm tools-make tools-scripts tools-model-main tools-charsets plugins-deprecated license libobjc webkit-cef apps-dock tools-bridge plugins-themes tools-windows-msvc apps-videoplayer apps-fontbook"
+
+usage()
+{
+    cat <<EOF
+Usage: ${PROGRAM} [options] [stage ...]
+
+Build GNUstep from one entrypoint.
+
+Options:
+  --platform NAME   Override detected platform.
+  --clone SET       Repository set: essential, all, or none. Default: essential.
+  --https           Clone/update repositories over HTTPS instead of SSH.
+  --dry-run         Print the commands that would run.
+  -h, --help        Show this help.
+
+Stages:
+  setup             Run setup-<platform>.
+  clone             Clone or update repositories.
+  dependencies      Run install-dependencies-<platform>.
+  core              Run build-<platform>.
+  apps              Run build-libs-tools-apps.
+  post-install      Run post-install-<platform>, when present.
+  all               Run every stage. This is the default.
+EOF
+}
+
+die()
+{
+    echo "${PROGRAM}: $*" >&2
+    exit 1
+}
+
+detect_platform()
+{
+    uname_s=$(uname -s 2>/dev/null || echo unknown)
+    key=$(printf '%s\n' "$uname_s" | cut -d- -f1 | tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 'abcdefghijklmnopqrstuvwxyz')
+
+    case "$key" in
+        linux|freebsd|openbsd|netbsd|darwin|haiku|mingw32_nt|mingw64_nt|msys_nt)
+            echo "$key"
+            ;;
+        cygwin_nt)
+            echo msys_nt
+            ;;
+        *)
+            die "cannot detect supported platform from uname -s '${uname_s}'. Use --platform NAME."
+            ;;
+    esac
+}
+
+normalize_platform()
+{
+    key=$(printf '%s\n' "$1" | tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 'abcdefghijklmnopqrstuvwxyz')
+
+    case "$key" in
+        linux|gnu/linux) echo linux ;;
+        macos|macosx|darwin) echo darwin ;;
+        freebsd|openbsd|netbsd|haiku) echo "$key" ;;
+        windows|win64|mingw|mingw64|mingw64_nt) echo mingw64_nt ;;
+        win32|mingw32|mingw32_nt) echo mingw32_nt ;;
+        msys|msys2|msys_nt) echo msys_nt ;;
+        *) die "unsupported platform '$1'" ;;
+    esac
+}
+
+script_path()
+{
+    case "$1" in
+        setup) echo "tools-scripts/setup-${PLATFORM}" ;;
+        dependencies) echo "tools-scripts/install-dependencies-${PLATFORM}" ;;
+        core) echo "tools-scripts/build-${PLATFORM}" ;;
+        apps) echo "tools-scripts/build-libs-tools-apps" ;;
+        post-install) echo "tools-scripts/post-install-${PLATFORM}" ;;
+        *) die "unknown script stage '$1'" ;;
+    esac
+}
+
+run_script()
+{
+    stage=$1
+    script=$(script_path "$stage")
+
+    if [ ! -f "$script" ]; then
+        if [ "$stage" = post-install ]; then
+            echo "==> ${stage}: no ${script}; skipped"
+            return
+        fi
+        die "missing ${stage} script: ${script}"
+    fi
+
+    [ -x "$script" ] || die "${script} is not executable"
+
+    echo "==> ${stage}: ./${script}"
+    [ "$DRY_RUN" = yes ] || "./${script}"
+}
+
+clone_repos()
+{
+    [ "$CLONE_SET" != none ] || {
+        echo "==> clone: skipped"
+        return
+    }
+
+    if [ "$CLONE_TRANSPORT" = https ]; then
+        prefix=https://github.com/gnustep/
+    else
+        prefix=git@github.com:gnustep/
+    fi
+
+    if [ "$CLONE_SET" = all ]; then
+        repos=$ALL_REPOS
+    else
+        repos=$ESSENTIAL_REPOS
+    fi
+
+    for repo in $repos; do
+        url="${prefix}${repo}"
+        if [ -d "$repo/.git" ]; then
+            echo "==> clone: updating ${repo}"
+            [ "$DRY_RUN" = yes ] || (cd "$repo" && git pull "$url" master)
+        elif [ "$repo" = tools-scripts ] && [ -d "$repo" ]; then
+            echo "==> clone: using existing ${repo}"
+        elif [ -d "$repo" ]; then
+            die "${repo} exists but is not a git repository"
+        else
+            echo "==> clone: cloning ${url}"
+            [ "$DRY_RUN" = yes ] || git clone --recursive "$url"
+        fi
+    done
+}
+
+append_stage()
+{
+    case "$1" in
+        all) STAGES="setup clone dependencies core apps post-install" ;;
+        setup|clone|dependencies|core|apps|post-install)
+            STAGES="${STAGES}${STAGES:+ }$1"
+            ;;
+        *) die "unknown stage '$1'" ;;
+    esac
+}
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --platform|--os)
+            [ $# -gt 1 ] || die "$1 requires a value"
+            PLATFORM=$(normalize_platform "$2")
+            shift 2
+            ;;
+        --clone)
+            [ $# -gt 1 ] || die "$1 requires one of: essential, all, none"
+            case "$2" in
+                essential|all|none) CLONE_SET=$2 ;;
+                *) die "--clone requires one of: essential, all, none" ;;
+            esac
+            shift 2
+            ;;
+        --https)
+            CLONE_TRANSPORT=https
+            shift
+            ;;
+        --dry-run)
+            DRY_RUN=yes
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        --)
+            shift
+            while [ $# -gt 0 ]; do
+                append_stage "$1"
+                shift
+            done
+            ;;
+        -*)
+            die "unknown option '$1'"
+            ;;
+        *)
+            append_stage "$1"
+            shift
+            ;;
+    esac
+done
+
+[ "$STAGES" != "" ] || append_stage all
+[ "$PLATFORM" != "" ] || PLATFORM=$(detect_platform)
+
+cd "$WORKSPACE_DIR"
+
+echo "GNUstep workspace: $WORKSPACE_DIR"
+echo "Platform: $PLATFORM"
+echo "Stages: $STAGES"
+echo ""
+
+for stage in $STAGES; do
+    if [ "$stage" = clone ]; then
+        clone_repos
+    else
+        run_script "$stage"
+    fi
+done
+
+echo ""
+echo "GNUstep build workflow complete."

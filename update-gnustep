@@ -1,14 +1,20 @@
 #!/bin/sh
+
+set -e
+
+SCRIPT_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd)
+WORKSPACE_DIR=$(CDPATH= cd "${SCRIPT_DIR}/.." && pwd)
 COMPILER=${1:-clang}
 CXX=${2:-clang++}
 
-./tools-scripts/clone-all-repos
-if [ "${COMPILER}" != "gcc" ]; then
-#    CXX=`echo ${COMPILER} | sed 's/clang/clang++/g`
-    ./tools-scripts/clang-build "${COMPILER}" "${CXX}"
-else
-    ./tools-scripts/compile-all "/usr/GNUstep" "gcc" "g++"
-fi
-make_services
+cd "$WORKSPACE_DIR"
 
-exit 0
+./tools-scripts/build-gnustep --clone all clone
+
+if [ "$COMPILER" = gcc ]; then
+    ./tools-scripts/compile-all /usr/GNUstep gcc g++
+else
+    ./tools-scripts/clang-build "$COMPILER" "$CXX"
+fi
+
+make_services

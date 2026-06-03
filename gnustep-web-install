@@ -1,76 +1,31 @@
 #!/bin/sh
 
-echo "Install GNUstep"
-echo " "
-cat <<EOF
-                    @@@@@@@@@                     
-               @@@@@@@@@@@@@@@@@@@                
-            @@@@@@@@@@@@@@@@@@@@@@@@@             
-          @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@          
-         @@@@@@@@@@@@@@@@@@@@@@@         @@@@@    
-       @@@@@@@@@@@@@@@@@@@@@@@@@          @@@@    
-      @@@@@@@@@@@@@@@@@@@@@@@@@@           @@@    
-     @@@@@@@@@@@@@@@@@@@@@@@@@@@            @@    
-     @@@@@@@@@@@@@@@@@@@@@@@@@@@             @    
-    @@@@@@@@@@@@@@@@@@@@@@@@@@@@             @    
-    @@@@@@@@@@@@@@@@@@@@@@@@@@@@                  
-    @@@@@@@@@@@@@@                                
-    @@@@@@@@@@@@@@                                
-     @@@@@@@@@@@@@                           @    
-     @@@@@@@@@@@@@                           @    
-      @@@@@@@@@@@@                          @@    
-      @@@@@@@@@@@@                         @@@    
-       @@@@@@@@@@@                        @@@@    
-         @@@@@@@@@                       @@@@@    
-    @@@@@@@                            @@@@@@@    
-    @@@@@@@@@                        @@@@@@@@@    
-    @@@@@@@@@@@@                  @@@@@@@@@@@@    
-    @@@@@@@@@@@@@@@@@@      @@@@@@@@@@@@@@@@@@    
-EOF
+set -e
 
-echo " "
-export KERNEL=`uname -s | sed "s/\-.*//g" | awk '{print(tolower($0))}'`
-echo "Begin setup for ${KERNEL}"
+ROOT_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd)
+TOOLS_DIR="${ROOT_DIR}/tools-scripts"
+ARCHIVE_URL=https://github.com/gnustep/tools-scripts/archive/refs/heads/master.tar.gz
 
-export USER=`whoami`
-if [ ! -f ./setup-${KERNEL} ] ; then
-  # Download the setup script only if not already present (e.g. CI).
-  curl -fsSL > ./setup-${KERNEL} https://raw.githubusercontent.com/gnustep/tools-scripts/master/setup-${KERNEL}
-  . ./setup-${KERNEL}
-  rm ./setup-${KERNEL}
-else
-  # Assume inside CI.
-  # For CI purposes, default to failing. Using bashism is fine here, for now.
-  set -euo pipefail
-  . ./setup-${KERNEL}
+fetch_tools_scripts()
+{
+    if command -v git >/dev/null 2>&1; then
+        git clone https://github.com/gnustep/tools-scripts "$TOOLS_DIR"
+    elif command -v curl >/dev/null 2>&1; then
+        (cd "$ROOT_DIR" && curl -fsSL "$ARCHIVE_URL" | tar -xz && mv tools-scripts-master tools-scripts)
+    elif command -v ftp >/dev/null 2>&1; then
+        (cd "$ROOT_DIR" && ftp -o - "$ARCHIVE_URL" | tar -xz && mv tools-scripts-master tools-scripts)
+    else
+        echo "gnustep-web-install: need git, curl, or ftp to fetch tools-scripts" >&2
+        exit 1
+    fi
+}
+
+if [ -x "${ROOT_DIR}/build-gnustep" ]; then
+    exec "${ROOT_DIR}/build-gnustep" --https --clone essential "$@"
 fi
 
-echo "======== Create gnustep build directories ========"
-if [ ! -e .git ] ; then
-  # Default outside CI.
-  mkdir -p gnustep
-  cd gnustep
-  git clone https://github.com/gnustep/tools-scripts
-else
-  # Inside CI we are already in the repo.
-  # Just go to the parent directory, tools-scripts will exist.
-  cd ..
+if [ ! -d "$TOOLS_DIR" ]; then
+    fetch_tools_scripts
 fi
-./tools-scripts/clone-essential-repos-https
 
-echo "================ Install Dependencies ================"
-# Install dependencies
-./tools-scripts/install-dependencies-${KERNEL}
-
-echo "================ Build ================"
-# Build it...
-./tools-scripts/build-${KERNEL}
-
-# Post installation
-echo "================ Post Installation ================"
-./tools-scripts/post-install-${KERNEL}
-
-echo "Done..."
-
-
-
+exec "${TOOLS_DIR}/build-gnustep" --https --clone essential "$@"

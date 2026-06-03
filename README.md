@@ -7,13 +7,20 @@ Usage:
 ---
 * Make sure that the tools-scripts directory is in the same directory as make, base, gui & back.
   (if you are using SVN this should be done already)
-* make certain that when you execute these scripts you are in the directory above.
-  These scripts act on the gnustep repos.  like so ./tools-scripts/[scriptname]
-* Type, for example: ./tools-scripts/clang-build.  This will do all of the needed configuration
-  using clang.
-* You must be in the directory above (where all of the GNUstep related directories are) when invoking
-  any script in this directory.  This is so that the scripts will have access to all of GNUstep when
-  running.
+* The preferred entrypoint is `./tools-scripts/build-gnustep`.  It detects the
+  operating system, clones or updates repositories, and calls the matching
+  setup, dependency, build, and post-install scripts as needed.
+* `build-gnustep` can be run from either the directory above `tools-scripts` or
+  from inside `tools-scripts`; it normalizes the working directory before
+  invoking the existing scripts.
+* Type, for example: `./tools-scripts/build-gnustep --clone essential --https all`
+  to run OS-specific setup, clone or update the essential repositories over
+  HTTPS, install dependencies, build the core libraries, build the
+  additional libraries/tools/apps, and run the OS-specific post-install script
+  when one exists.
+* You can run individual stages as needed.  For example:
+  `./tools-scripts/build-gnustep dependencies core` or
+  `./tools-scripts/build-gnustep --platform freebsd setup core`.
 * A few scripts: whitespace-cleanup, process-files, and cleanup should be executed inside the repo
   directory.
 
@@ -22,14 +29,14 @@ The purposes of all of the scripts is as follows:
 * clang-build - Build GNUstep using clang
 * compile-all - Build GNUstep.  With no options it will build using gcc and the built in runtime.
 * windows-build - Legacy script builds GNUstep on Windows under MinGW32.
+* build-gnustep - Master build entrypoint.  It clones or updates repositories
+  and invokes the platform-specific scripts for setup, dependency installation,
+  core builds, additional libraries/tools/apps, and post-install tasks.
 * build-* - Builds GNUstep for the given operating system represented by *
 * install-dependencies-* - installs the dependencies for a given system represented by *
 * setup-* - sets up the build for the system represented by *
 * windows-package - packages a GNUstep application so that it can run WITHOUT having GNUstep installed
-* clone-essential-repos - uses SSL to update the essential repos
-* clone-essential-repos-https - uses HTTPS to update the essential repos
 * update-gnustep - update gnustep from git, merge the latest if needed.
-* clone-* - clone from git repositories
 * whitespace-cleanup - cleanup one file
 * process-files - run the specified command on the current files that have been changed.
 * cleanup - whitespace cleanup and, likely, other cleanups to be done on currently changed files.

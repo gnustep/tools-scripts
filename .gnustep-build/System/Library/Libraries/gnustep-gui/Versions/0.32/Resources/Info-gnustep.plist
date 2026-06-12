@@ -1,0 +1,8 @@
+{
+  NSExecutable = "gnustep-gui";
+  NSPrincipalClass = "NSApplication";
+  GSBundleShortVersionString = "0.32.0";
+  GSBundleVersion = 032.0;
+  CFBundleShortVersionString = "0.32.0";
+  CFBundleVersion = 032.0;
+}

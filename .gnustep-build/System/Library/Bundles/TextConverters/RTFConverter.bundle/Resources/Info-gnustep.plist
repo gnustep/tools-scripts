@@ -1,0 +1,6 @@
+{
+  NOTE = "Automatically generated, do not edit!";
+  NSExecutable = "RTFConverter";
+  NSMainNibFile = "";
+  NSPrincipalClass = "RTFConsumer";
+}

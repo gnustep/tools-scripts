@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ###############################################################################
-# GNUstep clean build for macOS using X11
+# GNUstep clean build for macOS using the system X11 installation
 #
 # Builds and installs:
 #   - tools-make
@@ -11,8 +11,10 @@ set -euo pipefail
 #   - libs-back
 #
 # Notes:
-#   * XQuartz provides the X11 server/runtime on macOS.
-#   * Homebrew provides the X11 development libraries/pkg-config files.
+#   * XQuartz is the standard system X11 installation on modern macOS and is
+#     expected at /opt/X11 unless X11_PREFIX is set.
+#   * Homebrew provides non-X11 build dependencies and can install the XQuartz
+#     cask if the system X11 tree is missing.
 #   * This installs into /opt/GNUstep by default.
 ###############################################################################
 
@@ -42,9 +44,32 @@ else
 fi
 
 BREW_PREFIX="$("$BREW" --prefix)"
+REQUESTED_X11_PREFIX="${X11_PREFIX:-}"
 
-# XQuartz paths.
-X11_PREFIX="/opt/X11"
+# System/XQuartz X11 paths.  The user may set X11_PREFIX explicitly; otherwise
+# prefer the standard XQuartz location and then the historical Apple X11 paths.
+detect_x11_prefix() {
+  local candidates=()
+  if [[ -n "$REQUESTED_X11_PREFIX" ]]; then
+    candidates+=("$REQUESTED_X11_PREFIX")
+  fi
+  candidates+=(
+    "/opt/X11"
+    "/usr/X11"
+    "/usr/X11R6"
+    "/usr/local/X11"
+  )
+
+  local candidate
+  for candidate in "${candidates[@]}"; do
+    if [[ -f "$candidate/include/X11/Xlib.h" ]] && compgen -G "$candidate/lib/libX11.*" >/dev/null; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+
+  return 1
+}
 
 echo "==> Checking prerequisites"
 
@@ -54,23 +79,39 @@ if ! xcode-select -p >/dev/null 2>&1; then
   exit 1
 fi
 
-if [[ ! -d "$X11_PREFIX" ]]; then
-  echo "XQuartz is not installed at $X11_PREFIX."
-  echo "Install it first:"
-  echo "  brew install --cask xquartz"
-  echo "or download from https://www.xquartz.org/"
-  exit 1
-fi
-
 echo "==> Installing Homebrew dependencies"
 
 "$BREW" install \
   autoconf automake libtool pkgconf gsed gawk coreutils \
   gcc make \
   libffi openssl@3 libxml2 libxslt icu4c zlib bdw-gc gnutls \
-  jpeg-turbo libpng libtiff cairo fontconfig freetype \
-  libx11 libxext libxt libxmu libxft libxrender libxfixes libxcursor libxrandr \
-  libxi libxinerama libxcomposite libxdamage libxpm libicns portaudio
+  jpeg-turbo libpng libtiff fontconfig freetype \
+  libicns portaudio
+
+if ! X11_PREFIX="$(detect_x11_prefix)"; then
+  if [[ -n "$REQUESTED_X11_PREFIX" ]]; then
+    echo "No usable X11 installation found at X11_PREFIX=$REQUESTED_X11_PREFIX."
+    exit 1
+  fi
+
+  echo "==> Installing XQuartz"
+  "$BREW" install --cask xquartz
+fi
+
+if ! X11_PREFIX="$(detect_x11_prefix)"; then
+  echo "No usable macOS X11 installation found."
+  echo "Expected X11 headers and libraries under one of:"
+  echo "  /opt/X11, /usr/X11, /usr/X11R6, /usr/local/X11"
+  echo "Install XQuartz, or set X11_PREFIX to an existing X11 prefix."
+  exit 1
+fi
+
+X11_PKG_CONFIG_PATH=""
+if [[ -d "$X11_PREFIX/lib/pkgconfig" ]]; then
+  X11_PKG_CONFIG_PATH="$X11_PREFIX/lib/pkgconfig"
+fi
+
+echo "==> Using X11 from $X11_PREFIX"
 
 mkdir -p "$SRCROOT"
 cd "$SRCROOT"
@@ -119,7 +160,28 @@ reset_patch_targets() {
   if [[ -d "$SRCROOT/libs-base/.git" ]]; then
     git -C "$SRCROOT/libs-base" checkout -- \
       Headers/Foundation/Foundation.h \
+      Tools/HTMLLinker.m \
+      Tools/autogsdoc.m \
+      Tools/cvtenc.m \
+      Tools/defaults.m \
+      Tools/gdnc.m \
       Tools/gdomap.c \
+      Tools/gspath.m \
+      Tools/pl2link.m \
+      Tools/pldes.m \
+      Tools/plget.m \
+      Tools/plmerge.m \
+      Tools/plparse.m \
+      Tools/plser.m \
+      Tools/plutil.m \
+      Tools/sfparse.m \
+      Tools/xmlparse.m \
+      Source/GSString.m \
+      Source/NSArray.m \
+      Source/GSDictionary.m \
+      Source/NSDictionary.m \
+      Source/NSDatePrivate.h \
+      Source/NSNumber.m \
       Source/NSNotificationCenter.m \
       Source/NSObject.m \
       Source/NSZone.m \
@@ -128,6 +190,7 @@ reset_patch_targets() {
 
   if [[ -d "$SRCROOT/libs-gui/.git" ]]; then
     git -C "$SRCROOT/libs-gui" checkout -- \
+      Tools/GNUmakefile \
       Tools/gclose.m \
       Tools/gcloseall.m \
       Tools/gopen.m \
@@ -137,6 +200,8 @@ reset_patch_targets() {
 
   if [[ -d "$SRCROOT/libs-back/.git" ]]; then
     git -C "$SRCROOT/libs-back" checkout -- \
+      Source/x11/scale.c \
+      Source/x11/xutil.c \
       Tools/font_cacher.m \
       Tools/gpbs.m
   fi
@@ -200,6 +265,68 @@ patch_gdomap_for_modern_sdk() {
   perl -pi -e 's/void\s+\(\*ifun\)\(\)/void (*ifun)(int)/' "$gdomap"
 }
 
+# patch_small_objects_for_gnu_runtime
+#
+# GNUstep small object representations require runtime support in
+# object_getClass().  Homebrew GCC's GNU Objective-C runtime exposes small
+# object capability macros, but its object_getClass() implementation still
+# dereferences the object pointer directly.  Disable these representations for
+# that runtime so autorelease pools do not try to release encoded pointer values
+# as normal Objective-C objects.
+patch_small_objects_for_gnu_runtime() {
+  local number="$SRCROOT/libs-base/Source/NSNumber.m"
+  local string="$SRCROOT/libs-base/Source/GSString.m"
+  local date_private="$SRCROOT/libs-base/Source/NSDatePrivate.h"
+
+  if [[ -f "$number" ]]; then
+    perl -0pi -e 's/#ifdef OBJC_SMALL_OBJECT_SHIFT/#if defined(OBJC_SMALL_OBJECT_SHIFT) \&\& !defined(__GNU_LIBOBJC__)/g' "$number"
+  fi
+
+  if [[ -f "$string" ]]; then
+    perl -0pi -e 's/#if defined\(OBJC_SMALL_OBJECT_SHIFT\) && \(OBJC_SMALL_OBJECT_SHIFT == 3\)/#if defined(OBJC_SMALL_OBJECT_SHIFT) \&\& (OBJC_SMALL_OBJECT_SHIFT == 3) \&\& !defined(__GNU_LIBOBJC__)/g' "$string"
+  fi
+
+  if [[ -f "$date_private" ]]; then
+    perl -0pi -e 's/#if defined\(OBJC_SMALL_OBJECT_SHIFT\) && \(OBJC_SMALL_OBJECT_SHIFT == 3\)/#if defined(OBJC_SMALL_OBJECT_SHIFT) \&\& (OBJC_SMALL_OBJECT_SHIFT == 3) \&\& !defined(__GNU_LIBOBJC__)/' "$date_private"
+  fi
+}
+
+patch_nsarray_cached_imp_for_darwin_gcc() {
+  local array="$SRCROOT/libs-base/Source/NSArray.m"
+  if [[ ! -f "$array" ]]; then
+    return
+  fi
+
+  perl -0pi -e 's/IMP(\s+)get;/id (*get)(id, SEL, NSUInteger);/g' "$array"
+  perl -0pi -e 's/IMP(\s+)get([01]?)(\s*=\s*\[[^\]]+\s+methodForSelector:\s*oaiSel\];)/id (*get$2)(id, SEL, NSUInteger)$3/g' "$array"
+  perl -0pi -e 's/(\n\s+get\s*=\s*)\[(array|otherArray|self)\s+methodForSelector:\s*oaiSel\];/$1(id (*)(id, SEL, NSUInteger))[$2 methodForSelector: oaiSel];/g' "$array"
+}
+
+patch_gsdictionary_cached_imp_for_darwin_gcc() {
+  local dict="$SRCROOT/libs-base/Source/GSDictionary.m"
+  if [[ ! -f "$dict" ]]; then
+    return
+  fi
+
+  perl -0pi -e 's/IMP(\s+)nxtObj(\s*=\s*\[e\s+methodForSelector:\s*nxtSel\];)/id (*nxtObj)(id, SEL)$2/g' "$dict"
+  perl -0pi -e 's/IMP(\s+)otherObj(\s*=\s*\[other\s+methodForSelector:\s*objSel\];)/id (*otherObj)(id, SEL, id)$2/g' "$dict"
+}
+
+patch_nsdictionary_cached_imp_for_darwin_gcc() {
+  local dict="$SRCROOT/libs-base/Source/NSDictionary.m"
+  if [[ ! -f "$dict" ]]; then
+    return
+  fi
+
+  perl -0pi -e 's/IMP(\s+)(nxtObj|nxtImp)(\s*=\s*\[[^\]]+\s+methodForSelector:\s*nxtSel\];)/id (*$2)(id, SEL)$3/g' "$dict"
+  perl -0pi -e 's/IMP(\s+)(myObj|otherObj|getObj|objImp)(\s*=\s*\[[^\]]+\s+methodForSelector:\s*objSel\];)/id (*$2)(id, SEL, id)$3/g' "$dict"
+  perl -0pi -e 's/IMP(\s+)objectForKey(\s*=\s*\[self\s+methodForSelector:\s*objectForKeySelector\];)/id (*objectForKey)(id, SEL, id)$2/g' "$dict"
+  perl -0pi -e 's/IMP(\s+)addObject(\s*=\s*\[buildSet\s+methodForSelector:\s*addObjectSelector\];)/void (*addObject)(id, SEL, id)$2/g' "$dict"
+  perl -0pi -e 's/IMP(\s+)(remObj)(\s*=\s*\[self\s+methodForSelector:\s*remSel\];)/void (*$2)(id, SEL, id)$3/g' "$dict"
+  perl -0pi -e 's/IMP(\s+)(setObj)(\s*=\s*\[self\s+methodForSelector:\s*setSel\];)/void (*$2)(id, SEL, id, id)$3/g' "$dict"
+  perl -0pi -e 's/IMP(\s+)(setObj);/void (*$2)(id, SEL, id, id);/g' "$dict"
+}
+
 # patch_nsobject_for_gnu_runtime
 #
 # Wraps GNU-Objective-C-2 runtime API calls inside NSObject.m with
@@ -210,6 +337,9 @@ patch_gdomap_for_modern_sdk() {
 #   - objc_create_block_classes_as_subclasses_of
 #   - GSWeakInit
 #   - objc_delete_weak_refs
+# It also casts NSObject's cached autorelease IMP to a fixed-argument
+# function pointer before calling it.  On Darwin arm64, calling GCC's
+# variadic IMP type directly passes the object argument incorrectly.
 patch_nsobject_for_gnu_runtime() {
   local nsobject="$SRCROOT/libs-base/Source/NSObject.m"
   if [[ ! -f "$nsobject" ]]; then
@@ -227,6 +357,9 @@ patch_nsobject_for_gnu_runtime() {
   fi
   if rg -q '^\s+objc_delete_weak_refs\(anObject\);' "$nsobject"; then
     perl -pi -e 's|^(\s+)(objc_delete_weak_refs\(anObject\);)|$1#ifndef __GNU_LIBOBJC__\n$1$2\n$1#endif|' "$nsobject"
+  fi
+  if rg -q '\(\*autorelease_imp\)\(autorelease_class, autorelease_sel, self\);' "$nsobject"; then
+    perl -0pi -e 's|\(\*autorelease_imp\)\(autorelease_class, autorelease_sel, self\);|#if defined(__APPLE__) \&\& defined(__GNU_LIBOBJC__)\n  ((void (*)(id, SEL, id))autorelease_imp)(autorelease_class, autorelease_sel, self);\n#else\n  (*autorelease_imp)(autorelease_class, autorelease_sel, self);\n#endif|' "$nsobject"
   fi
 }
 
@@ -292,12 +425,17 @@ patch_nszone_for_darwin_gcc() {
 #      only) that sanity-checks a pointer's bit pattern before dereferencing it.
 #      This catches wild pointers that would otherwise hard-crash during pool
 #      drainage.
-#   2. Inserts GSAutoreleasePointerLooksValid checks for both the object pointer
+#   2. Drops invalid pointers before they are inserted into the autorelease
+#      list, then sanity-checks both the object pointer
 #      and its class pointer in the drain loop, guarded by the same #if block.
 #   3. Replaces NSAllocateObject(self, 0, zone) with
 #      NSAllocateObject(self, 0, NULL) to avoid passing a potentially stale zone.
 #   4. Replaces the overengineered cached-IMP implementation of +new with a
 #      simple [[self allocWithZone: NULL] init] one-liner.
+#   5. Avoids the cached _addImp path in +addObject: for this runtime; GCC's
+#      runtime can resolve the cached IMP to the class method, which causes the
+#      function address itself to be inserted into the autorelease list.  A
+#      direct C helper is used instead of another Objective-C message send.
 patch_nsautoreleasepool_for_gnu_runtime() {
   local arp="$SRCROOT/libs-base/Source/NSAutoreleasePool.m"
   if [[ ! -f "$arp" ]]; then
@@ -311,6 +449,17 @@ patch_nsautoreleasepool_for_gnu_runtime() {
   if rg -q 'c = object_getClass\(anObject\);' "$arp" && ! rg -q 'invalid class encountered in autorelease pool' "$arp"; then
     perl -0pi -e 's|\t      anObject = objects\[i\];\n\t      objects\[i\] = nil;\n              if \(anObject == nil\)\n                \{\n                  fprintf\(stderr,\n                    "nil object encountered in autorelease pool\\n"\);\n                  continue;\n                \}\n\t      c = object_getClass\(anObject\);\n              if \(c == 0\)\n                \{\n                  \[NSException raise: NSInternalInconsistencyException\n                    format: \@"nul class for object in autorelease pool"\];\n                \}|\t      anObject = objects[i];\n\t      objects[i] = nil;\n              if (anObject == nil)\n                {\n                  fprintf(stderr,\n                    "nil object encountered in autorelease pool\\n");\n                  continue;\n                }\n\t      #if defined(__APPLE__) && defined(__GNU_LIBOBJC__)\n\t      if (NO == GSAutoreleasePointerLooksValid(anObject))\n\t        {\n\t          volatile struct autorelease_array_list *remaining = released;\n\n\t          fprintf(stderr,\n\t            "invalid object encountered in autorelease pool: %p\\n",\n\t            anObject);\n\t          while (remaining != 0)\n\t            {\n\t              remaining->count = 0;\n\t              remaining = remaining->next;\n\t            }\n\t          _released_count = 0;\n\t          break;\n\t        }\n\t      #endif\n\t      c = object_getClass(anObject);\n              if (c == 0)\n                {\n                  [NSException raise: NSInternalInconsistencyException\n                    format: @"nul class for object in autorelease pool"];\n                }\n\t      #if defined(__APPLE__) && defined(__GNU_LIBOBJC__)\n\t      if (NO == GSAutoreleasePointerLooksValid(c))\n\t        {\n\t          volatile struct autorelease_array_list *remaining = released;\n\n\t          fprintf(stderr,\n\t            "invalid class encountered in autorelease pool: object=%p class=%p\\n",\n\t            anObject, c);\n\t          while (remaining != 0)\n\t            {\n\t              remaining->count = 0;\n\t              remaining = remaining->next;\n\t            }\n\t          _released_count = 0;\n\t          break;\n\t        }\n\t      #endif|s' "$arp"
   fi
+
+  if ! rg -q 'invalid object ignored by autorelease pool' "$arp"; then
+    perl -0pi -e 's|  if \(!autorelease_enabled\)\n    return;\n|  if (!autorelease_enabled)\n    return;\n\n#if defined(__APPLE__) && defined(__GNU_LIBOBJC__)\n  if (NO == GSAutoreleasePointerLooksValid(anObj))\n    {\n      fprintf(stderr,\n        "invalid object ignored by autorelease pool: %p\\n", anObj);\n      return;\n    }\n#endif\n|s' "$arp"
+  fi
+
+  if ! rg -q 'GSAutoreleasePoolAddObjectDirect' "$arp"; then
+    perl -0pi -e 's|(\nstatic id\npop_pool_from_cache\(struct autorelease_thread_vars \*tv\)\n\{\n  return tv->pool_cache\[--\(tv->pool_cache_count\)\];\n\}\n)|$1\n#if defined(__APPLE__) \&\& defined(__GNU_LIBOBJC__)\nstatic inline void\nGSAutoreleasePoolAddObjectDirect(NSAutoreleasePool *pool, id anObj)\n{\n  if (!autorelease_enabled)\n    {\n      return;\n    }\n  if (NO == GSAutoreleasePointerLooksValid(anObj))\n    {\n      fprintf(stderr,\n        "invalid object ignored by autorelease pool: %p\\n", anObj);\n      return;\n    }\n  if (pool->_released_count >= pool_count_warning_threshold)\n    {\n      [NSException raise: NSGenericException\n                  format: @"AutoreleasePool count threshold exceeded."];\n    }\n  while (pool->_released->count == pool->_released->size)\n    {\n      if (pool->_released->next)\n        {\n          pool->_released = pool->_released->next;\n        }\n      else\n        {\n          struct autorelease_array_list *new_released;\n          unsigned new_size = pool->_released->size * 2;\n\n          new_released = (struct autorelease_array_list*)\n            NSZoneMalloc(NSDefaultMallocZone(),\n              sizeof(struct autorelease_array_list) + (new_size * sizeof(id)));\n          new_released->next = NULL;\n          new_released->size = new_size;\n          new_released->count = 0;\n          pool->_released->next = new_released;\n          pool->_released = new_released;\n        }\n    }\n  pool->_released->objects[pool->_released->count] = anObj;\n  (pool->_released->count)++;\n  pool->_released_count++;\n}\n#endif\n|s' "$arp"
+  fi
+
+  perl -pi -e 's|^(\s*)\(\*pool->_addImp\).*anObj\);|${1}#if defined(__APPLE__) \&\& defined(__GNU_LIBOBJC__)\n${1}[pool addObject: anObj];\n${1}#else\n${1}(*pool->_addImp)(pool, \@selector(addObject:), anObj);\n${1}#endif|' "$arp"
+  perl -pi -e 's/\[pool addObject: anObj\];/GSAutoreleasePoolAddObjectDirect(pool, anObj);/g' "$arp"
 
   perl -pi -e 's/NSAllocateObject \(self, 0, zone\)/NSAllocateObject (self, 0, NULL)/g' "$arp"
 
@@ -345,12 +494,11 @@ patch_nsautoreleasepool_runtime_safety() {
 
 # patch_tool_processinfo_init_guards
 #
-# Removes redundant "#ifdef GS_PASS_ARGUMENTS" preprocessor guards that wrap
-# [NSProcessInfo initializeWithArguments:...] call sites in the tool source
-# files of libs-base, libs-gui, and libs-back.  When building with
-# tools-make the macro GS_PASS_ARGUMENTS is always defined, so the guard is
-# dead code that merely obscures the call.  Stripping it simplifies the source
-# and avoids compiler warnings about always-true conditions.
+# Removes "#ifdef GS_PASS_ARGUMENTS" preprocessor guards that wrap process
+# initialization in GNUstep command-line tools.  On Darwin with the GNU
+# Objective-C runtime, helper tools built during bootstrap must always publish
+# argc/argv/env to GNUstep before using Foundation.  Otherwise tools such as
+# plmerge fail while backend bundles are being installed.
 #
 # Operates on every .m file under Tools/ in the three library source trees that
 # still contains the guard, as reported by ripgrep.
@@ -368,24 +516,60 @@ patch_tool_processinfo_init_guards() {
 
     while IFS= read -r file; do
       perl -0pi -e 's|#ifdef GS_PASS_ARGUMENTS\n([ \t]*\[NSProcessInfo initializeWithArguments:[^\n]*\];)\n[ \t]*#endif|$1|g' "$file"
+      perl -0pi -e 's|#ifdef GS_PASS_ARGUMENTS\n([ \t]*GSInitializeProcess\([^\n]*\);)\n[ \t]*#endif|$1|g' "$file"
     done < <(rg -l '#ifdef GS_PASS_ARGUMENTS' "$root")
   done
+}
+
+# patch_libs_back_x11_for_modern_gcc
+#
+# GCC 15 treats empty function parameter lists as strict prototypes in places
+# that older C tolerated.  The X11 backend has two old declarations that then
+# fail to compile:
+#   - oldErrorHandler must use Xlib's XErrorHandler signature.
+#   - filterf must accept the double argument passed by the scaler.
+patch_libs_back_x11_for_modern_gcc() {
+  local xutil="$SRCROOT/libs-back/Source/x11/xutil.c"
+  local scale="$SRCROOT/libs-back/Source/x11/scale.c"
+
+  if [[ -f "$xutil" ]]; then
+    perl -pi -e 's/static int \(\*oldErrorHandler\)\(\);/static XErrorHandler oldErrorHandler;/' "$xutil"
+  fi
+
+  if [[ -f "$scale" ]]; then
+    perl -pi -e 's/static double \(\*filterf\)\(\) = Mitchell_filter;/static double (*filterf)(double) = Mitchell_filter;/' "$scale"
+  fi
 }
 
 reset_patch_targets
 patch_tools_make_for_darwin_gcc
 patch_libs_base_for_darwin_gcc
 patch_gdomap_for_modern_sdk
+patch_small_objects_for_gnu_runtime
+patch_nsarray_cached_imp_for_darwin_gcc
+patch_gsdictionary_cached_imp_for_darwin_gcc
+patch_nsdictionary_cached_imp_for_darwin_gcc
 patch_nsobject_for_gnu_runtime
 patch_nsnotificationcenter_for_gnu_runtime
 patch_nszone_for_darwin_gcc
 patch_nsautoreleasepool_for_gnu_runtime
 patch_nsautoreleasepool_runtime_safety
 patch_tool_processinfo_init_guards
+patch_libs_back_x11_for_modern_gcc
 
 # Common compiler and linker environment: GCC + GNU Objective-C runtime only.
-GCC_CC="$(ls -1 "$BREW_PREFIX"/bin/gcc-[0-9]* 2>/dev/null | sort -V | tail -n1)"
-GCC_CXX="$(ls -1 "$BREW_PREFIX"/bin/g++-[0-9]* 2>/dev/null | sort -V | tail -n1)"
+# Avoid GNU sort's -V flag here so the script works with macOS' BSD sort.
+latest_versioned_tool() {
+  local pattern="$1"
+  find "$BREW_PREFIX/bin" -maxdepth 1 -name "$pattern" 2>/dev/null \
+    | awk -F- '{ print $NF "\t" $0 }' \
+    | sort -n \
+    | tail -n1 \
+    | cut -f2-
+}
+
+GCC_CC="$(latest_versioned_tool 'gcc-[0-9]*')"
+GCC_CXX="$(latest_versioned_tool 'g++-[0-9]*')"
 
 if [[ -z "$GCC_CC" || -z "$GCC_CXX" ]]; then
   echo "Homebrew GCC not found under $BREW_PREFIX/bin"
@@ -433,13 +617,15 @@ echo "==> Using GNU Objective-C runtime from $GCC_LIBOBJC_DIR"
 echo "==> Using GNU Objective-C headers from $GCC_GNU_RUNTIME_INCLUDE_DIR"
 
 export PKG_CONFIG="$BREW_PREFIX/bin/pkg-config"
-export PKG_CONFIG_PATH="$BREW_PREFIX/opt/icu4c/lib/pkgconfig:$BREW_PREFIX/opt/libxml2/lib/pkgconfig:$BREW_PREFIX/opt/libffi/lib/pkgconfig:$X11_PREFIX/lib/pkgconfig:$BREW_PREFIX/lib/pkgconfig${EXTRA_PKG_CONFIG_PATH:+:$EXTRA_PKG_CONFIG_PATH}"
+export PKG_CONFIG_PATH="${X11_PKG_CONFIG_PATH:+$X11_PKG_CONFIG_PATH:}$BREW_PREFIX/opt/icu4c/lib/pkgconfig:$BREW_PREFIX/opt/libxml2/lib/pkgconfig:$BREW_PREFIX/opt/libffi/lib/pkgconfig:$BREW_PREFIX/lib/pkgconfig${EXTRA_PKG_CONFIG_PATH:+:$EXTRA_PKG_CONFIG_PATH}"
 export ACLOCAL_PATH="$BREW_PREFIX/share/aclocal${EXTRA_ACLOCAL_PATH:+:$EXTRA_ACLOCAL_PATH}"
 
-# Bootstrap with Homebrew and XQuartz only. Do not expose an existing GNUstep
-# prefix here because stale libobjc2 headers/libs can poison compiler probes.
-export CPPFLAGS="-D__GNU_LIBOBJC__=1 -I$GCC_GNU_RUNTIME_INCLUDE_DIR -I$BREW_PREFIX/include -I$BREW_PREFIX/opt/icu4c/include -I$BREW_PREFIX/opt/libxml2/include -I$BREW_PREFIX/opt/libffi/include -I$X11_PREFIX/include${EXTRA_CPPFLAGS:+ $EXTRA_CPPFLAGS}"
-export LDFLAGS="-L$BREW_PREFIX/lib -L$BREW_PREFIX/opt/icu4c/lib -L$BREW_PREFIX/opt/libxml2/lib -L$BREW_PREFIX/opt/libffi/lib -L$X11_PREFIX/lib${EXTRA_LDFLAGS:+ $EXTRA_LDFLAGS}"
+# Bootstrap with Homebrew and the system X11 tree only. Do not expose an
+# existing GNUstep prefix here because stale libobjc2 headers/libs can poison
+# compiler probes.  Keep X11 before Homebrew so the backend uses the macOS X11
+# installation even if Homebrew xorg libraries are present indirectly.
+export CPPFLAGS="-D__GNU_LIBOBJC__=1 -I$GCC_GNU_RUNTIME_INCLUDE_DIR -I$X11_PREFIX/include -I$BREW_PREFIX/include -I$BREW_PREFIX/opt/icu4c/include -I$BREW_PREFIX/opt/libxml2/include -I$BREW_PREFIX/opt/libffi/include${EXTRA_CPPFLAGS:+ $EXTRA_CPPFLAGS}"
+export LDFLAGS="-L$X11_PREFIX/lib -L$BREW_PREFIX/lib -L$BREW_PREFIX/opt/icu4c/lib -L$BREW_PREFIX/opt/libxml2/lib -L$BREW_PREFIX/opt/libffi/lib${EXTRA_LDFLAGS:+ $EXTRA_LDFLAGS}"
 
 if [[ -n "$GCC_LIBOBJC_DIR" ]]; then
   export LDFLAGS="-L$GCC_LIBOBJC_DIR $LDFLAGS"
@@ -451,9 +637,9 @@ if [[ -n "$GCC_LIBGCC_DIR" && "$GCC_LIBGCC_DIR" != "$GCC_LIBOBJC_DIR" ]]; then
 fi
 
 # Helpful runtime path for bootstrap tools built during the process.
-export DYLD_LIBRARY_PATH="$BREW_PREFIX/lib:$X11_PREFIX/lib${EXTRA_DYLD_LIBRARY_PATH:+:$EXTRA_DYLD_LIBRARY_PATH}"
-export LIBRARY_PATH="$BREW_PREFIX/lib:$X11_PREFIX/lib${EXTRA_LIBRARY_PATH:+:$EXTRA_LIBRARY_PATH}"
-export CPATH="$GCC_GNU_RUNTIME_INCLUDE_DIR:$BREW_PREFIX/include:$X11_PREFIX/include${EXTRA_CPATH:+:$EXTRA_CPATH}"
+export DYLD_LIBRARY_PATH="$X11_PREFIX/lib:$BREW_PREFIX/lib${EXTRA_DYLD_LIBRARY_PATH:+:$EXTRA_DYLD_LIBRARY_PATH}"
+export LIBRARY_PATH="$X11_PREFIX/lib:$BREW_PREFIX/lib${EXTRA_LIBRARY_PATH:+:$EXTRA_LIBRARY_PATH}"
+export CPATH="$GCC_GNU_RUNTIME_INCLUDE_DIR:$X11_PREFIX/include:$BREW_PREFIX/include${EXTRA_CPATH:+:$EXTRA_CPATH}"
 
 if [[ -n "$GCC_LIBOBJC_DIR" ]]; then
   export DYLD_LIBRARY_PATH="$GCC_LIBOBJC_DIR:$DYLD_LIBRARY_PATH"
@@ -466,7 +652,6 @@ fi
 
 export CFLAGS="-D__GNU_LIBOBJC__=1${EXTRA_CFLAGS:+ $EXTRA_CFLAGS}"
 export OBJCFLAGS="-D__GNU_LIBOBJC__=1 -fgnu-runtime${EXTRA_OBJCFLAGS:+ $EXTRA_OBJCFLAGS}"
-export GNUSTEP_MAKE_SERVICES="${GNUSTEP_MAKE_SERVICES:-/usr/bin/true}"
 
 # libobjc shim: create a directory where libobjc.dylib is a symlink to
 # libobjc-gnu.dylib.  Placing this directory first in LDFLAGS means that any
@@ -528,6 +713,11 @@ reset_bootstrap_env() {
 #   COMMAND  The command to run as root.
 #   ARGS     Any additional arguments forwarded verbatim to COMMAND.
 run_as_root() {
+  if [[ "${GNUSTEP_BUILD_USE_SUDO:-auto}" == "no" ]]; then
+    "$@"
+    return
+  fi
+
   if [[ -n "${SUDO_ASKPASS:-}" ]]; then
     sudo -A "$@"
   else
@@ -632,6 +822,7 @@ purge_installed_libobjc2() {
 MAKE_CONFIGURE_FLAGS=(
   "--prefix=$PREFIX"
   "--with-layout=gnustep"
+  "--with-config-file=$PREFIX/etc/GNUstep/GNUstep.conf"
   "--disable-strip"
 )
 
@@ -842,6 +1033,7 @@ build_lib() {
   if [[ "$name" == "libs-base" ]]; then
     extra_args+=("--disable-libdispatch")
     extra_args+=("--disable-importing-config-file")
+    extra_args+=("--enable-pass-arguments=yes")
   fi
 
   ./configure "${LIB_CONFIGURE_FLAGS[@]}" "${extra_args[@]}"
@@ -862,9 +1054,14 @@ build_lib libs-base
 build_lib libs-gui \
   "--with-tiff-library=$BREW_PREFIX/lib"
 
-# Back last; force X11-oriented include/library search paths.
+# Back last; force the X11 server and xlib graphics path against the macOS X11
+# installation discovered above.
 build_lib libs-back \
-  "--with-tiff-library=$BREW_PREFIX/lib"
+  "--with-tiff-library=$BREW_PREFIX/lib" \
+  "--enable-server=x11" \
+  "--enable-graphics=xlib" \
+  "--x-includes=$X11_PREFIX/include" \
+  "--x-libraries=$X11_PREFIX/lib"
 
 # Refresh environment one last time.
 source_gnustep_env

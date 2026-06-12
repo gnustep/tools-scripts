@@ -1,0 +1,38 @@
+#
+# GNUstep zones
+#
+Link	Etc/UTC			Universal
+Link	Etc/UTC			Zulu
+Link	Etc/GMT			Greenwich
+Link	Etc/GMT			GMT-0
+Link	Etc/GMT			GMT+0
+Link	Etc/GMT			GMT0
+
+Zone	GMT-14	-14	-	GMT-14	# 14 hours behind GMT
+Zone	GMT-13	-13	-	GMT-13
+Zone	GMT-12	-12	-	GMT-12
+Zone	GMT-11	-11	-	GMT-11
+Zone	GMT-10	-10	-	GMT-10
+Zone	GMT-9	-9	-	GMT-9
+Zone	GMT-8	-8	-	GMT-8
+Zone	GMT-7	-7	-	GMT-7
+Zone	GMT-6	-6	-	GMT-6
+Zone	GMT-5	-5	-	GMT-5
+Zone	GMT-4	-4	-	GMT-4
+Zone	GMT-3	-3	-	GMT-3
+Zone	GMT-2	-2	-	GMT-2
+Zone	GMT-1	-1	-	GMT-1
+Zone	GMT+1	1	-	GMT+1
+Zone	GMT+2	2	-	GMT+2
+Zone	GMT+3	3	-	GMT+3
+Zone	GMT+4	4	-	GMT+4
+Zone	GMT+5	5	-	GMT+5
+Zone	GMT+6	6	-	GMT+6
+Zone	GMT+7	7	-	GMT+7
+Zone	GMT+8	8	-	GMT+8
+Zone	GMT+9	9	-	GMT+9
+Zone	GMT+10	10	-	GMT+10
+Zone	GMT+11	11	-	GMT+11
+Zone	GMT+12	12	-	GMT+12
+Zone	GMT+13	13	-	GMT+13
+Zone	GMT+14	14	-	GMT+14

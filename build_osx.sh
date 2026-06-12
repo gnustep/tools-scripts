@@ -176,6 +176,7 @@ reset_patch_targets() {
       Tools/plutil.m \
       Tools/sfparse.m \
       Tools/xmlparse.m \
+      Source/GSArray.m \
       Source/GSString.m \
       Source/NSArray.m \
       Source/GSDictionary.m \
@@ -307,6 +308,15 @@ patch_nsarray_cached_imp_for_darwin_gcc() {
   perl -0pi -e 's/IMP(\s+)add(\s*=\s*\[self\s+methodForSelector:\s*addSel\];)/void (*add)(id, SEL, id)$2/g' "$array"
 }
 
+patch_gsarray_cached_imp_for_darwin_gcc() {
+  local array="$SRCROOT/libs-base/Source/GSArray.m"
+  if [[ ! -f "$array" ]]; then
+    return
+  fi
+
+  perl -0pi -e 's/IMP(\s+)get1(\s*=\s*\[otherArray\s+methodForSelector:\s*oaiSel\];)/id (*get1)(id, SEL, NSUInteger)$2/g' "$array"
+}
+
 patch_gsdictionary_cached_imp_for_darwin_gcc() {
   local dict="$SRCROOT/libs-base/Source/GSDictionary.m"
   if [[ ! -f "$dict" ]]; then
@@ -378,6 +388,11 @@ patch_nsserializer_cached_imp_for_darwin_gcc() {
 
   perl -0pi -e 's/IMP(\s+)nxtImp;/id (*nxtImp)(id, SEL);/g' "$serializer"
   perl -0pi -e 's/IMP(\s+)objImp;/id (*objImp)(id, SEL, id);/g' "$serializer"
+  perl -0pi -e 's/static IMP dInitImp;/static id (*dInitImp)(id, SEL, void *, NSUInteger);/g' "$serializer"
+  perl -0pi -e 's/static IMP maInitImp;/static id (*maInitImp)(id, SEL, NSUInteger);/g' "$serializer"
+  perl -0pi -e 's/static IMP mdInitImp;/static id (*mdInitImp)(id, SEL, NSUInteger);/g' "$serializer"
+  perl -0pi -e 's/static IMP maAddImp;/static void (*maAddImp)(id, SEL, id);/g' "$serializer"
+  perl -0pi -e 's/static IMP mdSetImp;/static void (*mdSetImp)(id, SEL, id, id);/g' "$serializer"
 }
 
 # patch_nsobject_for_gnu_runtime
@@ -600,6 +615,7 @@ patch_libs_base_for_darwin_gcc
 patch_gdomap_for_modern_sdk
 patch_small_objects_for_gnu_runtime
 patch_nsarray_cached_imp_for_darwin_gcc
+patch_gsarray_cached_imp_for_darwin_gcc
 patch_gsdictionary_cached_imp_for_darwin_gcc
 patch_nsdictionary_cached_imp_for_darwin_gcc
 patch_nsuserdefaults_cached_imp_for_darwin_gcc

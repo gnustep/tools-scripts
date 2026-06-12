@@ -181,6 +181,7 @@ reset_patch_targets() {
       Source/GSDictionary.m \
       Source/NSDictionary.m \
       Source/NSPropertyList.m \
+      Source/NSSerializer.m \
       Source/NSFileManager.m \
       Source/NSDatePrivate.h \
       Source/NSNumber.m \
@@ -356,6 +357,8 @@ patch_nsfilemanager_cached_imp_for_darwin_gcc() {
   perl -0pi -e 's/IMP(\s+)addImp;/void (*addImp)(id, SEL, id);/g' "$filemanager"
   perl -0pi -e 's/(\n\s+nxtImp\s*=\s*)\[direnum\s+methodForSelector:\s*@selector\(nextObject\)\];/$1(id (*)(id, SEL))[direnum methodForSelector: @selector(nextObject)];/g' "$filemanager"
   perl -0pi -e 's/(\n\s+addImp\s*=\s*)\[content\s+methodForSelector:\s*@selector\(addObject:\)\];/$1(void (*)(id, SEL, id))[content methodForSelector: @selector(addObject:)];/g' "$filemanager"
+  perl -0pi -e 's/\n\s+id \(\*nxtImp\)\(id, SEL\);\n\s+void \(\*addImp\)\(id, SEL, id\);\n\s*\n\s+nxtImp = \[direnum methodForSelector: @selector\(nextObject\)\];\n\s+addImp = \[content methodForSelector: @selector\(addObject:\)\];\n\s*\n\s+while \(\(path = \(\*nxtImp\)\(direnum, @selector\(nextObject\)\)\) != nil\)\n\s+\{\n\s+\(\*addImp\)\(content, @selector\(addObject:\), path\);\n\s+\}/\n      while ((path = [direnum nextObject]) != nil)\n\t{\n\t  [content addObject: path];\n\t}/g' "$filemanager"
+  perl -0pi -e 's/\n\s+id \(\*nxtImp\)\(id, SEL\);\n(\s+NSMutableArray\s+\*urlArray;\n\s+NSString\s+\*tempPath;\n\s*\n)\s+nxtImp = \[direnum methodForSelector: @selector\(nextObject\)\];\n\s*\n(\s+urlArray = \[NSMutableArray arrayWithCapacity: 128\];\n)\s+while \(\(tempPath = \(\*nxtImp\)\(direnum, @selector\(nextObject\)\)\) != nil\)/\n$1$2      while ((tempPath = [direnum nextObject]) != nil)/g' "$filemanager"
 }
 
 patch_nspropertylist_cached_imp_for_darwin_gcc() {
@@ -365,6 +368,16 @@ patch_nspropertylist_cached_imp_for_darwin_gcc() {
   fi
 
   perl -0pi -e 's/IMP(\s+)myObj(\s*=\s*\[obj\s+methodForSelector:\s*objSel\];)/id (*myObj)(id, SEL, id)$2/g' "$plist"
+}
+
+patch_nsserializer_cached_imp_for_darwin_gcc() {
+  local serializer="$SRCROOT/libs-base/Source/NSSerializer.m"
+  if [[ ! -f "$serializer" ]]; then
+    return
+  fi
+
+  perl -0pi -e 's/IMP(\s+)nxtImp;/id (*nxtImp)(id, SEL);/g' "$serializer"
+  perl -0pi -e 's/IMP(\s+)objImp;/id (*objImp)(id, SEL, id);/g' "$serializer"
 }
 
 # patch_nsobject_for_gnu_runtime
@@ -592,6 +605,7 @@ patch_nsdictionary_cached_imp_for_darwin_gcc
 patch_nsuserdefaults_cached_imp_for_darwin_gcc
 patch_nsfilemanager_cached_imp_for_darwin_gcc
 patch_nspropertylist_cached_imp_for_darwin_gcc
+patch_nsserializer_cached_imp_for_darwin_gcc
 patch_nsobject_for_gnu_runtime
 patch_nsnotificationcenter_for_gnu_runtime
 patch_nszone_for_darwin_gcc

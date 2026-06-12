@@ -180,10 +180,13 @@ reset_patch_targets() {
       Source/NSArray.m \
       Source/GSDictionary.m \
       Source/NSDictionary.m \
+      Source/NSPropertyList.m \
+      Source/NSFileManager.m \
       Source/NSDatePrivate.h \
       Source/NSNumber.m \
       Source/NSNotificationCenter.m \
       Source/NSObject.m \
+      Source/NSUserDefaults.m \
       Source/NSZone.m \
       Source/NSAutoreleasePool.m
   fi
@@ -300,6 +303,7 @@ patch_nsarray_cached_imp_for_darwin_gcc() {
   perl -0pi -e 's/IMP(\s+)get;/id (*get)(id, SEL, NSUInteger);/g' "$array"
   perl -0pi -e 's/IMP(\s+)get([01]?)(\s*=\s*\[[^\]]+\s+methodForSelector:\s*oaiSel\];)/id (*get$2)(id, SEL, NSUInteger)$3/g' "$array"
   perl -0pi -e 's/(\n\s+get\s*=\s*)\[(array|otherArray|self)\s+methodForSelector:\s*oaiSel\];/$1(id (*)(id, SEL, NSUInteger))[$2 methodForSelector: oaiSel];/g' "$array"
+  perl -0pi -e 's/IMP(\s+)add(\s*=\s*\[self\s+methodForSelector:\s*addSel\];)/void (*add)(id, SEL, id)$2/g' "$array"
 }
 
 patch_gsdictionary_cached_imp_for_darwin_gcc() {
@@ -308,6 +312,7 @@ patch_gsdictionary_cached_imp_for_darwin_gcc() {
     return
   fi
 
+  perl -0pi -e 's|#define\s+GSI_MAP_HASH\(M, X\)\s+\[X\.obj hash\]\n#define\s+GSI_MAP_EQUAL\(M, X,Y\)\s+\[X\.obj isEqual: Y\.obj\]\n#define\s+GSI_MAP_RETAIN_KEY\(M, X\)\s+\(\(X\)\.obj\) = \\\n\s+\[\(\(id\)\(X\)\.obj\) copyWithZone: map->zone\]|#if defined(__APPLE__) \&\& defined(__GNU_LIBOBJC__)\nstatic inline NSUInteger\nGSDictionaryMapHash(id obj)\n{\n  static SEL hashSel = NULL;\n  if (hashSel == NULL)\n    hashSel = \@selector(hash);\n  return ((NSUInteger (*)(id, SEL))objc_msg_lookup(obj, hashSel))(obj, hashSel);\n}\n\nstatic inline BOOL\nGSDictionaryMapEqual(id obj, id other)\n{\n  static SEL equalSel = NULL;\n  if (equalSel == NULL)\n    equalSel = \@selector(isEqual:);\n  return ((BOOL (*)(id, SEL, id))objc_msg_lookup(obj, equalSel))(obj, equalSel, other);\n}\n\nstatic inline id\nGSDictionaryMapCopyWithZone(id obj, NSZone *zone)\n{\n  static SEL copySel = NULL;\n  if (copySel == NULL)\n    copySel = \@selector(copyWithZone:);\n  return ((id (*)(id, SEL, NSZone *))objc_msg_lookup(obj, copySel))(obj, copySel, zone);\n}\n\n#define\tGSI_MAP_HASH(M, X)\t\tGSDictionaryMapHash((X).obj)\n#define\tGSI_MAP_EQUAL(M, X,Y)\t\tGSDictionaryMapEqual((X).obj, (Y).obj)\n#define\tGSI_MAP_RETAIN_KEY(M, X)\t((X).obj) = \\\n\t\t\t\t\tGSDictionaryMapCopyWithZone((id)(X).obj, map->zone)\n#else\n#define\tGSI_MAP_HASH(M, X)\t\t[X.obj hash]\n#define\tGSI_MAP_EQUAL(M, X,Y)\t\t[X.obj isEqual: Y.obj]\n#define\tGSI_MAP_RETAIN_KEY(M, X)\t((X).obj) = \\\n\t\t\t\t\t[((id)(X).obj) copyWithZone: map->zone]\n#endif|g' "$dict"
   perl -0pi -e 's/IMP(\s+)nxtObj(\s*=\s*\[e\s+methodForSelector:\s*nxtSel\];)/id (*nxtObj)(id, SEL)$2/g' "$dict"
   perl -0pi -e 's/IMP(\s+)otherObj(\s*=\s*\[other\s+methodForSelector:\s*objSel\];)/id (*otherObj)(id, SEL, id)$2/g' "$dict"
 }
@@ -325,6 +330,41 @@ patch_nsdictionary_cached_imp_for_darwin_gcc() {
   perl -0pi -e 's/IMP(\s+)(remObj)(\s*=\s*\[self\s+methodForSelector:\s*remSel\];)/void (*$2)(id, SEL, id)$3/g' "$dict"
   perl -0pi -e 's/IMP(\s+)(setObj)(\s*=\s*\[self\s+methodForSelector:\s*setSel\];)/void (*$2)(id, SEL, id, id)$3/g' "$dict"
   perl -0pi -e 's/IMP(\s+)(setObj);/void (*$2)(id, SEL, id, id);/g' "$dict"
+}
+
+patch_nsuserdefaults_cached_imp_for_darwin_gcc() {
+  local defaults="$SRCROOT/libs-base/Source/NSUserDefaults.m"
+  if [[ ! -f "$defaults" ]]; then
+    return
+  fi
+
+  perl -0pi -e 's/IMP(\s+)(pImp|tImp);/id (*$2)(id, SEL, id);/g' "$defaults"
+  perl -0pi -e 's/IMP(\s+)nImp;/id (*nImp)(id, SEL);/g' "$defaults"
+  perl -0pi -e 's/IMP(\s+)addImp;/void (*addImp)(id, SEL, id);/g' "$defaults"
+  perl -0pi -e 's/(\n\s+[pt]Imp\s*=\s*)\[(_persDomains|_tempDomains)\s+methodForSelector:\s*objectForKeySel\];/$1(id (*)(id, SEL, id))[$2 methodForSelector: objectForKeySel];/g' "$defaults"
+  perl -0pi -e 's/(\n\s+nImp\s*=\s*)\[enumerator\s+methodForSelector:\s*nextObjectSel\];/$1(id (*)(id, SEL))[enumerator methodForSelector: nextObjectSel];/g' "$defaults"
+  perl -0pi -e 's/(\n\s+addImp\s*=\s*)\[dictRep\s+methodForSelector:\s*addSel\];/$1(void (*)(id, SEL, id))[dictRep methodForSelector: addSel];/g' "$defaults"
+}
+
+patch_nsfilemanager_cached_imp_for_darwin_gcc() {
+  local filemanager="$SRCROOT/libs-base/Source/NSFileManager.m"
+  if [[ ! -f "$filemanager" ]]; then
+    return
+  fi
+
+  perl -0pi -e 's/IMP(\s+)nxtImp;/id (*nxtImp)(id, SEL);/g' "$filemanager"
+  perl -0pi -e 's/IMP(\s+)addImp;/void (*addImp)(id, SEL, id);/g' "$filemanager"
+  perl -0pi -e 's/(\n\s+nxtImp\s*=\s*)\[direnum\s+methodForSelector:\s*@selector\(nextObject\)\];/$1(id (*)(id, SEL))[direnum methodForSelector: @selector(nextObject)];/g' "$filemanager"
+  perl -0pi -e 's/(\n\s+addImp\s*=\s*)\[content\s+methodForSelector:\s*@selector\(addObject:\)\];/$1(void (*)(id, SEL, id))[content methodForSelector: @selector(addObject:)];/g' "$filemanager"
+}
+
+patch_nspropertylist_cached_imp_for_darwin_gcc() {
+  local plist="$SRCROOT/libs-base/Source/NSPropertyList.m"
+  if [[ ! -f "$plist" ]]; then
+    return
+  fi
+
+  perl -0pi -e 's/IMP(\s+)myObj(\s*=\s*\[obj\s+methodForSelector:\s*objSel\];)/id (*myObj)(id, SEL, id)$2/g' "$plist"
 }
 
 # patch_nsobject_for_gnu_runtime
@@ -549,6 +589,9 @@ patch_small_objects_for_gnu_runtime
 patch_nsarray_cached_imp_for_darwin_gcc
 patch_gsdictionary_cached_imp_for_darwin_gcc
 patch_nsdictionary_cached_imp_for_darwin_gcc
+patch_nsuserdefaults_cached_imp_for_darwin_gcc
+patch_nsfilemanager_cached_imp_for_darwin_gcc
+patch_nspropertylist_cached_imp_for_darwin_gcc
 patch_nsobject_for_gnu_runtime
 patch_nsnotificationcenter_for_gnu_runtime
 patch_nszone_for_darwin_gcc

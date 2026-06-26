@@ -49,6 +49,7 @@ install_debian()
     sudo apt --yes install ffmpeg
     sudo apt --yes install libavcodec-dev libavformat-dev libavdevice-dev libavfilter-dev libavutil-dev    
     sudo apt --yes install libao-dev
+    sudo apt --yes install libpq-dev
     
     echo "-------"
     echo "Done..."

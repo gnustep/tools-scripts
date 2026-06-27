@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Libraries/Apps/Tools
-LIBS_FILES="libs-xcode libs-ppd libs-steptalk libs-ucsdata libs-renaissance apps-gorm libs-gdl2 libs-gsweb libs-java libs-ruby libs-guile"
+LIBS_FILES="libs-xcode libs-ppd libs-steptalk libs-ucsdata libs-renaissance apps-gorm libs-gdl2 libs-gsweb libs-java libs-ruby libs-guile libs-simplewebkit"
 TOOLS_FILES="tools-charsets"
 APPS_FILES="apps-systempreferences apps-gworkspace apps-projectcenter apps-thematic apps-easydiff apps-videoplayer apps-fontbook apps-gsps"
 

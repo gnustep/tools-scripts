@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Libraries/Apps/Tools
-LIBS_FILES="libs-xcode libs-ppd libs-steptalk libs-ucsdata libs-renaissance apps-gorm libs-gdl2 libs-gsweb libs-java libs-ruby libs-guile libs-simplewebkit"
+LIBS_FILES="libs-xcode libs-ppd libs-steptalk libs-ucsdata libs-renaissance apps-gorm libs-gdl2 libs-gsweb libs-java libs-ruby libs-guile libs-simplewebkit libs-webkitcef"
 TOOLS_FILES="tools-charsets"
 APPS_FILES="apps-systempreferences apps-gworkspace apps-projectcenter apps-thematic apps-easydiff apps-videoplayer apps-fontbook apps-gsps"
 
@@ -31,18 +31,30 @@ fi
 # func..
 build_and_install()
 {
-    echo "***** Building ${1}..."
+    echo "***** Configuring ${1}..."
     cd ${1}
     if [ -f configure ]; then
 	./configure
     fi
-    if [ -f GNUmakefile ]; then
+
+    echo "***** Building ${1}..."
+    if [ -f Makefile ]; then
+	$MAKE -j${CPUS} -f Makefile
+	sudo $MAKE install
+    elif [ -f build.sh ]; then
+	./build.sh
+	# --install calls sudo, so we don't need to do it explicitly
+	./build.sh --install 
+    elif [ -f GNUmakefile ]; then
 	$MAKE -j${CPUS} debug=yes
 	if [ "$OS" = "MINGW64_NT*" ]; then
 	    . ${GNUSTEP_MAKEFILES}/GNUstep.sh && ${MAKE} GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install
 	else
 	    sudo -E -- sh -c ". ${GNUSTEP_MAKEFILES}/GNUstep.sh && ${MAKE} GNUSTEP_INSTALLATION_DOMAIN=SYSTEM debug=yes install"
 	fi
+    elif ls *.xcodeproj > /dev/null 2>&1; then
+	buildtool
+	sudo buildtool install
     fi
     cd ..
     echo "***** Done"

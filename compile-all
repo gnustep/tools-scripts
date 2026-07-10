@@ -130,10 +130,10 @@ cd tools-make
 # make distclean
 if $USING_GCC; then
     echo "==== BUILDING WITH GCC"
-    echo "Build command: CCFLAGS=$cc_flags CC=$CC ./configure --prefix=${prefix} --with-library-combo=gnu-gnu-gnu --with-layout=gnustep $make_flags"
+    echo "Build command: CFLAGS=$cc_flags CC=$CC ./configure --prefix=${prefix} --with-library-combo=gnu-gnu-gnu --with-layout=gnustep $make_flags"
 
     echo "===="
-    CCFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --prefix=${prefix} --with-library-combo=gnu-gnu-gnu --with-layout=gnustep ${make_flags}
+    CFLAGS=$cc_flags CXX=$CXX CC=$CC ./configure --prefix=${prefix} --with-library-combo=gnu-gnu-gnu --with-layout=gnustep ${make_flags}
 else
     echo "==== BUILDING WITH CLANG"
     unset CC
@@ -144,8 +144,8 @@ else
     export CXX=${cxxcompiler}
     # export LDFLAGS=-ldispatch
     echo "LDFLAGS=$LDFLAGS"
-    echo "Build command: CCFLAGS=${cc_flags} CXX=${CXX} CC=${CC} ./configure --prefix=${prefix} --with-library-combo=ng-gnu-gnu --enable-objc-arc --enable-native-objc-exceptions --with-layout=gnustep ${make_flags}"
-    CCFLAGS=${cc_flags} CXX=${CXX} CC=${CC} ./configure --prefix=${prefix} --with-library-combo=ng-gnu-gnu --enable-objc-arc --enable-native-objc-exceptions --with-layout=gnustep ${make_flags}
+    echo "Build command: CFLAGS=${cc_flags} CXX=${CXX} CC=${CC} ./configure --prefix=${prefix} --with-library-combo=ng-gnu-gnu --enable-objc-arc --enable-native-objc-exceptions --with-layout=gnustep ${make_flags}"
+    CFLAGS=${cc_flags} CXX=${CXX} CC=${CC} ./configure --prefix=${prefix} --with-library-combo=ng-gnu-gnu --enable-objc-arc --enable-native-objc-exceptions --with-layout=gnustep ${make_flags}
 fi
 
 # Install make after configuration...

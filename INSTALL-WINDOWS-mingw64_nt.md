@@ -7,7 +7,7 @@ This guide explains how to build and install GNUstep on Windows 10 using the MSY
 - Install MSYS2 (MinGW-w64 64-bit)
 - Update MSYS2 packages
 - Clone this repository (or use your local copy)
-- Run the repository helper scripts: `install-dependencies-mingw64_nt`, `setup-mingw64_nt`, `build-mingw64_nt`, and `post-install-mingw64_nt`
+- Run the repository helper through its `dependencies`, `setup`, `build`, and `post-install` actions
 - Verify the installation with small smoke tests
 
 ## Prerequisites
@@ -71,29 +71,29 @@ If you already have a local copy of the repository, `cd` into that folder instea
 
 This repository includes helper scripts specifically for the mingw64 target:
 
-- `install-dependencies-mingw64_nt` — installs required MSYS2/Mingw packages via `pacman`
-- `setup-mingw64_nt` — configures GNUstep Makefiles and environment
-- `build-mingw64_nt` — builds the GNUstep stack
-- `post-install-mingw64_nt` — optional post-install tasks
+- `gnustep dependencies` — installs required MSYS2/Mingw packages via `pacman`
+- `gnustep setup` — configures GNUstep Makefiles and environment
+- `gnustep build` — builds the GNUstep stack
+- `gnustep post-install` — optional post-install tasks
 
 Run them from the MSYS2 MinGW 64-bit shell in the repository root:
 
 ```bash
-chmod +x ./tools-scripts/install-dependencies-mingw64_nt ./tools-scripts/setup-mingw64_nt ./tools-scripts/build-mingw64_nt ./tools-scripts/post-install-mingw64_nt
-./tools-scripts/install-dependencies-mingw64_nt
+chmod +x ./tools-scripts/gnustep
+./tools-scripts/gnustep dependencies
 ```
 
 Notes:
 
 - The script will call `pacman` to install required packages (GCC, make, pkg-config, cmake, etc.). Let it run and install.
-- If you prefer, open `install-dependencies-mingw64_nt` to see the package list and install them manually with `pacman -S`.
+- If you prefer, inspect `scripts/dependencies/windows/x86_64/gcc` to see the package list and install it manually with `pacman -S`.
 
 ## 6. Run the setup script to configure the environment
 
 Run the setup script from the repository root:
 
 ```bash
-./tools-scripts/setup-mingw64_nt
+./tools-scripts/gnustep setup
 ```
 
 This script typically:
@@ -118,7 +118,7 @@ Use the build driver to build the GNUstep components:
 
 ```bash
 # From repository root inside MSYS2 MinGW 64-bit shell
-./tools-scripts/build-mingw64_nt
+./tools-scripts/gnustep build
 ```
 
 Notes:
@@ -127,17 +127,17 @@ Notes:
 - Scripts commonly honor `MAKEFLAGS` or accept `-j` options. For example, to build with 4 jobs:
 
 ```bash
-MAKEFLAGS='-j4' ./build-mingw64_nt
+MAKEFLAGS='-j4' ./tools-scripts/gnustep build
 ```
 
 - If the build fails, capture the first error in the logs — typical causes are missing packages, wrong shell (not using mingw64), or antivirus interference.
 
 ## 8. Post-install
 
-If the repository provides a `post-install-mingw64_nt` script, run it to perform final packaging or copy the built artifacts into their final locations:
+Run the `post-install` action to perform final packaging or copy the built artifacts into their final locations:
 
 ```bash
-./tools-scripts/post-install-mingw64_nt
+./tools-scripts/gnustep post-install
 ```
 
 Review the script to see whether it installs into `/mingw64`, a staging area, or creates packages.
@@ -183,15 +183,15 @@ gcc -o hello.exe hello.c
 ## Performance tips
 
 - Use parallel builds with `MAKEFLAGS='-jN'` or pass `-jN` to supported `make` invocations.
-- Build only the components you need (edit `build-mingw64_nt` or run component-specific targets) to save time.
+- Build only the components you need (edit `scripts/build/windows/x86_64/gcc` or run component-specific targets) to save time.
 - Use an SSD and multiple cores for significantly faster builds.
 
 ## Repository files you will use
 
-- `install-dependencies-mingw64_nt` — installs MSYS2/mingw packages via `pacman`.
-- `setup-mingw64_nt` — configures GNUstep Makefiles and environment for mingw64.
-- `build-mingw64_nt` — builds the GNUstep stack for mingw64.
-- `post-install-mingw64_nt` — post-installation and packaging tasks.
+- `gnustep dependencies` — installs MSYS2/mingw packages via `pacman`.
+- `gnustep setup` — configures GNUstep Makefiles and environment for mingw64.
+- `gnustep build` — builds the GNUstep stack for mingw64.
+- `gnustep post-install` — post-installation and packaging tasks.
 
 Run those scripts from the repository root inside the MSYS2 MinGW 64-bit shell.
 
@@ -210,19 +210,19 @@ pacman -S --needed git
 git -c core.autocrlf=false clone https://github.com/gnustep/tools-scripts.git
 
 # invoke helper scripts from the repository path (do not cd into it)
-chmod +x ./tools-scripts/install-dependencies-mingw64_nt ./tools-scripts/setup-mingw64_nt ./tools-scripts/build-mingw64_nt ./tools-scripts/post-install-mingw64_nt
-./tools-scripts/install-dependencies-mingw64_nt
-./tools-scripts/setup-mingw64_nt
+chmod +x ./tools-scripts/gnustep
+./tools-scripts/gnustep dependencies
+./tools-scripts/gnustep setup
 # optional: parallel build (adjust -j to match your CPU)
-MAKEFLAGS='-j4' ./tools-scripts/build-mingw64_nt
-./tools-scripts/post-install-mingw64_nt
+MAKEFLAGS='-j4' ./tools-scripts/gnustep build
+./tools-scripts/gnustep post-install
 ```
 
 ## Next steps / how I can help
 
 If you want, I can:
 
-- Inspect the `install-dependencies-mingw64_nt`, `setup-mingw64_nt`, and `build-mingw64_nt` scripts in this repository and produce a tailored command list.
+- Inspect the Windows implementations under `scripts/` and produce a tailored command list.
 - Add a short Windows-specific README or integrate this file into the repo's main `README.md` with a link.
 - Help debug build failures — paste the first error and I'll analyze it and propose fixes.
 

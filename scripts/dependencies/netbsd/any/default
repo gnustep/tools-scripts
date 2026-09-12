@@ -1,0 +1,16 @@
+#!/bin/sh
+
+echo "Installing NetBSD dependencies"
+
+PATH="/usr/pkg/sbin:/usr/sbin:$PATH"
+PKG_PATH="http://cdn.netbsd.org/pub/pkgsrc/packages/NetBSD/amd64/9.1/All"
+export PATH
+export PKG_PATH
+
+for package in gmake windowmaker jpeg tiff png libxml libxslt gnutls libffi icu cairo avahi portaudio flite clang cmake objc libcurl
+do
+    sudo "${TOOLS_SCRIPTS_ROOT}/gnustep" netbsd_pkg_add "$package"
+done
+ 
+echo "Done..."
+exit 0

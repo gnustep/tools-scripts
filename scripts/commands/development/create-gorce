@@ -1,0 +1,14 @@
+#!/bin/sh
+files = `ls -C1`
+
+for i in ${files}
+do
+	echo "Creating video for ${i}"
+	gource --seconds-per-day 0.01 --stop-at-end ${i} \
+	       --output-ppm-stream ~/Videos/${i}.ppm
+	echo "Done."
+done
+
+exit 0
+
+	

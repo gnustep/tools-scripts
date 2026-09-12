@@ -1,0 +1,13 @@
+#!/bin/sh
+
+
+COMMAND=$1
+
+FILES=`git diff | grep "+++" | sed 's/+++ b\///'`
+
+for FILE in ${FILES}
+do
+	emacs -batch ${FILE} --eval '(whitespace-cleanup)' -f save-buffer
+done
+
+exit 0

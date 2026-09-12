@@ -1,0 +1,14 @@
+#!/bin/sh
+COMPILER=${1:-clang}
+CXX=${2:-clang++}
+
+./tools-scripts/gnustep clone-all-repos-https
+if [ "${COMPILER}" != "gcc" ]; then
+#    CXX=`echo ${COMPILER} | sed 's/clang/clang++/g`
+    ./tools-scripts/gnustep clang-build "${COMPILER}" "${CXX}"
+else
+    ./tools-scripts/gnustep compile-all "/usr/GNUstep" "gcc" "g++"
+fi
+make_services
+
+exit 0

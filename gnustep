@@ -1,0 +1,175 @@
+#!/bin/sh
+
+set -eu
+
+PROGRAM=${0##*/}
+SCRIPT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+export TOOLS_SCRIPTS_ROOT=$SCRIPT_ROOT
+
+usage()
+{
+    cat <<EOF
+Usage: $PROGRAM <action> [options] [-- script arguments...]
+
+Actions:
+  setup                 Prepare the host for a GNUstep installation
+  dependencies          Install the platform dependencies
+  build                 Build GNUstep
+  post-install          Run optional post-install steps
+  list                  List the available implementations
+  <command>             Run a command from scripts/commands
+
+Options:
+  --os <name>            Override OS detection
+  --arch <name>          Override architecture detection
+  --toolchain <name>     Select a toolchain/variant (default: default)
+  --dry-run              Print the selected script without executing it
+  -h, --help             Show this help
+
+Examples:
+  ./$PROGRAM dependencies
+  ./$PROGRAM build --toolchain clang
+  ./$PROGRAM build --os windows --arch x86_64 --toolchain gcc
+  ./$PROGRAM clone-essential-repos-https
+EOF
+}
+
+normalize_os()
+{
+    case $(printf '%s' "$1" | tr '[:upper:]' '[:lower:]') in
+        darwin|macos|osx) echo darwin ;;
+        linux) echo linux ;;
+        freebsd) echo freebsd ;;
+        netbsd) echo netbsd ;;
+        openbsd) echo openbsd ;;
+        haiku) echo haiku ;;
+        mingw*|msys*|cygwin*|windows) echo windows ;;
+        *) printf '%s\n' "$1" | tr '[:upper:]' '[:lower:]' ;;
+    esac
+}
+
+normalize_arch()
+{
+    case $(printf '%s' "$1" | tr '[:upper:]' '[:lower:]') in
+        x86_64|amd64) echo x86_64 ;;
+        i386|i486|i586|i686|x86) echo x86 ;;
+        arm64|aarch64) echo arm64 ;;
+        armv6*|armv7*|arm) echo arm ;;
+        *) printf '%s\n' "$1" | tr '[:upper:]' '[:lower:]' ;;
+    esac
+}
+
+detect_toolchain()
+{
+    if [ "${MSYSTEM:-}" = "CLANG64" ]; then
+        echo clang
+    elif [ -n "${MSYSTEM:-}" ]; then
+        echo gcc
+    else
+        echo default
+    fi
+}
+
+list_scripts()
+{
+    for action in setup dependencies build post-install
+    do
+        find "$SCRIPT_ROOT/scripts/$action" -type f -perm -u+x 2>/dev/null
+    done |
+        sed "s|^$SCRIPT_ROOT/scripts/||" |
+        sort
+}
+
+list_commands()
+{
+    find "$SCRIPT_ROOT/scripts/commands" -type f -perm -u+x 2>/dev/null |
+        sed "s|^$SCRIPT_ROOT/scripts/commands/||" |
+        sort
+}
+
+[ $# -gt 0 ] || { usage >&2; exit 2; }
+
+ACTION=$1
+shift
+
+case $ACTION in
+    -h|--help) usage; exit 0 ;;
+    list)
+        echo "Platform implementations:"
+        list_scripts
+        echo "Commands:"
+        list_commands
+        exit 0
+        ;;
+    setup|dependencies|build|post-install) ;;
+    *)
+        case $ACTION in
+            *[!A-Za-z0-9_.-]*) echo "$PROGRAM: invalid command: $ACTION" >&2; exit 2 ;;
+        esac
+        COMMAND=$(find "$SCRIPT_ROOT/scripts/commands" -type f -name "$ACTION" -perm -u+x 2>/dev/null | sed -n '1p')
+        if [ -z "$COMMAND" ]; then
+            echo "$PROGRAM: unknown action or command: $ACTION" >&2
+            usage >&2
+            exit 2
+        fi
+        exec "$COMMAND" "$@"
+        ;;
+esac
+
+OS=$(normalize_os "$(uname -s)")
+ARCH=$(normalize_arch "$(uname -m)")
+TOOLCHAIN=$(detect_toolchain)
+TOOLCHAIN_EXPLICIT=no
+DRY_RUN=no
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --os) [ $# -ge 2 ] || { echo "$PROGRAM: --os requires a value" >&2; exit 2; }; OS=$(normalize_os "$2"); shift 2 ;;
+        --arch) [ $# -ge 2 ] || { echo "$PROGRAM: --arch requires a value" >&2; exit 2; }; ARCH=$(normalize_arch "$2"); shift 2 ;;
+        --toolchain) [ $# -ge 2 ] || { echo "$PROGRAM: --toolchain requires a value" >&2; exit 2; }; TOOLCHAIN=$2; TOOLCHAIN_EXPLICIT=yes; shift 2 ;;
+        --dry-run) DRY_RUN=yes; shift ;;
+        --) shift; break ;;
+        -h|--help) usage; exit 0 ;;
+        *) break ;;
+    esac
+done
+
+BASE="$SCRIPT_ROOT/scripts/$ACTION/$OS"
+SELECTED=
+if [ "$TOOLCHAIN_EXPLICIT" = yes ]; then
+    for candidate in "$BASE/$ARCH/$TOOLCHAIN" "$BASE/any/$TOOLCHAIN"; do
+        if [ -f "$candidate" ] && [ -x "$candidate" ]; then
+            SELECTED=$candidate
+            break
+        fi
+    done
+else
+    for candidate in \
+        "$BASE/$ARCH/$TOOLCHAIN" \
+        "$BASE/$ARCH/default" \
+        "$BASE/any/$TOOLCHAIN" \
+        "$BASE/any/default"
+    do
+        if [ -f "$candidate" ] && [ -x "$candidate" ]; then
+            SELECTED=$candidate
+            break
+        fi
+    done
+fi
+
+if [ -z "$SELECTED" ]; then
+    echo "$PROGRAM: no $ACTION implementation for os=$OS arch=$ARCH toolchain=$TOOLCHAIN" >&2
+    echo "$PROGRAM: available implementations:" >&2
+    list_scripts >&2
+    exit 1
+fi
+
+echo "$PROGRAM: $ACTION -> ${SELECTED#"$SCRIPT_ROOT/"}"
+[ "$DRY_RUN" = no ] || exit 0
+WORKSPACE_ROOT=${GNUSTEP_WORKSPACE_ROOT:-"$SCRIPT_ROOT/.."}
+if [ ! -d "$WORKSPACE_ROOT" ]; then
+    echo "$PROGRAM: workspace root does not exist: $WORKSPACE_ROOT" >&2
+    exit 1
+fi
+cd "$WORKSPACE_ROOT"
+exec "$SELECTED" "$@"

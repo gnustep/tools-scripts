@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -eu
+
+exec "${TOOLS_SCRIPTS_ROOT}/gnustep" build_osx.sh "$@"

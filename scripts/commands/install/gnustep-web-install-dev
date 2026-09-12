@@ -1,0 +1,64 @@
+#!/bin/sh
+
+echo "Install GNUstep"
+echo " "
+cat <<EOF
+                    @@@@@@@@@                     
+               @@@@@@@@@@@@@@@@@@@                
+            @@@@@@@@@@@@@@@@@@@@@@@@@             
+          @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@          
+         @@@@@@@@@@@@@@@@@@@@@@@         @@@@@    
+       @@@@@@@@@@@@@@@@@@@@@@@@@          @@@@    
+      @@@@@@@@@@@@@@@@@@@@@@@@@@           @@@    
+     @@@@@@@@@@@@@@@@@@@@@@@@@@@            @@    
+     @@@@@@@@@@@@@@@@@@@@@@@@@@@             @    
+    @@@@@@@@@@@@@@@@@@@@@@@@@@@@             @    
+    @@@@@@@@@@@@@@@@@@@@@@@@@@@@                  
+    @@@@@@@@@@@@@@                                
+    @@@@@@@@@@@@@@                                
+     @@@@@@@@@@@@@                           @    
+     @@@@@@@@@@@@@                           @    
+      @@@@@@@@@@@@                          @@    
+      @@@@@@@@@@@@                         @@@    
+       @@@@@@@@@@@                        @@@@    
+         @@@@@@@@@                       @@@@@    
+    @@@@@@@                            @@@@@@@    
+    @@@@@@@@@                        @@@@@@@@@    
+    @@@@@@@@@@@@                  @@@@@@@@@@@@    
+    @@@@@@@@@@@@@@@@@@      @@@@@@@@@@@@@@@@@@    
+EOF
+
+echo " "
+echo "IMPORTANT!"
+echo "You must update your .ssh directory so it contains your github ssh key"
+echo " "
+export KERNEL=`uname -s | sed "s/\-.*//g" | awk '{print(tolower($0))}'`
+echo "Begin setup for ${KERNEL}"
+
+echo "======== Create gnustep build directories ========"
+if [ ! -e .git ] ; then
+  # Default outside CI.
+  mkdir -p gnustep
+  cd gnustep
+  git clone git@github.com:gnustep/tools-scripts.git
+else
+  # Inside CI we are already in the repo.
+  # Just go to the parent directory, tools-scripts will exist.
+  cd ..
+fi
+./tools-scripts/gnustep setup
+./tools-scripts/gnustep clone-all-repos-https
+
+echo "================ Install Dependencies ================"
+# Install dependencies
+./tools-scripts/gnustep dependencies
+
+echo "================ Build ================"
+# Build it...
+WITH_ARC="${WITH_ARC}" ./tools-scripts/gnustep build
+
+# Post installation
+echo "================ Post Installation ================"
+./tools-scripts/gnustep post-install
+
+echo "Done..."

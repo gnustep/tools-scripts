@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Linux builds use the shared clang build command.
+exec "${TOOLS_SCRIPTS_ROOT}/gnustep" clang-build "$@"

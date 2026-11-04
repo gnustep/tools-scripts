@@ -1,0 +1,41 @@
+# Maintainer: Gregory Casamento <greg.casamento@gmail.com>
+
+_realname=libobjc2
+tests_enabled=('OFF')
+
+build()
+{
+  declare -a extra_config
+  declare -a extra_make_opts
+
+  extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
+  extra_config+=(-DCMAKE_C_FLAGS="-g -O0 -DDEBUG -fobjc-runtime=gnustep-1.9")
+  extra_config+=(-DCMAKE_C_LINK_FLAGS="-Wl,--allow-multiple-definition")
+
+  # tests_enabled=('ON')
+  # extra_make_opts+=("VERBOSE=1")
+
+  rm -rf CMakeFiles
+  rm libobjc.dll*
+  rm Makefile
+  rm CMakeCache.txt
+  
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+    ${MINGW_PREFIX}/bin/cmake \
+      -G'MSYS Makefiles' \
+      -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+      -DGNUSTEP_INSTALL_TYPE=NONE \
+      "${extra_config[@]}" \
+      	-DCMAKE_POSITION_INDEPENDENT_CODE=OFF \
+	-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+	-DCMAKE_ASM_COMPILER=clang -DCMAKE_ASM_FLAGS=-c \
+	-DTESTS=${tests_enabled} \
+      	../${_realname}
+
+  make "${extra_make_opts[@]}"
+}
+
+echo ".... build libobjc2 ...."
+build
+echo ".... done ...."
+exit 0

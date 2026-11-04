@@ -1,0 +1,5 @@
+#!/bin/sh
+
+GNUSTEP_GIT_PREFIX="https://github.com/gnustep/"
+export GNUSTEP_GIT_PREFIX
+exec "$(dirname -- "$0")/clone-all-repos" "$@"

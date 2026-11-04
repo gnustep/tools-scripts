@@ -1,0 +1,43 @@
+#!/bin/bash
+
+PREFIX="${GNUSTEP_GIT_PREFIX:-git@github.com:gnustep/}"
+FILES="libs-back libs-gui apps-projectcenter libs-palettes libs-boron apps-easydiff libs-opal libs-ec libs-mica libs-webservices libobjc2 libs-performance libs-base libs-sqlclient libs-corebase libs-dbuskit gitsvn-scripts plugins-themes-WinUXTheme plugins-themes-Gtk plugins-session plugins-gs-emacs libs-gscoredata apps-thematic apps-systempreferences tools-android android-examples tools-windows-development-installer tools-startup libs-gsweb tools-nfmake tools-installers tests-testsuite tests-retaincount tests-palettetest tests-gormtest libs-webserver libs-uikit libs-ucsdata libs-sysconfig apps-interfacecreator tests-examples libs-xcode libs-steptalk libs-smbkit libs-simplewebkit libs-ruby libs-renaissance libs-quartzcore libs-ppd libs-java libs-guile libs-gsldap libs-gsgd libs-gscrypt libs-gsantlr libs-gdl2 libs-corenetwork libs-coreimage gap libs-audiotoolbox apps-gworkspace apps-gsldapwebexplorer apps-gorm tools-make tools-scripts tools-model-main tools-charsets plugins-deprecated license libobjc libs-webkitcef apps-dock apps-leakdetector tools-bridge plugins-themes tools-windows-msvc apps-videoplayer apps-fontbook"
+
+for file in ${FILES}
+do
+    GITURL=${PREFIX}${file}
+    if
+	test -d ${file}
+    then
+	echo ""
+	echo "*** Entering directory: ${file}"
+        pushd $file
+        if [ "$file" = "apps-dock" ]; then
+            # DockWM lives on main; do not merge it into the legacy master branch.
+            git fetch "$GITURL" main || exit 1
+            if git show-ref --verify --quiet refs/heads/main; then
+                git checkout main || exit 1
+            else
+                git checkout -b main FETCH_HEAD || exit 1
+            fi
+            git merge --ff-only FETCH_HEAD || exit 1
+        else
+            git pull "${GITURL}" master
+        fi
+	echo "*** Done updating...\n"
+	echo ""
+	popd
+    else
+	echo ""
+	echo "*** New checkout for ${GITURL}"
+        if [ "$file" = "apps-dock" ]; then
+            git clone --recursive --branch main "$GITURL" || exit 1
+        else
+            git clone --recursive "$GITURL"
+        fi
+	echo "*** Done checkout...\n"
+	echo ""
+    fi
+done
+
+exit 0

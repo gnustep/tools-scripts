@@ -17,6 +17,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Test command dispatch
+        run: python3 -m unittest discover -s tests -v
+
       # Running only the non-dev version for now, as the dev version assumes
       # ssh keys are set up. This should be possible to set up with GitHub
       # Actions, but let's keep it simple for now.
@@ -24,7 +27,7 @@ jobs:
         shell: bash
         run: |
           # Sourcing so we get the pipefail propagate.
-          (set -euo pipefail ; export MANAGE_SUDO=no ; . gnustep-web-install) | tee /tmp/gs-build.log
+          (set -euo pipefail ; export MANAGE_SUDO=no ; . scripts/commands/install/gnustep-web-install) | tee /tmp/gs-build.log
           # We should process the log here to see if we can recognize critical
           # errors.
 

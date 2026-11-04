@@ -1,10 +1,9 @@
-GNUstep scripts
-===
+# GNUstep scripts
 
 The purpose of these scripts is to simplify GNUstep installation and dependency management.  
 
-Usage:
----
+## Usage:
+
 * Make sure that the tools-scripts directory is in the same directory as make, base, gui & back.
   (if you are using SVN this should be done already)
 * Make certain that when you execute the master script you are in the directory above.
@@ -47,7 +46,7 @@ All other commands are organized by purpose under `scripts/commands` and are
 also invoked through `gnustep`. For example:
 
 ```
-./tools-scripts/gnustep clone-essential-repos-https
+./tools-scripts/gnustep clone-essential-repos
 ./tools-scripts/gnustep update-gnustep
 ./tools-scripts/gnustep windows-package MyApplication.app
 ```
@@ -58,9 +57,14 @@ command. Some commonly used commands are:
 * clang-build - Build GNUstep using clang
 * compile-all - Build GNUstep.  With no options it will build using gcc and the built in runtime.
 * windows-package - packages a GNUstep application so that it can run WITHOUT having GNUstep installed
-* clone-essential-repos-https - uses HTTPS to update the essential repos
-* update-gnustep - update gnustep from git, merge the latest if needed.
-* clone-*-https - clone public git repositories over HTTPS
+* clone-essential-repos - clone or update the essential repos over SSH
+* clone-all-repos - clone or update all listed repos over SSH
+* update-gnustep - update GNUstep over SSH, then build and install it.
+* clone-*-https - explicitly use HTTPS instead of SSH for cloning and updating
+
+The default repository commands and development installer require a GitHub SSH
+key. Existing checkouts are updated using the selected transport regardless of
+their configured origin URL.
 * whitespace-cleanup - cleanup one file
 * process-files - run the specified command on the current files that have been changed.
 * cleanup - whitespace cleanup and, likely, other cleanups to be done on currently changed files.

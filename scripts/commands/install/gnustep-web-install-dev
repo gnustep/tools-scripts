@@ -47,7 +47,7 @@ else
   cd ..
 fi
 ./tools-scripts/gnustep setup
-./tools-scripts/gnustep clone-all-repos-https
+./tools-scripts/gnustep clone-all-repos
 
 echo "================ Install Dependencies ================"
 # Install dependencies

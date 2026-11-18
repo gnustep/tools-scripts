@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# Standalone entry point for the installer linked from the website.
+set -eu
+
+SCRIPT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+INSTALLER="$SCRIPT_ROOT/scripts/commands/install/gnustep-web-install"
+
+if [ -f "$INSTALLER" ]; then
+    exec sh -e "$INSTALLER" "$@"
+fi
+
+INSTALLER=$(mktemp "${TMPDIR:-/tmp}/gnustep-web-install.XXXXXX")
+trap 'rm -f "$INSTALLER"' EXIT
+trap 'exit 1' HUP INT TERM
+curl -fsSL https://raw.githubusercontent.com/gnustep/tools-scripts/master/scripts/commands/install/gnustep-web-install \
+    -o "$INSTALLER"
+sh -e "$INSTALLER" "$@"

@@ -73,6 +73,18 @@ their configured origin URL.
 Install GNUstep dev environment
 ===
 
+For the HTTPS installer, download the standalone top-level script, review it,
+and run it from the directory where you want the `gnustep` workspace created.
+Git and curl must already be installed.
+
+```
+curl -fsSLO https://raw.githubusercontent.com/gnustep/tools-scripts/master/gnustep-web-install
+sh gnustep-web-install
+```
+
+The standalone script retrieves the installer from this repository. Inside an
+existing checkout, it uses the local installer instead.
+
  * use ssh-agent forwarding, or have your key for GitHub locally on your dev machine and
    start ssh-agent locally.
  * have sudo configured, you may or may not want to use NOPASSWD
